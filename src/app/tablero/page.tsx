@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/presentation/components/ui/Button';
 import { Card } from '@/presentation/components/ui/Card';
 import { useSorteo } from '@/presentation/hooks/useSorteo';
+import { useFullscreen } from '@/presentation/hooks/useFullscreen';
 import { DinamicasSelector, DinamicasConfig } from '@/presentation/components/sorteo/DinamicasSelector';
-import { RotateCcw, Trophy, Upload } from 'lucide-react';
+import { RotateCcw, Trophy, Upload, Maximize, Minimize } from 'lucide-react';
 import { BINGO_CONSTANTS } from '@/shared/constants/bingo.constants';
 import { cn } from '@/shared/utils/cn';
 
@@ -34,12 +35,25 @@ export default function TableroPage() {
     reiniciar,
     getLetraNumero,
     totalSorteados,
+    cartonesConMenosAciertos,
+    juegoTerminado,
   } = useSorteo({ dinamicasActivas: dinamicas });
+
+  // Hook de pantalla completa
+  const { isFullscreen, toggleFullscreen, enterFullscreen } = useFullscreen();
 
   // Cargar cartones al montar
   useEffect(() => {
     cargarCartones();
   }, [cargarCartones]);
+
+  // Activar pantalla completa automáticamente cuando inicia el juego
+  useEffect(() => {
+    if (totalSorteados === 1 && !isFullscreen) {
+      // Cuando se sortea el primer número, entrar en pantalla completa
+      enterFullscreen();
+    }
+  }, [totalSorteados, isFullscreen, enterFullscreen]);
 
   // Deshabilitar cambio de dinámicas si ya empezó el sorteo
   const sorteoIniciado = totalSorteados > 0;
@@ -73,6 +87,18 @@ export default function TableroPage() {
           </div>
 
           <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              onClick={toggleFullscreen}
+              title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+            >
+              {isFullscreen ? (
+                <Minimize className="w-4 h-4 mr-2" />
+              ) : (
+                <Maximize className="w-4 h-4 mr-2" />
+              )}
+              {isFullscreen ? 'Salir' : 'Pantalla Completa'}
+            </Button>
             <Button variant="outline" onClick={cargarCartones} disabled={loading}>
               <Upload className="w-4 h-4 mr-2" />
               Recargar
@@ -176,6 +202,42 @@ export default function TableroPage() {
                 })}
               </div>
             </Card>
+
+            {/* Panel de Cartones con Menos Aciertos */}
+            {juegoTerminado && cartonesConMenosAciertos.length > 0 && (
+              <Card className="mt-6 bg-red-50 border-2 border-red-300">
+                <h2 className="text-xl font-bold mb-4 text-red-800">❌ Cartones con Menos Aciertos</h2>
+                <p className="text-sm text-gray-600 mb-4">
+                  Los 5 cartones que estuvieron más lejos de ganar:
+                </p>
+                <div className="space-y-3">
+                  {cartonesConMenosAciertos.map((item, index) => (
+                    <div
+                      key={item.numero_carton}
+                      className="p-4 bg-white rounded-xl border-2 border-red-200 shadow-sm hover:shadow-md transition-all"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-lg font-bold text-red-700">
+                            #{item.numero_carton}
+                          </p>
+                          <p className="text-xs text-gray-500">{item.carton.serial}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-black text-red-600">
+                            ({item.aciertos})
+                          </p>
+                          <p className="text-xs text-gray-500">aciertos</p>
+                        </div>
+                      </div>
+                      <div className="mt-2 text-xs text-gray-600">
+                        Posición: #{index + 1} de los menos afortunados
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
           </div>
 
           {/* Panel de Ganadores */}
