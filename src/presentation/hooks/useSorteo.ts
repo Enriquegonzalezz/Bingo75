@@ -24,6 +24,12 @@ interface Ganador {
   tipo?: 'normal' | 'pavoso'; // Tipo de premio
 }
 
+interface CartonConAciertos {
+  carton: Carton;
+  numero_carton: number;
+  aciertos: number;
+}
+
 interface UseSorteoProps {
   dinamicasActivas: DinamicasConfig;
 }
@@ -33,6 +39,8 @@ export function useSorteo({ dinamicasActivas }: UseSorteoProps) {
   const [ganadores, setGanadores] = useState<Ganador[]>([]);
   const [cartones, setCartones] = useState<Carton[]>([]);
   const [loading, setLoading] = useState(false);
+  const [cartonesConMenosAciertos, setCartonesConMenosAciertos] = useState<CartonConAciertos[]>([]);
+  const [juegoTerminado, setJuegoTerminado] = useState(false);
 
   // Validadores (filtrados por dinámicas activas)
   const validadores = useMemo(() => {
@@ -77,9 +85,27 @@ export function useSorteo({ dinamicasActivas }: UseSorteoProps) {
     }
   }, []);
 
+  // Calcular aciertos de un cartón
+  const calcularAciertos = useCallback((carton: Carton, numerosSet: Set<number>): number => {
+    let aciertos = 0;
+    for (let i = 0; i < 5; i++) {
+      for (let j = 0; j < 5; j++) {
+        const numero = carton.matriz[i][j];
+        // El centro (FREE) siempre cuenta como acierto
+        if ((i === 2 && j === 2) || (numero !== 0 && numerosSet.has(numero))) {
+          aciertos++;
+        }
+      }
+    }
+    return aciertos;
+  }, []);
+
   // Validar UN cartón contra TODOS los patrones (optimizado)
   const validarCarton = useCallback(
     (carton: Carton, numerosSet: Set<number>): Ganador | null => {
+      // Si el juego ya terminó, no validar más
+      if (juegoTerminado) return null;
+      
       // Si el cartón ya ganó, no validar de nuevo
       const yaGano = ganadores.some((g) => g.numero_carton === carton.numero_carton);
       if (yaGano) return null;
@@ -106,12 +132,15 @@ export function useSorteo({ dinamicasActivas }: UseSorteoProps) {
 
       return null;
     },
-    [validadores, ganadores]
+    [validadores, ganadores, juegoTerminado]
   );
 
   // Validar Pavoso (solo cuando hay exactamente 14 números y está activo)
   const validarPavoso = useCallback(
     (carton: Carton, numerosSet: Set<number>): Ganador | null => {
+      // Si el juego ya terminó, no validar más
+      if (juegoTerminado) return null;
+      
       // Si Pavoso no está activo, no validar
       if (!dinamicasActivas.pavoso) return null;
 
@@ -136,7 +165,7 @@ export function useSorteo({ dinamicasActivas }: UseSorteoProps) {
 
       return null;
     },
-    [pavosoValidator, ganadores, dinamicasActivas.pavoso]
+    [pavosoValidator, ganadores, dinamicasActivas.pavoso, juegoTerminado]
   );
 
   // Sortear número (CLICK MANUAL)
@@ -185,6 +214,29 @@ export function useSorteo({ dinamicasActivas }: UseSorteoProps) {
       // Actualizar ganadores
       if (nuevosGanadores.length > 0) {
         setGanadores((prev) => [...prev, ...nuevosGanadores]);
+        
+        // Marcar el juego como terminado cuando hay un ganador normal (no pavoso)
+        const hayGanadorNormal = nuevosGanadores.some(g => g.tipo !== 'pavoso');
+        if (hayGanadorNormal) {
+          setJuegoTerminado(true);
+          
+          // Calcular cartones con menos aciertos
+          const cartonesConAciertosCalc: CartonConAciertos[] = cartones
+            .filter(c => !nuevosGanadores.some(g => g.numero_carton === c.numero_carton))
+            .map(carton => ({
+              carton,
+              numero_carton: carton.numero_carton,
+              aciertos: calcularAciertos(carton, nuevosNumeros)
+            }))
+            .sort((a, b) => a.aciertos - b.aciertos)
+            .slice(0, 5); // Top 5 con menos aciertos
+          
+          setCartonesConMenosAciertos(cartonesConAciertosCalc);
+          
+          toast.info('🎮 Juego terminado. Reinicia para jugar de nuevo.', {
+            duration: 8000,
+          });
+        }
 
         // Notificar cada ganador
         nuevosGanadores.forEach((g) => {
@@ -201,13 +253,15 @@ export function useSorteo({ dinamicasActivas }: UseSorteoProps) {
 
       toast.info(`Número sorteado: ${numero}`);
     },
-    [numerosSorteados, cartones, validarCarton, validarPavoso]
+    [numerosSorteados, cartones, validarCarton, validarPavoso, juegoTerminado, calcularAciertos]
   );
 
   // Reiniciar sorteo
   const reiniciar = useCallback(() => {
     setNumerosSorteados(new Set());
     setGanadores([]);
+    setCartonesConMenosAciertos([]);
+    setJuegoTerminado(false);
     toast.info('Sorteo reiniciado');
   }, []);
 
@@ -231,5 +285,7 @@ export function useSorteo({ dinamicasActivas }: UseSorteoProps) {
     reiniciar,
     getLetraNumero,
     totalSorteados: numerosSorteados.size,
+    cartonesConMenosAciertos,
+    juegoTerminado,
   };
 }

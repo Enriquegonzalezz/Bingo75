@@ -11,8 +11,8 @@ import { Carton } from '../entities/Carton';
  */
 export class PavosoValidator {
   validate(carton: Carton, numerosSorteados: Set<number>): boolean {
-    // Solo validar si han salido exactamente 14 números
-    if (numerosSorteados.size !== 14) {
+    // Solo validar si han salido exactamente 16 números
+    if (numerosSorteados.size !== 16) {
       return false;
     }
 
