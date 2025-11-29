@@ -24,6 +24,8 @@ export interface ConfiguracionJuego {
   avisoPremiAutomatico: boolean;
   numeroRondas: number;
   rondas: ConfiguracionRonda[];
+  numeroSoporte: string;
+  patronPersonalizado?: boolean[][];
 }
 
 interface ConfiguracionModalProps {
@@ -98,6 +100,15 @@ export function ConfiguracionModal({
   const [rondas, setRondas] = useState<ConfiguracionRonda[]>([
     { numero: 1, pavosoActivo: true, menosAciertosActivo: true }
   ]);
+  const [numeroSoporte, setNumeroSoporte] = useState('');
+  // Patrón personalizado 5x5 (centro siempre es FREE)
+  const [patronPersonalizado, setPatronPersonalizado] = useState<boolean[][]>([
+    [false, false, false, false, false],
+    [false, false, false, false, false],
+    [false, false, true, false, false], // Centro es FREE
+    [false, false, false, false, false],
+    [false, false, false, false, false],
+  ]);
 
   if (!isOpen) return null;
 
@@ -123,6 +134,9 @@ export function ConfiguracionModal({
   };
 
   const handleConfirmar = () => {
+    // Si hay patrón personalizado seleccionado, incluirlo
+    const tienePatronPersonalizado = modalidadesSeleccionadas.has('personalizado');
+    
     onConfirmar({
       modalidadesSeleccionadas: Array.from(modalidadesSeleccionadas),
       rangoCartones: {
@@ -132,8 +146,36 @@ export function ConfiguracionModal({
       avisoPremiAutomatico: avisoAutomatico,
       numeroRondas,
       rondas,
+      numeroSoporte,
+      patronPersonalizado: tienePatronPersonalizado ? patronPersonalizado : undefined,
     });
   };
+
+  // Toggle celda del patrón personalizado
+  const toggleCeldaPersonalizada = (fila: number, col: number) => {
+    // No permitir cambiar el centro (FREE)
+    if (fila === 2 && col === 2) return;
+    
+    setPatronPersonalizado(prev => {
+      const nuevo = prev.map(f => [...f]);
+      nuevo[fila][col] = !nuevo[fila][col];
+      return nuevo;
+    });
+  };
+
+  // Limpiar patrón personalizado
+  const limpiarPatronPersonalizado = () => {
+    setPatronPersonalizado([
+      [false, false, false, false, false],
+      [false, false, false, false, false],
+      [false, false, true, false, false],
+      [false, false, false, false, false],
+      [false, false, false, false, false],
+    ]);
+  };
+
+  // Contar celdas activas en patrón personalizado
+  const celdasActivasPersonalizado = patronPersonalizado.flat().filter(Boolean).length;
 
   // Manejar cambio de número de rondas
   const handleNumeroRondasChange = (value: number) => {
@@ -223,9 +265,96 @@ export function ConfiguracionModal({
             </button>
           </div>
 
-          {/* Grid de modalidades */}
+          {/* Grid de modalidades o Editor Personalizado */}
           <div className="bg-white rounded-lg p-4 mb-6 min-h-[150px]">
-            {modalidadesFiltradas.length === 0 ? (
+            {categoriaActiva === 'PERSONALIZADO' ? (
+              /* Editor de Patrón Personalizado */
+              <div className="flex flex-col items-center gap-4">
+                <h3 className="text-lg font-bold text-[#124723]">Diseña tu patrón personalizado</h3>
+                <p className="text-sm text-gray-600 text-center">
+                  Haz clic en las celdas para activar/desactivar. El centro (FREE) siempre está activo.
+                </p>
+                
+                {/* Grid del patrón */}
+                <div className="bg-[#124723] p-4 rounded-xl shadow-lg">
+                  {/* Letras BINGO */}
+                  <div className="grid grid-cols-5 gap-1 mb-2">
+                    {['B', 'I', 'N', 'G', 'O'].map((letra) => (
+                      <div key={letra} className="w-12 h-8 flex items-center justify-center text-[#ffd402] font-black text-lg">
+                        {letra}
+                      </div>
+                    ))}
+                  </div>
+                  {/* Celdas del patrón */}
+                  <div className="grid grid-cols-5 gap-1">
+                    {patronPersonalizado.map((fila, i) =>
+                      fila.map((activo, j) => {
+                        const esCentro = i === 2 && j === 2;
+                        return (
+                          <button
+                            key={`${i}-${j}`}
+                            onClick={() => toggleCeldaPersonalizada(i, j)}
+                            className={`
+                              w-12 h-12 rounded-lg font-bold text-sm flex items-center justify-center
+                              transition-all duration-200 transform hover:scale-105
+                              ${esCentro
+                                ? 'bg-white text-[#124723] cursor-default'
+                                : activo
+                                  ? 'bg-[#ffd402] text-[#1d1d1b] shadow-lg'
+                                  : 'bg-[#1d1d1b] text-gray-500 hover:bg-[#2d2d2b]'
+                              }
+                            `}
+                          >
+                            {esCentro ? 'FREE' : activo ? '✓' : ''}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                {/* Controles */}
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={limpiarPatronPersonalizado}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-semibold"
+                  >
+                    Limpiar patrón
+                  </button>
+                  <span className="text-sm text-gray-600">
+                    Celdas activas: <span className="font-bold text-[#124723]">{celdasActivasPersonalizado}</span>
+                  </span>
+                  <button
+                    onClick={() => {
+                      if (celdasActivasPersonalizado >= 2) {
+                        const nuevas = new Set(modalidadesSeleccionadas);
+                        if (nuevas.has('personalizado')) {
+                          nuevas.delete('personalizado');
+                        } else {
+                          nuevas.add('personalizado');
+                        }
+                        setModalidadesSeleccionadas(nuevas);
+                      }
+                    }}
+                    disabled={celdasActivasPersonalizado < 2}
+                    className={`
+                      px-4 py-2 rounded-lg font-bold transition-all
+                      ${modalidadesSeleccionadas.has('personalizado')
+                        ? 'bg-[#68b258] text-white'
+                        : celdasActivasPersonalizado >= 2
+                          ? 'bg-[#124723] text-white hover:bg-[#1d5c2e]'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }
+                    `}
+                  >
+                    {modalidadesSeleccionadas.has('personalizado') ? '✓ Patrón seleccionado' : 'Usar este patrón'}
+                  </button>
+                </div>
+                {celdasActivasPersonalizado < 2 && (
+                  <p className="text-xs text-red-500">Selecciona al menos 2 celdas para crear un patrón válido</p>
+                )}
+              </div>
+            ) : modalidadesFiltradas.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
                 <p>No hay modalidades en esta categoría.</p>
                 <p className="text-sm">Las modalidades se agregarán próximamente.</p>
@@ -244,12 +373,26 @@ export function ConfiguracionModal({
             )}
           </div>
 
-          {/* Selección de rango de cartones */}
+          {/* Selección de rango de cartones y número de soporte */}
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-white rounded-lg p-4">
-              <h3 className="font-bold text-[#124723] mb-4">Seleccionar rango de cartones:</h3>
+              <h3 className="font-bold text-[#124723] mb-4">Configuración de partida:</h3>
               
               <div className="space-y-4">
+                {/* Número de Soporte */}
+                <div className="flex items-center gap-4">
+                  <label className="text-sm font-semibold text-gray-700 w-24">Nº Soporte:</label>
+                  <input
+                    type="text"
+                    value={numeroSoporte}
+                    onChange={(e) => setNumeroSoporte(e.target.value)}
+                    placeholder="Ej: 001234"
+                    className="flex-1 px-3 py-2 border-2 border-[#baa115] rounded-lg text-center font-bold 
+                      focus:border-[#ffd402] focus:ring-2 focus:ring-[#ffd402]/20 outline-none"
+                  />
+                </div>
+
+                {/* Rango de cartones */}
                 <div className="flex items-center gap-4">
                   <label className="text-sm font-semibold text-gray-700 w-24">Rango:</label>
                   <div className="flex items-center gap-2">

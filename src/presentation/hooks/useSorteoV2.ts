@@ -64,9 +64,22 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
   const modalidadesActivas = useMemo((): Modalidad[] => {
     if (!configuracion) return [];
     
-    return configuracion.modalidadesSeleccionadas
+    const modalidades = configuracion.modalidadesSeleccionadas
+      .filter(id => id !== 'personalizado') // Excluir personalizado de la búsqueda normal
       .map(id => getModalidadById(id))
       .filter((m): m is Modalidad => m !== undefined);
+    
+    // Si hay patrón personalizado, agregarlo como modalidad
+    if (configuracion.modalidadesSeleccionadas.includes('personalizado') && configuracion.patronPersonalizado) {
+      modalidades.push({
+        id: 'personalizado',
+        nombre: 'Personalizado',
+        categoria: 'PERSONALIZADO',
+        patron: configuracion.patronPersonalizado,
+      });
+    }
+    
+    return modalidades;
   }, [configuracion]);
 
   // Crear validadores basados en las modalidades seleccionadas
@@ -91,7 +104,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
         };
       }
       
-      // Validador genérico basado en patrón
+      // Validador genérico basado en patrón (incluye personalizado)
       return {
         id: modalidad.id,
         nombre: modalidad.nombre,

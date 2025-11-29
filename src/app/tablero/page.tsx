@@ -108,6 +108,7 @@ export default function TableroPage() {
         rondaActual={rondaActual}
         totalRondas={totalRondas}
         rondaFinalizada={rondaFinalizada}
+        numeroSoporte={configuracionJuego.numeroSoporte}
       />
     );
   }
