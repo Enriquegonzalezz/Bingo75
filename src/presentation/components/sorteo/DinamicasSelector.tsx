@@ -73,45 +73,45 @@ export function DinamicasSelector({ dinamicas, onChange, disabled = false }: Din
         disabled={disabled}
         className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border-2 transition-all ${
           disabled
-            ? 'bg-gray-100 border-gray-300 cursor-not-allowed'
-            : 'bg-white border-purple-300 hover:border-purple-500 hover:shadow-md cursor-pointer'
+            ? 'bg-[#1d1d1b] border-[#baa115] cursor-not-allowed'
+            : 'bg-[#1d1d1b] border-[#ffd402] hover:border-[#68b258] hover:shadow-md cursor-pointer'
         }`}
       >
         <div className="flex items-center gap-3">
-          <Trophy className="w-5 h-5 text-yellow-600" />
+          <Trophy className="w-5 h-5 text-[#ffd402]" />
           <div className="text-left">
-            <p className="font-bold text-gray-900">Dinámicas del Juego</p>
-            <p className="text-xs text-gray-600">
+            <p className="font-bold text-[#ffd402]">Dinámicas del Juego</p>
+            <p className="text-xs text-[#f8df7e]">
               {activasCount} de {DINAMICAS.length} activas
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {disabled && (
-            <span className="text-xs text-yellow-600 font-semibold">🔒 Bloqueado</span>
+            <span className="text-xs text-[#baa115] font-semibold">🔒 Bloqueado</span>
           )}
           {isOpen ? (
-            <ChevronUp className="w-5 h-5 text-gray-600" />
+            <ChevronUp className="w-5 h-5 text-[#f8df7e]" />
           ) : (
-            <ChevronDown className="w-5 h-5 text-gray-600" />
+            <ChevronDown className="w-5 h-5 text-[#f8df7e]" />
           )}
         </div>
       </button>
 
       {/* Dropdown - Solo se muestra cuando está abierto */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg border-2 border-purple-300 shadow-xl z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-[#1d1d1b] rounded-lg border-2 border-[#ffd402] shadow-xl z-50 max-h-96 overflow-y-auto">
           {/* Header con botón de activar/desactivar todas */}
-          <div className="sticky top-0 bg-white border-b-2 border-purple-200 p-3">
+          <div className="sticky top-0 bg-[#1d1d1b] border-b-2 border-[#baa115] p-3">
             <button
               onClick={handleToggleAll}
               disabled={disabled}
               className={`w-full px-4 py-2 rounded-lg font-semibold transition-colors ${
                 disabled
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  ? 'bg-[#124723] text-[#f8df7e] cursor-not-allowed opacity-50'
                   : allActive
-                  ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                  : 'bg-green-100 text-green-700 hover:bg-green-200'
+                  ? 'bg-[#baa115] text-[#1d1d1b] hover:bg-[#ffd402]'
+                  : 'bg-[#68b258] text-white hover:bg-[#124723]'
               }`}
             >
               {allActive ? '❌ Desactivar Todas' : '✅ Activar Todas'}
@@ -128,20 +128,20 @@ export function DinamicasSelector({ dinamicas, onChange, disabled = false }: Din
                 className={`w-full flex items-center justify-between p-3 rounded-lg mb-1 transition-all ${
                   disabled
                     ? 'cursor-not-allowed opacity-50'
-                    : 'cursor-pointer hover:bg-gray-50'
+                    : 'cursor-pointer hover:bg-[#124723]'
                 } ${
                   dinamicas[dinamica.key]
-                    ? 'bg-green-50 border-2 border-green-400'
-                    : 'bg-white border-2 border-gray-200'
+                    ? 'bg-[#68b258] border-2 border-[#ffd402]'
+                    : 'bg-[#124723] border-2 border-[#baa115]'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{dinamica.emoji}</span>
-                  <span className="font-semibold text-gray-900">{dinamica.nombre}</span>
+                  <span className="font-semibold text-[#f8df7e]">{dinamica.nombre}</span>
                 </div>
                 <div
                   className={`w-12 h-6 rounded-full transition-colors relative ${
-                    dinamicas[dinamica.key] ? 'bg-green-500' : 'bg-gray-300'
+                    dinamicas[dinamica.key] ? 'bg-[#ffd402]' : 'bg-[#baa115]'
                   }`}
                 >
                   <div
@@ -156,8 +156,8 @@ export function DinamicasSelector({ dinamicas, onChange, disabled = false }: Din
 
           {/* Footer con mensaje si está deshabilitado */}
           {disabled && (
-            <div className="sticky bottom-0 bg-yellow-50 border-t-2 border-yellow-200 p-3">
-              <p className="text-xs text-yellow-800 text-center font-semibold">
+            <div className="sticky bottom-0 bg-[#baa115] border-t-2 border-[#ffd402] p-3">
+              <p className="text-xs text-[#1d1d1b] text-center font-semibold">
                 ⚠️ No puedes cambiar las dinámicas durante el sorteo
               </p>
             </div>

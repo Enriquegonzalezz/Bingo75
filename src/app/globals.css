@@ -10,12 +10,22 @@
 }
 
 @layer base {
+  :root {
+    --bingo-green-dark: #124723;
+    --bingo-gold-dark: #baa115;
+    --bingo-gold-light: #f8df7e;
+    --bingo-yellow: #ffd402;
+    --bingo-green-light: #68b258;
+    --bingo-black: #1d1d1b;
+  }
+
   * {
     font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   }
 
   body {
-    @apply bg-white text-gray-900;
+    @apply text-gray-900;
+    background-color: var(--bingo-green-dark);
   }
 }
 

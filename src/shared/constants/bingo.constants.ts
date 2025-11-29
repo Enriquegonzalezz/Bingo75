@@ -13,11 +13,11 @@ export const BINGO_CONSTANTS = {
   },
   
   COLORS: {
-    B: '#3b82f6',  // Azul
-    I: '#ef4444',  // Rojo
-    N: '#a855f7',  // Púrpura
-    G: '#10b981',  // Verde
-    O: '#f59e0b',  // Naranja
+    B: '#124723',  // Verde oscuro
+    I: '#baa115',  // Dorado oscuro
+    N: '#ffd402',  // Amarillo intenso
+    G: '#68b258',  // Verde claro
+    O: '#f8df7e',  // Dorado claro
   },
 } as const;
 
