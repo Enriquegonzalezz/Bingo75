@@ -65,11 +65,11 @@ export function CartonGrid({
                   'rounded-lg font-bold flex items-center justify-center border-2 transition-all',
                   cellSizeClasses[size],
                   sizeClasses[size],
-                  esFree && 'bg-gray-800 text-white border-gray-800',
-                  !esFree && !esMarcado && 'bg-white text-gray-900 border-gray-300',
+                  esFree && 'bg-[#124723] text-[#ffd402] border-[#124723]',
+                  !esFree && !esMarcado && 'bg-[#1d1d1b] text-[#f8df7e] border-[#baa115]',
                   !esFree &&
                     esMarcado &&
-                    'bg-yellow-400 text-gray-900 border-yellow-500 scale-105'
+                    'bg-[#68b258] text-white border-[#ffd402] scale-105'
                 )}
               >
                 {esFree ? 'FREE' : numero}

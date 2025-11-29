@@ -60,7 +60,7 @@ export function useSorteo({ dinamicasActivas }: UseSorteoProps) {
     return todosValidadores.filter((v) => dinamicasActivas[v.key as keyof DinamicasConfig]);
   }, [dinamicasActivas]);
 
-  // Validador especial para Pavoso
+  // Validador especial para Pavoso (16 números, 0 coincidencias)
   const pavosoValidator = useMemo(() => new PavosoValidator(), []);
 
   // Cargar cartones desde JSON
@@ -148,8 +148,8 @@ export function useSorteo({ dinamicasActivas }: UseSorteoProps) {
       const yaGano = ganadores.some((g) => g.numero_carton === carton.numero_carton);
       if (yaGano) return null;
 
-      // Solo validar si hay exactamente 14 números
-      if (numerosSet.size !== 14) return null;
+      // Solo validar si hay exactamente 16 números
+      if (numerosSet.size !== 16) return null;
 
       const esPavoso = pavosoValidator.validate(carton, numerosSet);
 
@@ -201,8 +201,8 @@ export function useSorteo({ dinamicasActivas }: UseSorteoProps) {
             nuevosGanadores.push(ganador);
           }
 
-          // Validar Pavoso (solo cuando hay exactamente 14 números)
-          if (nuevosNumeros.size === 14) {
+          // Validar Pavoso (solo cuando hay exactamente 16 números)
+          if (nuevosNumeros.size === 16) {
             const pavoso = validarPavoso(carton, nuevosNumeros);
             if (pavoso) {
               nuevosGanadores.push(pavoso);

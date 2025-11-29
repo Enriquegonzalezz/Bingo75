@@ -4,8 +4,8 @@ import { Carton } from '../entities/Carton';
  * Validador para patrón PAVOSO
  * 
  * Un cartón es "Pavoso" cuando:
- * - Han salido exactamente 14 números
- * - El cartón NO tiene NINGUNA coincidencia con esos números
+ * - Han salido exactamente 16 números
+ * - El cartón NO tiene NINGUNA coincidencia (0 aciertos)
  * 
  * Es un premio especial por "mala suerte"
  */
@@ -26,7 +26,7 @@ export class PavosoValidator {
       numerosSorteados.has(num)
     );
 
-    // Es pavoso si NO tiene coincidencias
+    // Es pavoso si NO tiene ninguna coincidencia
     return !tieneCoincidencia;
   }
 }

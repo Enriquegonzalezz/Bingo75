@@ -22,11 +22,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const variants = {
-      primary: 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800',
-      secondary: 'bg-gray-600 text-white hover:bg-gray-700 active:bg-gray-800',
-      outline: 'border-2 border-gray-300 text-gray-700 hover:bg-gray-50',
-      destructive: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800',
-      ghost: 'text-gray-700 hover:bg-gray-100',
+      primary: 'bg-[#ffd402] text-[#124723] hover:bg-[#baa115] active:bg-[#baa115]',
+      secondary: 'bg-[#68b258] text-white hover:bg-[#124723] active:bg-[#124723]',
+      outline: 'border-2 border-[#ffd402] text-[#ffd402] hover:bg-[#ffd402] hover:text-[#124723]',
+      destructive: 'bg-[#baa115] text-[#1d1d1b] hover:bg-[#ffd402] active:bg-[#ffd402]',
+      ghost: 'text-[#f8df7e] hover:bg-[#68b258] hover:text-white',
     };
 
     const sizes = {
@@ -41,7 +41,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || loading}
         className={cn(
           'inline-flex items-center justify-center font-semibold rounded-lg transition-all',
-          'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
+          'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ffd402]',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           variants[variant],
           sizes[size],
