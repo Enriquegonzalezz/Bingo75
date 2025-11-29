@@ -51,26 +51,29 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
 
   // Obtener configuración de la ronda actual
   const configRondaActual = useMemo(() => {
-    if (!configuracion) return { pavosoActivo: true, menosAciertosActivo: true };
+    if (!configuracion) return { pavosoActivo: true, menosAciertosActivo: true, modalidades: [] as string[] };
     const ronda = configuracion.rondas.find(r => r.numero === rondaActual);
-    return ronda || { pavosoActivo: true, menosAciertosActivo: true };
+    return ronda || { pavosoActivo: true, menosAciertosActivo: true, modalidades: [] as string[] };
   }, [configuracion, rondaActual]);
 
   const pavosoActivo = configRondaActual.pavosoActivo;
   const menosAciertosActivo = configRondaActual.menosAciertosActivo;
   const totalRondas = configuracion?.numeroRondas || 1;
 
-  // Obtener modalidades activas desde la configuración
+  // Obtener modalidades activas desde la configuración de la RONDA ACTUAL
   const modalidadesActivas = useMemo((): Modalidad[] => {
     if (!configuracion) return [];
     
-    const modalidades = configuracion.modalidadesSeleccionadas
+    // Usar las modalidades de la ronda actual
+    const modalidadesRonda: string[] = configRondaActual.modalidades || [];
+    
+    const modalidades = modalidadesRonda
       .filter(id => id !== 'personalizado') // Excluir personalizado de la búsqueda normal
       .map(id => getModalidadById(id))
       .filter((m): m is Modalidad => m !== undefined);
     
-    // Si hay patrón personalizado, agregarlo como modalidad
-    if (configuracion.modalidadesSeleccionadas.includes('personalizado') && configuracion.patronPersonalizado) {
+    // Si hay patrón personalizado en esta ronda, agregarlo como modalidad
+    if (modalidadesRonda.includes('personalizado') && configuracion.patronPersonalizado) {
       modalidades.push({
         id: 'personalizado',
         nombre: 'Personalizado',
@@ -80,7 +83,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     }
     
     return modalidades;
-  }, [configuracion]);
+  }, [configuracion, configRondaActual]);
 
   // Crear validadores basados en las modalidades seleccionadas
   const validadores = useMemo(() => {

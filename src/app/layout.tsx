@@ -1,15 +1,17 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { Header } from '@/presentation/components/layout/Header';
 import { Toaster } from 'sonner';
+import { AuthProvider } from '@/presentation/context/AuthContext';
+import { AuthGuard } from '@/presentation/components/auth/AuthGuard';
+import { Header } from '@/presentation/components/layout/Header';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Bingo 75 - Sistema Profesional',
+  title: 'Bingo Carabobo - Sistema Profesional',
   description: 'Sistema completo de gestión de Bingo 75 con arquitectura escalable',
-  keywords: ['bingo', 'bingo 75', 'sorteo', 'cartones'],
+  keywords: ['bingo', 'bingo 75', 'sorteo', 'cartones', 'carabobo'],
 };
 
 export default function RootLayout({
@@ -20,9 +22,13 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={inter.className}>
-        <Header />
-        <main className="min-h-screen">{children}</main>
-        <Toaster position="top-right" richColors />
+        <AuthProvider>
+          <AuthGuard>
+            <Header />
+            <main className="min-h-screen">{children}</main>
+          </AuthGuard>
+          <Toaster position="top-right" richColors />
+        </AuthProvider>
       </body>
     </html>
   );

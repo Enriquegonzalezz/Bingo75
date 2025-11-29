@@ -1,13 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { PlayCircle, Grid3x3 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 
 export default function Home() {
   const logoRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
 
@@ -19,15 +19,6 @@ export default function Home() {
         rotation: -180,
         duration: 0.8,
         ease: 'back.out(1.7)',
-      });
-
-      // Animación del título
-      gsap.from(titleRef.current, {
-        y: -50,
-        opacity: 0,
-        duration: 0.6,
-        delay: 0.3,
-        ease: 'power3.out',
       });
 
       // Animación de las cards
@@ -58,16 +49,17 @@ export default function Home() {
       <div className="container mx-auto px-4 py-12 md:py-20 max-w-7xl">
         {/* Hero - Flex Layout */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-12 mb-20">
-          {/* Logo y Título - Izquierda */}
+          {/* Logo - Izquierda */}
           <div className="flex items-center gap-6">
             <div ref={logoRef}>
-              <div className="w-20 h-20 md:w-28 md:h-28 bg-[#ffd402] rounded-2xl flex items-center justify-center shadow-2xl">
-                <span className="text-[#124723] font-black text-4xl md:text-6xl">B</span>
-              </div>
+              <Image
+                src="/logo.png"
+                alt="Bingo Carabobo"
+                width={350}
+                height={120}
+                className="rounded-xl shadow-2xl"
+              />
             </div>
-            <h1 ref={titleRef} className="text-5xl md:text-7xl font-black text-[#ffd402]">
-              BINGO CARABOBO
-            </h1>
           </div>
 
           {/* Stats - Derecha */}

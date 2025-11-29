@@ -12,6 +12,7 @@ export interface ConfiguracionRonda {
   numero: number;
   pavosoActivo: boolean;
   menosAciertosActivo: boolean;
+  modalidades: string[]; // IDs de modalidades para esta ronda
 }
 
 // Configuración del juego
@@ -92,15 +93,15 @@ export function ConfiguracionModal({
   totalCartones,
 }: ConfiguracionModalProps) {
   const [categoriaActiva, setCategoriaActiva] = useState<CategoriaModalidad>('BINGO');
-  const [modalidadesSeleccionadas, setModalidadesSeleccionadas] = useState<Set<string>>(new Set());
   const [rangoDesde, setRangoDesde] = useState(1);
   const [rangoHasta, setRangoHasta] = useState(2000);
   const [avisoAutomatico, setAvisoAutomatico] = useState(true);
   const [numeroRondas, setNumeroRondas] = useState(1);
   const [rondas, setRondas] = useState<ConfiguracionRonda[]>([
-    { numero: 1, pavosoActivo: true, menosAciertosActivo: true }
+    { numero: 1, pavosoActivo: true, menosAciertosActivo: true, modalidades: [] }
   ]);
   const [numeroSoporte, setNumeroSoporte] = useState('');
+  const [rondaSeleccionada, setRondaSeleccionada] = useState(1); // Ronda actualmente seleccionada para editar
   // Patrón personalizado 5x5 (centro siempre es FREE)
   const [patronPersonalizado, setPatronPersonalizado] = useState<boolean[][]>([
     [false, false, false, false, false],
@@ -123,22 +124,30 @@ export function ConfiguracionModal({
 
   const modalidadesFiltradas = modalidades.filter(m => m.categoria === categoriaActiva);
 
+  // Obtener modalidades de la ronda seleccionada
+  const rondaActual = rondas.find(r => r.numero === rondaSeleccionada);
+  const modalidadesRondaActual = new Set(rondaActual?.modalidades || []);
+
+  // Toggle modalidad para la ronda seleccionada
   const toggleModalidad = (id: string) => {
-    const nuevas = new Set(modalidadesSeleccionadas);
-    if (nuevas.has(id)) {
-      nuevas.delete(id);
-    } else {
-      nuevas.add(id);
-    }
-    setModalidadesSeleccionadas(nuevas);
+    setRondas(prev => prev.map(r => {
+      if (r.numero !== rondaSeleccionada) return r;
+      const nuevasModalidades = r.modalidades.includes(id)
+        ? r.modalidades.filter(m => m !== id)
+        : [...r.modalidades, id];
+      return { ...r, modalidades: nuevasModalidades };
+    }));
   };
 
   const handleConfirmar = () => {
-    // Si hay patrón personalizado seleccionado, incluirlo
-    const tienePatronPersonalizado = modalidadesSeleccionadas.has('personalizado');
+    // Recopilar todas las modalidades únicas de todas las rondas
+    const todasModalidades = new Set<string>();
+    rondas.forEach(r => r.modalidades.forEach(m => todasModalidades.add(m)));
+    
+    const tienePatronPersonalizado = todasModalidades.has('personalizado');
     
     onConfirmar({
-      modalidadesSeleccionadas: Array.from(modalidadesSeleccionadas),
+      modalidadesSeleccionadas: Array.from(todasModalidades),
       rangoCartones: {
         desde: rangoDesde,
         hasta: rangoHasta,
@@ -153,7 +162,6 @@ export function ConfiguracionModal({
 
   // Toggle celda del patrón personalizado
   const toggleCeldaPersonalizada = (fila: number, col: number) => {
-    // No permitir cambiar el centro (FREE)
     if (fila === 2 && col === 2) return;
     
     setPatronPersonalizado(prev => {
@@ -174,7 +182,6 @@ export function ConfiguracionModal({
     ]);
   };
 
-  // Contar celdas activas en patrón personalizado
   const celdasActivasPersonalizado = patronPersonalizado.flat().filter(Boolean).length;
 
   // Manejar cambio de número de rondas
@@ -182,7 +189,6 @@ export function ConfiguracionModal({
     const num = Math.max(1, Math.min(value, 20));
     setNumeroRondas(num);
     
-    // Actualizar array de rondas
     const nuevasRondas: ConfiguracionRonda[] = [];
     for (let i = 1; i <= num; i++) {
       const rondaExistente = rondas.find(r => r.numero === i);
@@ -190,9 +196,15 @@ export function ConfiguracionModal({
         numero: i,
         pavosoActivo: true,
         menosAciertosActivo: true,
+        modalidades: [],
       });
     }
     setRondas(nuevasRondas);
+    
+    // Si la ronda seleccionada ya no existe, seleccionar la última
+    if (rondaSeleccionada > num) {
+      setRondaSeleccionada(num);
+    }
   };
 
   // Toggle pavoso para una ronda
@@ -209,6 +221,16 @@ export function ConfiguracionModal({
     ));
   };
 
+  // Copiar modalidades de otra ronda
+  const copiarModalidadesDeRonda = (desdeRonda: number) => {
+    const rondaOrigen = rondas.find(r => r.numero === desdeRonda);
+    if (!rondaOrigen) return;
+    
+    setRondas(prev => prev.map(r => 
+      r.numero === rondaSeleccionada ? { ...r, modalidades: [...rondaOrigen.modalidades] } : r
+    ));
+  };
+
   const handleRangoDesdeChange = (value: string) => {
     const num = parseInt(value) || 1;
     setRangoDesde(Math.max(1, Math.min(num, totalCartones)));
@@ -219,9 +241,12 @@ export function ConfiguracionModal({
     setRangoHasta(Math.max(rangoDesde, Math.min(num, totalCartones)));
   };
 
+  // Verificar si todas las rondas tienen al menos una modalidad
+  const todasRondasTienenModalidades = rondas.every(r => r.modalidades.length > 0);
+
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-[#e8e8e8] rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+      <div className="bg-[#e8e8e8] rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="bg-[#124723] px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-[#ffd402]">Opciones de la nueva partida</h2>
@@ -234,8 +259,98 @@ export function ConfiguracionModal({
         </div>
 
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+          {/* Selector de Ronda */}
+          <div className="bg-[#124723] rounded-xl p-4 mb-6">
+            {/* Número de rondas - MÁS VISIBLE */}
+            <div className="bg-[#ffd402] rounded-lg p-3 mb-4 flex items-center justify-center gap-4">
+              <span className="text-[#1d1d1b] font-black text-lg">🎲 NÚMERO DE RONDAS:</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleNumeroRondasChange(numeroRondas - 1)}
+                  disabled={numeroRondas <= 1}
+                  className="w-10 h-10 bg-[#124723] text-white font-black text-xl rounded-lg hover:bg-[#1d5c2e] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  value={numeroRondas}
+                  onChange={(e) => handleNumeroRondasChange(parseInt(e.target.value) || 1)}
+                  min={1}
+                  max={20}
+                  className="w-20 h-10 px-2 rounded-lg text-center font-black text-2xl border-2 border-[#124723]"
+                />
+                <button
+                  onClick={() => handleNumeroRondasChange(numeroRondas + 1)}
+                  disabled={numeroRondas >= 20}
+                  className="w-10 h-10 bg-[#124723] text-white font-black text-xl rounded-lg hover:bg-[#1d5c2e] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[#ffd402] font-bold">🎯 Selecciona la Ronda para configurar:</h3>
+            </div>
+            
+            <div className="flex flex-wrap gap-2">
+              {rondas.map((ronda) => (
+                <button
+                  key={ronda.numero}
+                  onClick={() => setRondaSeleccionada(ronda.numero)}
+                  className={`
+                    px-4 py-2 rounded-lg font-bold transition-all flex items-center gap-2
+                    ${rondaSeleccionada === ronda.numero
+                      ? 'bg-[#ffd402] text-[#1d1d1b] scale-105'
+                      : 'bg-[#1d1d1b] text-[#f8df7e] hover:bg-[#2d2d2b]'
+                    }
+                  `}
+                >
+                  <span>Ronda {ronda.numero}</span>
+                  {ronda.modalidades.length > 0 ? (
+                    <span className="bg-[#68b258] text-white text-xs px-2 py-0.5 rounded-full">
+                      {ronda.modalidades.length}
+                    </span>
+                  ) : (
+                    <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Opciones de la ronda seleccionada */}
+            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#ffd402]/30">
+              <span className="text-[#f8df7e] text-sm">Ronda {rondaSeleccionada}:</span>
+              <button
+                onClick={() => togglePavosoRonda(rondaSeleccionada)}
+                className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                  rondaActual?.pavosoActivo ? 'bg-[#68b258] text-white' : 'bg-gray-600 text-gray-300'
+                }`}
+              >
+                😅 Pavoso {rondaActual?.pavosoActivo ? '✓' : '✗'}
+              </button>
+              <button
+                onClick={() => toggleMenosAciertosRonda(rondaSeleccionada)}
+                className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                  rondaActual?.menosAciertosActivo ? 'bg-[#68b258] text-white' : 'bg-gray-600 text-gray-300'
+                }`}
+              >
+                ❌ Menos Aciertos {rondaActual?.menosAciertosActivo ? '✓' : '✗'}
+              </button>
+              {rondaSeleccionada > 1 && (
+                <button
+                  onClick={() => copiarModalidadesDeRonda(rondaSeleccionada - 1)}
+                  className="text-xs text-[#ffd402] hover:underline"
+                >
+                  📋 Copiar de Ronda {rondaSeleccionada - 1}
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* Tabs de categorías */}
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-4">
             <div className="flex items-center gap-1 mr-4">
               <span className="text-2xl font-black text-[#124723]">1</span>
               <span className="text-2xl font-black text-[#baa115]">2</span>
@@ -266,18 +381,19 @@ export function ConfiguracionModal({
           </div>
 
           {/* Grid de modalidades o Editor Personalizado */}
-          <div className="bg-white rounded-lg p-4 mb-6 min-h-[150px]">
+          <div className="bg-white rounded-lg p-4 mb-6 min-h-[180px]">
+            <p className="text-sm text-gray-600 mb-3">
+              Seleccionando figuras para <span className="font-bold text-[#124723]">Ronda {rondaSeleccionada}</span>
+            </p>
+            
             {categoriaActiva === 'PERSONALIZADO' ? (
-              /* Editor de Patrón Personalizado */
               <div className="flex flex-col items-center gap-4">
                 <h3 className="text-lg font-bold text-[#124723]">Diseña tu patrón personalizado</h3>
                 <p className="text-sm text-gray-600 text-center">
                   Haz clic en las celdas para activar/desactivar. El centro (FREE) siempre está activo.
                 </p>
                 
-                {/* Grid del patrón */}
                 <div className="bg-[#124723] p-4 rounded-xl shadow-lg">
-                  {/* Letras BINGO */}
                   <div className="grid grid-cols-5 gap-1 mb-2">
                     {['B', 'I', 'N', 'G', 'O'].map((letra) => (
                       <div key={letra} className="w-12 h-8 flex items-center justify-center text-[#ffd402] font-black text-lg">
@@ -285,7 +401,6 @@ export function ConfiguracionModal({
                       </div>
                     ))}
                   </div>
-                  {/* Celdas del patrón */}
                   <div className="grid grid-cols-5 gap-1">
                     {patronPersonalizado.map((fila, i) =>
                       fila.map((activo, j) => {
@@ -313,7 +428,6 @@ export function ConfiguracionModal({
                   </div>
                 </div>
 
-                {/* Controles */}
                 <div className="flex items-center gap-4">
                   <button
                     onClick={limpiarPatronPersonalizado}
@@ -327,19 +441,13 @@ export function ConfiguracionModal({
                   <button
                     onClick={() => {
                       if (celdasActivasPersonalizado >= 2) {
-                        const nuevas = new Set(modalidadesSeleccionadas);
-                        if (nuevas.has('personalizado')) {
-                          nuevas.delete('personalizado');
-                        } else {
-                          nuevas.add('personalizado');
-                        }
-                        setModalidadesSeleccionadas(nuevas);
+                        toggleModalidad('personalizado');
                       }
                     }}
                     disabled={celdasActivasPersonalizado < 2}
                     className={`
                       px-4 py-2 rounded-lg font-bold transition-all
-                      ${modalidadesSeleccionadas.has('personalizado')
+                      ${modalidadesRondaActual.has('personalizado')
                         ? 'bg-[#68b258] text-white'
                         : celdasActivasPersonalizado >= 2
                           ? 'bg-[#124723] text-white hover:bg-[#1d5c2e]'
@@ -347,7 +455,7 @@ export function ConfiguracionModal({
                       }
                     `}
                   >
-                    {modalidadesSeleccionadas.has('personalizado') ? '✓ Patrón seleccionado' : 'Usar este patrón'}
+                    {modalidadesRondaActual.has('personalizado') ? '✓ Patrón seleccionado' : 'Usar este patrón'}
                   </button>
                 </div>
                 {celdasActivasPersonalizado < 2 && (
@@ -357,7 +465,6 @@ export function ConfiguracionModal({
             ) : modalidadesFiltradas.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
                 <p>No hay modalidades en esta categoría.</p>
-                <p className="text-sm">Las modalidades se agregarán próximamente.</p>
               </div>
             ) : (
               <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
@@ -365,7 +472,7 @@ export function ConfiguracionModal({
                   <PatronModalidad
                     key={mod.id}
                     modalidad={mod}
-                    seleccionado={modalidadesSeleccionadas.has(mod.id)}
+                    seleccionado={modalidadesRondaActual.has(mod.id)}
                     onClick={() => toggleModalidad(mod.id)}
                   />
                 ))}
@@ -373,13 +480,12 @@ export function ConfiguracionModal({
             )}
           </div>
 
-          {/* Selección de rango de cartones y número de soporte */}
+          {/* Configuración de partida */}
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-white rounded-lg p-4">
               <h3 className="font-bold text-[#124723] mb-4">Configuración de partida:</h3>
               
               <div className="space-y-4">
-                {/* Número de Soporte */}
                 <div className="flex items-center gap-4">
                   <label className="text-sm font-semibold text-gray-700 w-24">Nº Soporte:</label>
                   <input
@@ -392,7 +498,6 @@ export function ConfiguracionModal({
                   />
                 </div>
 
-                {/* Rango de cartones */}
                 <div className="flex items-center gap-4">
                   <label className="text-sm font-semibold text-gray-700 w-24">Rango:</label>
                   <div className="flex items-center gap-2">
@@ -428,119 +533,49 @@ export function ConfiguracionModal({
                   <label htmlFor="avisoAutomatico" className="text-sm text-gray-700">
                     Aviso de premio automático
                   </label>
-                  <span className="text-xs text-[#68b258]">(Para controlar el retardo si es un bingo ONLINE.)</span>
                 </div>
 
                 <div className="bg-[#f8df7e] rounded p-3 text-center">
                   <p className="text-sm font-semibold text-[#124723]">
                     Se jugarán con <span className="font-black">{(rangoHasta - rangoDesde + 1).toLocaleString()}</span> cartones
                   </p>
-                  <p className="text-xs text-[#124723]/70">
-                    (Del #{rangoDesde} al #{rangoHasta} de {totalCartones.toLocaleString()} disponibles)
-                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Resumen de modalidades seleccionadas */}
+            {/* Resumen de rondas */}
             <div className="bg-white rounded-lg p-4">
-              <h3 className="font-bold text-[#124723] mb-4">Modalidades seleccionadas:</h3>
+              <h3 className="font-bold text-[#124723] mb-4">Resumen de Rondas:</h3>
               
-              {modalidadesSeleccionadas.size === 0 ? (
-                <div className="text-center text-gray-500 py-4">
-                  <p className="text-sm">Selecciona al menos una modalidad</p>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-                  {Array.from(modalidadesSeleccionadas).map((id) => {
-                    const mod = modalidades.find(m => m.id === id);
-                    if (!mod) return null;
-                    return (
-                      <span
-                        key={id}
-                        className="px-3 py-1 bg-[#68b258] text-white text-sm font-semibold rounded-full"
-                      >
-                        {mod.nombre}
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {rondas.map((ronda) => (
+                  <div 
+                    key={ronda.numero}
+                    className={`p-2 rounded-lg border-2 ${
+                      ronda.modalidades.length === 0 
+                        ? 'border-red-300 bg-red-50' 
+                        : 'border-[#68b258] bg-green-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-[#124723]">Ronda {ronda.numero}</span>
+                      <span className={`text-xs font-bold ${ronda.modalidades.length === 0 ? 'text-red-500' : 'text-[#68b258]'}`}>
+                        {ronda.modalidades.length} figura(s)
                       </span>
-                    );
-                  })}
-                </div>
-              )}
+                    </div>
+                    {ronda.modalidades.length > 0 && (
+                      <p className="text-xs text-gray-600 mt-1 truncate">
+                        {ronda.modalidades.slice(0, 3).map(id => {
+                          const mod = modalidades.find(m => m.id === id);
+                          return mod?.nombre || id;
+                        }).join(', ')}
+                        {ronda.modalidades.length > 3 && ` +${ronda.modalidades.length - 3} más`}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-
-          {/* Configuración de Rondas */}
-          <div className="bg-white rounded-lg p-4 mt-6">
-            <h3 className="font-bold text-[#124723] mb-4">Configuración de Rondas:</h3>
-            
-            <div className="flex items-center gap-4 mb-4">
-              <label className="text-sm font-semibold text-gray-700">Número de rondas:</label>
-              <input
-                type="number"
-                value={numeroRondas}
-                onChange={(e) => handleNumeroRondasChange(parseInt(e.target.value) || 1)}
-                min={1}
-                max={20}
-                className="w-20 px-2 py-1 border-2 border-gray-300 rounded text-center font-bold"
-              />
-            </div>
-
-            {/* Tabla de rondas */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-[#124723] text-white">
-                    <th className="px-3 py-2 text-left rounded-tl-lg">Ronda</th>
-                    <th className="px-3 py-2 text-center">😅 Pavoso</th>
-                    <th className="px-3 py-2 text-center rounded-tr-lg">❌ Menos Aciertos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rondas.map((ronda, index) => (
-                    <tr 
-                      key={ronda.numero} 
-                      className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}
-                    >
-                      <td className="px-3 py-2 font-bold text-[#124723]">
-                        Ronda {ronda.numero}
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        <button
-                          onClick={() => togglePavosoRonda(ronda.numero)}
-                          className={`
-                            w-8 h-8 rounded-full transition-all
-                            ${ronda.pavosoActivo 
-                              ? 'bg-[#68b258] text-white' 
-                              : 'bg-gray-200 text-gray-400'
-                            }
-                          `}
-                        >
-                          {ronda.pavosoActivo ? '✓' : '✗'}
-                        </button>
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        <button
-                          onClick={() => toggleMenosAciertosRonda(ronda.numero)}
-                          className={`
-                            w-8 h-8 rounded-full transition-all
-                            ${ronda.menosAciertosActivo 
-                              ? 'bg-[#68b258] text-white' 
-                              : 'bg-gray-200 text-gray-400'
-                            }
-                          `}
-                        >
-                          {ronda.menosAciertosActivo ? '✓' : '✗'}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <p className="text-xs text-gray-500 mt-2">
-              * Pavoso: Cartón sin coincidencias en 16 números. Menos Aciertos: Los 5 cartones más lejos de ganar.
-            </p>
           </div>
 
           {/* Botones de acción */}
@@ -553,10 +588,10 @@ export function ConfiguracionModal({
             </button>
             <button
               onClick={handleConfirmar}
-              disabled={modalidadesSeleccionadas.size === 0}
+              disabled={!todasRondasTienenModalidades}
               className={`
                 px-6 py-3 font-bold rounded-lg flex items-center gap-2 transition-colors
-                ${modalidadesSeleccionadas.size === 0
+                ${!todasRondasTienenModalidades
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-[#68b258] text-white hover:bg-[#124723]'
                 }
