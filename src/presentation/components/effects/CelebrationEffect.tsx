@@ -58,7 +58,7 @@ export function CelebrationEffect({ tipo, activo, onComplete }: CelebrationEffec
     particlesRef.current = particles;
 
     // Animar confetti cayendo desde arriba
-    particles.forEach((particle, i) => {
+    particles.forEach((particle) => {
       const startX = gsap.utils.random(0, window.innerWidth);
       const startY = -50;
       const endY = window.innerHeight + 100;
