@@ -14,6 +14,8 @@ export interface ConfiguracionRonda {
   menosAciertosActivo: boolean;
   modalidades: string[]; // IDs de modalidades para esta ronda
   premio: number; // Premio en dólares para esta ronda
+  patronPersonalizado?: boolean[][]; // Patrón personalizado para esta ronda
+  nombrePatronPersonalizado?: string; // Nombre del patrón personalizado
 }
 
 // Configuración del juego
@@ -27,7 +29,6 @@ export interface ConfiguracionJuego {
   numeroRondas: number;
   rondas: ConfiguracionRonda[];
   numeroSoporte: string;
-  patronPersonalizado?: boolean[][];
 }
 
 interface ConfiguracionModalProps {
@@ -103,14 +104,19 @@ export function ConfiguracionModal({
   ]);
   const [numeroSoporte, setNumeroSoporte] = useState('');
   const [rondaSeleccionada, setRondaSeleccionada] = useState(1); // Ronda actualmente seleccionada para editar
-  // Patrón personalizado 5x5 (centro siempre es FREE)
-  const [patronPersonalizado, setPatronPersonalizado] = useState<boolean[][]>([
+
+  // Patrón vacío por defecto
+  const patronVacio: boolean[][] = [
     [false, false, false, false, false],
     [false, false, false, false, false],
     [false, false, true, false, false], // Centro es FREE
     [false, false, false, false, false],
     [false, false, false, false, false],
-  ]);
+  ];
+
+  // Obtener patrón personalizado de la ronda seleccionada
+  const patronPersonalizado = rondas.find(r => r.numero === rondaSeleccionada)?.patronPersonalizado || patronVacio;
+  const nombrePatronPersonalizado = rondas.find(r => r.numero === rondaSeleccionada)?.nombrePatronPersonalizado || '';
 
   if (!isOpen) return null;
 
@@ -145,8 +151,6 @@ export function ConfiguracionModal({
     const todasModalidades = new Set<string>();
     rondas.forEach(r => r.modalidades.forEach(m => todasModalidades.add(m)));
     
-    const tienePatronPersonalizado = todasModalidades.has('personalizado');
-    
     onConfirmar({
       modalidadesSeleccionadas: Array.from(todasModalidades),
       rangoCartones: {
@@ -157,30 +161,47 @@ export function ConfiguracionModal({
       numeroRondas,
       rondas,
       numeroSoporte,
-      patronPersonalizado: tienePatronPersonalizado ? patronPersonalizado : undefined,
     });
   };
 
-  // Toggle celda del patrón personalizado
+  // Toggle celda del patrón personalizado para la ronda seleccionada
   const toggleCeldaPersonalizada = (fila: number, col: number) => {
     if (fila === 2 && col === 2) return;
     
-    setPatronPersonalizado(prev => {
-      const nuevo = prev.map(f => [...f]);
-      nuevo[fila][col] = !nuevo[fila][col];
-      return nuevo;
-    });
+    setRondas(prev => prev.map(r => {
+      if (r.numero !== rondaSeleccionada) return r;
+      const patronActual = r.patronPersonalizado || patronVacio;
+      const nuevoPatron = patronActual.map((f, i) => 
+        i === fila ? f.map((c, j) => j === col ? !c : c) : [...f]
+      );
+      return { ...r, patronPersonalizado: nuevoPatron };
+    }));
   };
 
-  // Limpiar patrón personalizado
+  // Actualizar nombre del patrón personalizado para la ronda seleccionada
+  const setNombrePatronPersonalizado = (nombre: string) => {
+    setRondas(prev => prev.map(r => {
+      if (r.numero !== rondaSeleccionada) return r;
+      return { ...r, nombrePatronPersonalizado: nombre };
+    }));
+  };
+
+  // Limpiar patrón personalizado de la ronda seleccionada
   const limpiarPatronPersonalizado = () => {
-    setPatronPersonalizado([
-      [false, false, false, false, false],
-      [false, false, false, false, false],
-      [false, false, true, false, false],
-      [false, false, false, false, false],
-      [false, false, false, false, false],
-    ]);
+    setRondas(prev => prev.map(r => {
+      if (r.numero !== rondaSeleccionada) return r;
+      return { 
+        ...r, 
+        patronPersonalizado: [
+          [false, false, false, false, false],
+          [false, false, false, false, false],
+          [false, false, true, false, false],
+          [false, false, false, false, false],
+          [false, false, false, false, false],
+        ],
+        nombrePatronPersonalizado: ''
+      };
+    }));
   };
 
   const celdasActivasPersonalizado = patronPersonalizado.flat().filter(Boolean).length;
@@ -417,6 +438,19 @@ export function ConfiguracionModal({
                 <p className="text-sm text-gray-600 text-center">
                   Haz clic en las celdas para activar/desactivar. El centro (FREE) siempre está activo.
                 </p>
+                
+                {/* Input para nombre del patrón */}
+                <div className="w-full max-w-xs">
+                  <label className="block text-sm font-semibold text-[#124723] mb-1">Nombre del patrón:</label>
+                  <input
+                    type="text"
+                    value={nombrePatronPersonalizado}
+                    onChange={(e) => setNombrePatronPersonalizado(e.target.value)}
+                    placeholder="Ej: Mi figura especial"
+                    className="w-full px-3 py-2 border-2 border-[#124723] rounded-lg focus:outline-none focus:border-[#ffd402] text-center font-semibold"
+                    maxLength={30}
+                  />
+                </div>
                 
                 <div className="bg-[#124723] p-4 rounded-xl shadow-lg">
                   <div className="grid grid-cols-5 gap-1 mb-2">

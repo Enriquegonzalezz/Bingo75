@@ -73,17 +73,19 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
       .filter((m): m is Modalidad => m !== undefined);
     
     // Si hay patrón personalizado en esta ronda, agregarlo como modalidad
-    if (modalidadesRonda.includes('personalizado') && configuracion.patronPersonalizado) {
+    // El patrón personalizado ahora está en la configuración de cada ronda
+    const rondaConfig = configuracion.rondas.find(r => r.numero === rondaActual);
+    if (modalidadesRonda.includes('personalizado') && rondaConfig?.patronPersonalizado) {
       modalidades.push({
         id: 'personalizado',
-        nombre: 'Personalizado',
+        nombre: rondaConfig.nombrePatronPersonalizado || 'Personalizado',
         categoria: 'PERSONALIZADO',
-        patron: configuracion.patronPersonalizado,
+        patron: rondaConfig.patronPersonalizado,
       });
     }
     
     return modalidades;
-  }, [configuracion, configRondaActual]);
+  }, [configuracion, configRondaActual, rondaActual]);
 
   // Crear validadores basados en las modalidades seleccionadas
   const validadores = useMemo(() => {

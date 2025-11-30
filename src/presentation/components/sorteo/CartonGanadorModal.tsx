@@ -42,7 +42,7 @@ export function CartonGanadorModal({ ganador, numerosSorteados, onClose }: Carto
             <h2 className="text-3xl md:text-4xl font-black text-[#124723]">
               {ganador.tipo === 'pavoso' ? '¡PAVOSO!' : '¡GANADOR!'}
             </h2>
-            <p className="text-[#124723] font-semibold text-lg">Cartón #{ganador.numero_carton}</p>
+            <p className="text-[#124723] font-black text-4xl md:text-5xl">Cartón #{ganador.numero_carton}</p>
           </div>
         </div>
         <button
