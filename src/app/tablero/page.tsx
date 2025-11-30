@@ -54,6 +54,8 @@ export default function TableroPage() {
     setMostrarConfiguracion(false);
     // Recargar cartones con la nueva configuración
     cargarCartones();
+    // Entrar en pantalla completa automáticamente
+    enterFullscreen();
   };
 
   // Mostrar modal de configuración
@@ -88,6 +90,9 @@ export default function TableroPage() {
     sortearNumero(numero);
   };
 
+  // Obtener el premio de la ronda actual
+  const premioRondaActual = configuracionJuego?.rondas.find(r => r.numero === rondaActual)?.premio || 0;
+
   // Si está en pantalla completa, mostrar el tablero especial
   if (isFullscreen && configuracionJuego) {
     return (
@@ -109,6 +114,7 @@ export default function TableroPage() {
         totalRondas={totalRondas}
         rondaFinalizada={rondaFinalizada}
         numeroSoporte={configuracionJuego.numeroSoporte}
+        premioRonda={premioRondaActual}
       />
     );
   }

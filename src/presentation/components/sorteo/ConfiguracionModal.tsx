@@ -13,6 +13,7 @@ export interface ConfiguracionRonda {
   pavosoActivo: boolean;
   menosAciertosActivo: boolean;
   modalidades: string[]; // IDs de modalidades para esta ronda
+  premio: number; // Premio en dólares para esta ronda
 }
 
 // Configuración del juego
@@ -98,7 +99,7 @@ export function ConfiguracionModal({
   const [avisoAutomatico, setAvisoAutomatico] = useState(true);
   const [numeroRondas, setNumeroRondas] = useState(1);
   const [rondas, setRondas] = useState<ConfiguracionRonda[]>([
-    { numero: 1, pavosoActivo: true, menosAciertosActivo: true, modalidades: [] }
+    { numero: 1, pavosoActivo: true, menosAciertosActivo: true, modalidades: [], premio: 0 }
   ]);
   const [numeroSoporte, setNumeroSoporte] = useState('');
   const [rondaSeleccionada, setRondaSeleccionada] = useState(1); // Ronda actualmente seleccionada para editar
@@ -197,6 +198,7 @@ export function ConfiguracionModal({
         pavosoActivo: true,
         menosAciertosActivo: true,
         modalidades: [],
+        premio: 0,
       });
     }
     setRondas(nuevasRondas);
@@ -218,6 +220,13 @@ export function ConfiguracionModal({
   const toggleMenosAciertosRonda = (numeroRonda: number) => {
     setRondas(prev => prev.map(r => 
       r.numero === numeroRonda ? { ...r, menosAciertosActivo: !r.menosAciertosActivo } : r
+    ));
+  };
+
+  // Actualizar premio de una ronda
+  const actualizarPremioRonda = (numeroRonda: number, premio: number) => {
+    setRondas(prev => prev.map(r => 
+      r.numero === numeroRonda ? { ...r, premio } : r
     ));
   };
 
@@ -320,8 +329,24 @@ export function ConfiguracionModal({
             </div>
 
             {/* Opciones de la ronda seleccionada */}
-            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#ffd402]/30">
+            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#ffd402]/30 flex-wrap">
               <span className="text-[#f8df7e] text-sm">Ronda {rondaSeleccionada}:</span>
+              
+              {/* Premio de la ronda */}
+              <div className="flex items-center gap-2 bg-[#ffd402] rounded-lg px-3 py-1">
+                <span className="text-[#1d1d1b] font-bold text-sm">💰 Premio:</span>
+                <span className="text-[#1d1d1b] font-bold">$</span>
+                <input
+                  type="number"
+                  value={rondaActual?.premio || 0}
+                  onChange={(e) => actualizarPremioRonda(rondaSeleccionada, parseFloat(e.target.value) || 0)}
+                  min={0}
+                  step={0.01}
+                  className="w-24 px-2 py-1 rounded text-center font-bold text-[#1d1d1b] border-2 border-[#baa115]"
+                  placeholder="0.00"
+                />
+              </div>
+
               <button
                 onClick={() => togglePavosoRonda(rondaSeleccionada)}
                 className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all ${

@@ -309,7 +309,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
         });
       }
 
-      toast.info(`Número sorteado: ${numero}`);
+     
     },
     [numerosSorteados, cartonesEnJuego, validarCarton, validarPavoso, ganadores]
   );

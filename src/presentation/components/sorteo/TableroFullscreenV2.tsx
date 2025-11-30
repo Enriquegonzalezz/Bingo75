@@ -26,33 +26,32 @@ interface TableroFullscreenV2Props {
   totalRondas: number;
   rondaFinalizada: boolean;
   numeroSoporte?: string;
+  premioRonda?: number;
 }
 
-// Componente para mostrar un patrón de modalidad - RESPONSIVE
+// Componente para mostrar un patrón de modalidad - GRANDE
 function PatronModalidad({ modalidad, numero }: { modalidad: Modalidad; numero: number }) {
   return (
-    <div className="flex items-center gap-3 bg-[#124723] rounded-xl p-3 border border-[#68b258]">
-      {/* Grid del patrón */}
-      <div className="flex-shrink-0">
-        <div className="grid grid-cols-5 gap-0.5">
-          {modalidad.patron.map((fila, i) =>
-            fila.map((activo, j) => (
-              <div
-                key={`${i}-${j}`}
-                className={`w-4 h-4 rounded-sm ${
-                  i === 2 && j === 2
-                    ? 'bg-white'
-                    : activo
-                      ? 'bg-[#ffd402]'
-                      : 'bg-[#0d2a0d]'
-                }`}
-              />
-            ))
-          )}
-        </div>
+    <div className="flex flex-col items-center bg-[#124723] rounded-xl p-4 border-2 border-[#68b258]">
+      {/* Grid del patrón - GRANDE */}
+      <div className="grid grid-cols-5 gap-1 w-full aspect-square max-w-[10vw]">
+        {modalidad.patron.map((fila, i) =>
+          fila.map((activo, j) => (
+            <div
+              key={`${i}-${j}`}
+              className={`rounded aspect-square ${
+                i === 2 && j === 2
+                  ? 'bg-white'
+                  : activo
+                    ? 'bg-[#ffd402]'
+                    : 'bg-[#0d2a0d]'
+              }`}
+            />
+          ))
+        )}
       </div>
-      {/* Info */}
-      <div className="flex-1 min-w-0">
+      {/* Info debajo */}
+      <div className="mt-3 text-center w-full">
         <p className="text-white font-bold text-sm truncate">{modalidad.nombre}</p>
         <p className="text-[#ffd402] text-xs">Figura #{numero}</p>
       </div>
@@ -77,6 +76,7 @@ export function TableroFullscreenV2({
   totalRondas,
   rondaFinalizada,
   numeroSoporte = '',
+  premioRonda = 0,
 }: TableroFullscreenV2Props) {
   // Estado para mostrar modal de ganador
   const [ganadorSeleccionado, setGanadorSeleccionado] = useState<Ganador | null>(null);
@@ -150,10 +150,20 @@ export function TableroFullscreenV2({
               </div>
             </div>
 
-            {/* NÚMERO DE SOPORTE - CENTRO */}
-            <div className="bg-[#ffd402] rounded-xl px-8 py-3 text-center shadow-lg border-4 border-[#baa115]">
-              <p className="text-[#1d1d1b]/70 text-xs font-bold uppercase tracking-wider">Nº Soporte</p>
-              <p className="text-[#1d1d1b] text-4xl font-black">{numeroSoporte || '---'}</p>
+            {/* PREMIO Y NÚMERO DE SOPORTE - CENTRO */}
+            <div className="flex items-center gap-4">
+              {/* Premio */}
+              {premioRonda > 0 && (
+                <div className="bg-[#68b258] rounded-xl px-6 py-3 text-center shadow-lg border-4 border-[#4a9c3e]">
+                  <p className="text-white/80 text-xs font-bold uppercase tracking-wider">💰 Premio</p>
+                  <p className="text-white text-3xl font-black">${premioRonda.toLocaleString()}</p>
+                </div>
+              )}
+              {/* Número de Soporte */}
+              <div className="bg-[#ffd402] rounded-xl px-8 py-3 text-center shadow-lg border-4 border-[#baa115]">
+                <p className="text-[#1d1d1b]/70 text-xs font-bold uppercase tracking-wider">Nº Soporte</p>
+                <p className="text-[#1d1d1b] text-4xl font-black">{numeroSoporte || '---'}</p>
+              </div>
             </div>
 
             {/* Info derecha */}

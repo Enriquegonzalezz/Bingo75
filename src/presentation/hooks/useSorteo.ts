@@ -251,7 +251,6 @@ export function useSorteo({ dinamicasActivas }: UseSorteoProps) {
         });
       }
 
-      toast.info(`Número sorteado: ${numero}`);
     },
     [numerosSorteados, cartones, validarCarton, validarPavoso, juegoTerminado, calcularAciertos]
   );
