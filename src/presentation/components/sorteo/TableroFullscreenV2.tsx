@@ -283,29 +283,29 @@ export function TableroFullscreenV2({
               </div>
             </div>
 
-            {/* CARTÓN BUSCADO - Panel lateral grande (25%) */}
+            {/* CARTÓN BUSCADO - Panel lateral responsivo */}
             {cartonBuscado && (
-              <div className="w-1/4 bg-[#1d1d1b] rounded-2xl p-4 border-4 border-[#ffd402] flex flex-col">
+              <div className="w-1/4 bg-[#1d1d1b] rounded-2xl p-2 border-4 border-[#ffd402] flex flex-col min-h-0 overflow-hidden">
                 {/* Header del cartón */}
-                <div className="text-center mb-4">
-                  <p className="text-[#ffd402] font-black text-5xl">#{cartonBuscado.carton.numero_carton}</p>
-                  <p className="text-white text-lg mt-1">
-                    <span className="text-[#68b258] font-bold text-2xl">{cartonBuscado.aciertos}</span>
-                    <span className="text-gray-400">/{cartonBuscado.totalNumeros} aciertos</span>
+                <div className="text-center mb-2 shrink-0">
+                  <p className="text-[#ffd402] font-black text-2xl lg:text-4xl">#{cartonBuscado.carton.numero_carton}</p>
+                  <p className="text-white text-sm lg:text-base">
+                    <span className="text-[#68b258] font-bold text-lg lg:text-xl">{cartonBuscado.aciertos}</span>
+                    <span className="text-gray-400">/{cartonBuscado.totalNumeros}</span>
                   </p>
                 </div>
                 
-                {/* Cartón grande */}
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="bg-[#f8df7e] rounded-2xl p-4 w-full max-w-xs">
+                {/* Cartón - Se ajusta al espacio disponible */}
+                <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden">
+                  <div className="bg-[#f8df7e] rounded-xl p-2 w-full h-full max-h-full flex flex-col">
                     {/* Header BINGO */}
-                    <div className="grid grid-cols-5 gap-2 mb-3">
+                    <div className="grid grid-cols-5 gap-1 mb-1 shrink-0">
                       {['B', 'I', 'N', 'G', 'O'].map((letra, i) => {
                         const colores = ['#e91e63', '#9c27b0', '#ffd402', '#4caf50', '#ff9800'];
                         return (
                           <div
                             key={letra}
-                            className="aspect-square rounded-lg flex items-center justify-center text-white font-black text-xl"
+                            className="aspect-square rounded flex items-center justify-center text-white font-black text-xs lg:text-sm"
                             style={{ backgroundColor: colores[i] }}
                           >
                             {letra}
@@ -313,8 +313,8 @@ export function TableroFullscreenV2({
                         );
                       })}
                     </div>
-                    {/* Números del cartón */}
-                    <div className="grid grid-cols-5 gap-2">
+                    {/* Números del cartón - Grid que se ajusta */}
+                    <div className="flex-1 grid grid-cols-5 grid-rows-5 gap-1 min-h-0">
                       {cartonBuscado.carton.matriz.map((fila, i) =>
                         fila.map((numero, j) => {
                           const esCentro = i === 2 && j === 2;
@@ -322,7 +322,7 @@ export function TableroFullscreenV2({
                           return (
                             <div
                               key={`${i}-${j}`}
-                              className={`aspect-square rounded-lg flex items-center justify-center font-bold text-lg ${
+                              className={`rounded flex items-center justify-center font-bold text-xs lg:text-sm ${
                                 esCentro
                                   ? 'bg-[#ffd402] text-[#1d1d1b]'
                                   : estaSorteado
@@ -340,7 +340,7 @@ export function TableroFullscreenV2({
                 </div>
                 
                 {/* Serial */}
-                <p className="text-[#f8df7e] text-sm text-center mt-4">Serial: {cartonBuscado.carton.serial}</p>
+                <p className="text-[#f8df7e] text-xs text-center mt-1 shrink-0 truncate">Serial: {cartonBuscado.carton.serial}</p>
               </div>
             )}
           </div>
