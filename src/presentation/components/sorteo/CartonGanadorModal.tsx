@@ -29,25 +29,30 @@ export function CartonGanadorModal({ ganador, numerosSorteados, onClose }: Carto
   const patron = ganador.tipo === 'pavoso' ? patronVacio : (modalidad?.patron || patronVacio);
 
   return (
-    <div className="fixed inset-0 bg-[#124723] z-[100] flex flex-col">
-      {/* Header - Fijo arriba */}
-      <div className="bg-gradient-to-r from-[#ffd402] to-[#baa115] p-4 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-4">
-          {ganador.tipo === 'pavoso' ? (
-            <span className="text-5xl">😅</span>
-          ) : (
-            <Trophy className="w-12 h-12 text-[#124723]" />
-          )}
-          <div>
+    <div className="fixed inset-0 bg-[#124723] z-100 flex flex-col">
+      {/* Header - Número del cartón GIGANTE centrado */}
+      <div className="bg-linear-to-r from-[#ffd402] to-[#baa115] py-6 px-4 shrink-0">
+        <div className="flex flex-col items-center justify-center">
+          {/* Número del cartón GIGANTE */}
+          <p className="text-[#124723] font-black text-8xl md:text-9xl leading-none">
+            #{ganador.numero_carton}
+          </p>
+          {/* Tipo de ganador */}
+          <div className="flex items-center gap-3 mt-2">
+            {ganador.tipo === 'pavoso' ? (
+              <span className="text-4xl">😅</span>
+            ) : (
+              <Trophy className="w-10 h-10 text-[#124723]" />
+            )}
             <h2 className="text-3xl md:text-4xl font-black text-[#124723]">
               {ganador.tipo === 'pavoso' ? '¡PAVOSO!' : '¡GANADOR!'}
             </h2>
-            <p className="text-[#124723] font-black text-4xl md:text-5xl">Cartón #{ganador.numero_carton}</p>
           </div>
         </div>
+        {/* Botón cerrar */}
         <button
           onClick={onClose}
-          className="w-12 h-12 bg-[#124723] rounded-full flex items-center justify-center hover:bg-[#1d1d1b] transition-colors"
+          className="absolute top-4 right-4 w-12 h-12 bg-[#124723] rounded-full flex items-center justify-center hover:bg-[#1d1d1b] transition-colors"
         >
           <X className="w-8 h-8 text-[#ffd402]" />
         </button>

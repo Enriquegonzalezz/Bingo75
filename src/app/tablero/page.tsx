@@ -38,6 +38,7 @@ export default function TableroPage() {
     siguienteRonda,
     pavosoActivo,
     menosAciertosActivo,
+    buscarCarton,
   } = useSorteoV2({ configuracion: configuracionJuego });
 
   // Hook de pantalla completa
@@ -115,6 +116,7 @@ export default function TableroPage() {
         rondaFinalizada={rondaFinalizada}
         numeroSoporte={configuracionJuego.numeroSoporte}
         premioRonda={premioRondaActual}
+        buscarCarton={buscarCarton}
       />
     );
   }

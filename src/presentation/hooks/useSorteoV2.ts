@@ -143,13 +143,12 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
           c => c.numero_carton >= desde && c.numero_carton <= hasta
         );
         setCartonesEnJuego(filtrados);
-        toast.success(`✅ ${filtrados.length} cartones listos para jugar (del #${desde} al #${hasta})`);
+       
       } else {
         setCartonesEnJuego(todosCartones);
-        toast.success(`✅ ${todosCartones.length} cartones listos para jugar`);
+      
       }
     } catch (error) {
-      toast.error('Error al cargar cartones desde JSON');
       console.error(error);
     } finally {
       setLoading(false);
@@ -258,12 +257,12 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
   const sortearNumero = useCallback(
     (numero: number) => {
       if (numero < 1 || numero > 75) {
-        toast.error('Número debe estar entre 1 y 75');
+        console.error('Número debe estar entre 1 y 75');
         return;
       }
 
       if (numerosSorteados.has(numero)) {
-        toast.warning(`El número ${numero} ya fue sorteado`);
+        console.error(`El número ${numero} ya fue sorteado`);
         return;
       }
 
@@ -305,9 +304,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
             ? `${emoji} ¡PAVOSO! Cartón #${g.numero_carton} - Sin coincidencias`
             : `${emoji} ¡GANADOR! Cartón #${g.numero_carton} - ${g.patron}`;
           
-          toast.success(mensaje, {
-            duration: 5000,
-          });
+          console.log(mensaje);
         });
       }
 
@@ -324,7 +321,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     setRondaActual(1);
     setHistorialRondas([]);
     setRondaFinalizada(false);
-    toast.info('Sorteo reiniciado');
+    console.log('Sorteo reiniciado');
   }, []);
 
   // Finalizar ronda actual (guardar en historial y calcular menos aciertos si aplica)
@@ -356,13 +353,13 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
       setCartonesConMenosAciertos(cartonesConAciertosCalc);
     }
     
-    toast.success(`🏁 Ronda ${rondaActual} finalizada`);
+    console.log(`🏁 Ronda ${rondaActual} finalizada`);
   }, [rondaActual, ganadores, numerosSorteados, cartonesConMenosAciertos, menosAciertosActivo, cartonesEnJuego]);
 
   // Pasar a la siguiente ronda
   const siguienteRonda = useCallback(() => {
     if (rondaActual >= totalRondas) {
-      toast.info('🎮 ¡Juego terminado! Todas las rondas completadas.');
+      console.log('🎮 ¡Juego terminado! Todas las rondas completadas.');
       return;
     }
     
@@ -385,6 +382,28 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     if (numero >= 61 && numero <= 75) return 'O';
     return '';
   }, []);
+
+  // Buscar un cartón por número y calcular sus aciertos
+  const buscarCarton = useCallback((numeroCarton: number): { carton: Carton; aciertos: number; totalNumeros: number } | null => {
+    const carton = cartonesEnJuego.find(c => c.numero_carton === numeroCarton);
+    if (!carton) return null;
+    
+    // Calcular aciertos (números del cartón que han sido sorteados)
+    let aciertos = 0;
+    let totalNumeros = 0;
+    carton.matriz.forEach((fila, i) => {
+      fila.forEach((numero, j) => {
+        // El centro (FREE) no cuenta
+        if (i === 2 && j === 2) return;
+        totalNumeros++;
+        if (numerosSorteados.has(numero)) {
+          aciertos++;
+        }
+      });
+    });
+    
+    return { carton, aciertos, totalNumeros };
+  }, [cartonesEnJuego, numerosSorteados]);
 
   return {
     numerosSorteados: Array.from(numerosSorteados).sort((a, b) => a - b),
@@ -409,5 +428,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     siguienteRonda,
     pavosoActivo,
     menosAciertosActivo,
+    buscarCarton,
   };
 }
+  
