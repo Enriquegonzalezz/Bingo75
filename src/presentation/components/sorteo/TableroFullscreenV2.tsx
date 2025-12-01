@@ -148,15 +148,15 @@ export function TableroFullscreenV2({
   }, [pavosos.length]);
 
   return (
-    <div className="fixed inset-0 bg-[#124723] z-50 overflow-hidden">
+    <div className="fixed inset-0 bg-[#124723] z-50 overflow-hidden" style={{ height: '100dvh' }}>
       {/* Animación de celebración */}
       <CelebrationEffect tipo={celebracion.tipo} activo={celebracion.activo} />
 
       {/* GRID PRINCIPAL 5x5 - Optimizado para TV */}
-      <div className="h-screen p-2 grid grid-cols-5 grid-rows-5 gap-2">
+      <div className="h-full w-full p-2 grid grid-cols-5 grid-rows-5 gap-2" style={{ maxHeight: '100dvh' }}>
         
         {/* ===== FILA 1-3: HEADER + TABLERO (5 columnas, 3 filas) ===== */}
-        <div className="col-span-5 row-span-3 flex flex-col">
+        <div className="col-span-5 row-span-3 flex flex-col min-h-0 overflow-hidden">
           {/* Header compacto */}
           <div className="flex justify-between items-center mb-2 px-2">
             {/* Logo */}
@@ -243,7 +243,7 @@ export function TableroFullscreenV2({
           </div>
 
           {/* CONTENEDOR TABLERO + CARTÓN BUSCADO */}
-          <div className={`flex-1 flex gap-3 ${cartonBuscado ? '' : ''}`}>
+          <div className="flex-1 flex gap-3 min-h-0 overflow-hidden">
             {/* TABLERO 75 NÚMEROS */}
             <div className={`bg-[#1d1d1b] rounded-2xl p-3 border-4 border-[#ffd402] ${cartonBuscado ? 'w-3/4' : 'w-full'}`}>
               <div className="h-full bg-[#ffd402] rounded-xl p-2">
@@ -347,10 +347,10 @@ export function TableroFullscreenV2({
         </div>
 
         {/* ===== FILA INFERIOR - RESPONSIVE ===== */}
-        <div className="col-span-5 row-span-2 row-start-4 flex gap-2">
+        <div className="col-span-5 row-span-2 row-start-4 flex gap-2 min-h-0 overflow-hidden">
           
           {/* FIGURAS EN JUEGO - Scroll vertical */}
-          <div className="flex-1 bg-[#1d1d1b] rounded-2xl p-3 border-2 border-[#ffd402] flex flex-col min-w-0">
+          <div className="flex-1 bg-[#1d1d1b] rounded-2xl p-3 border-2 border-[#ffd402] flex flex-col min-w-0 min-h-0">
             <h3 className="text-[#ffd402] font-bold text-base mb-2 text-center flex-shrink-0">🎯 FIGURAS ({modalidadesActivas.length})</h3>
             <div className="flex-1 overflow-y-auto space-y-2">
               {modalidadesActivas.map((mod, index) => (
@@ -360,7 +360,7 @@ export function TableroFullscreenV2({
           </div>
 
           {/* GANADORES */}
-          <div className="flex-1 bg-[#1d1d1b] rounded-2xl p-3 border-2 border-[#68b258] flex flex-col min-w-0">
+          <div className="flex-1 bg-[#1d1d1b] rounded-2xl p-3 border-2 border-[#68b258] flex flex-col min-w-0 min-h-0">
             <div className="flex items-center justify-center gap-2 mb-2 flex-shrink-0">
               <Trophy className="w-5 h-5 text-[#ffd402]" />
               <h3 className="text-[#68b258] font-bold text-base">GANADORES ({ganadoresReales.length})</h3>
@@ -385,7 +385,7 @@ export function TableroFullscreenV2({
 
           {/* PAVOSOS - Solo si está activo */}
           {pavosoActivo && (
-            <div className="flex-1 bg-[#1d1d1b] rounded-2xl p-3 border-2 border-[#ffd402] flex flex-col min-w-0">
+            <div className="flex-1 bg-[#1d1d1b] rounded-2xl p-3 border-2 border-[#ffd402] flex flex-col min-w-0 min-h-0">
               <h3 className="text-[#ffd402] font-bold text-base mb-2 text-center flex-shrink-0">😅 PAVOSOS ({pavosos.length})</h3>
               <div className="flex-1 overflow-y-auto space-y-2">
                 {pavosos.length === 0 ? (
@@ -408,7 +408,7 @@ export function TableroFullscreenV2({
 
           {/* MENOS ACIERTOS - Solo si hay datos */}
           {cartonesConMenosAciertos.length > 0 && (
-            <div className="flex-1 bg-[#1d1d1b] rounded-2xl p-3 border-2 border-[#68b258] flex flex-col min-w-0">
+            <div className="flex-1 bg-[#1d1d1b] rounded-2xl p-3 border-2 border-[#68b258] flex flex-col min-w-0 min-h-0">
               <div className="flex items-center justify-center gap-1 mb-2 flex-shrink-0">
                 <XCircle className="w-4 h-4 text-[#ffd402]" />
                 <h3 className="text-white font-bold text-base">MENOS ACIERTOS</h3>
