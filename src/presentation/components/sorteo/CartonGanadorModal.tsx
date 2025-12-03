@@ -66,7 +66,7 @@ export function CartonGanadorModal({ ganador, numerosSorteados, onClose }: Carto
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <h3 className="text-[#ffd402] font-bold text-base md:text-xl mb-2 text-center shrink-0">CARTÓN</h3>
             <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden">
-              <div className="bg-[#f8df7e] rounded-xl md:rounded-2xl p-2 md:p-4 w-full max-w-[min(100%,40vh)] aspect-square">
+              <div className="bg-[#f8df7e] rounded-xl md:rounded-2xl p-2 md:p-4 w-fit h-fit max-w-full max-h-full">
                 {/* Header BINGO */}
                 <div className="grid grid-cols-5 gap-1 md:gap-2 mb-1 md:mb-2">
                   {['B', 'I', 'N', 'G', 'O'].map((letra, i) => {
@@ -74,7 +74,7 @@ export function CartonGanadorModal({ ganador, numerosSorteados, onClose }: Carto
                     return (
                       <div
                         key={letra}
-                        className="aspect-square rounded-lg md:rounded-xl flex items-center justify-center text-white font-black text-sm md:text-xl lg:text-2xl"
+                        className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-lg md:rounded-xl flex items-center justify-center text-white font-black text-sm md:text-xl lg:text-2xl"
                         style={{ backgroundColor: colores[i] }}
                       >
                         {letra}
@@ -95,7 +95,7 @@ export function CartonGanadorModal({ ganador, numerosSorteados, onClose }: Carto
                         <div
                           key={`${i}-${j}`}
                           className={`
-                            aspect-square rounded-lg md:rounded-xl flex items-center justify-center font-bold text-sm md:text-lg lg:text-xl
+                            w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-lg md:rounded-xl flex items-center justify-center font-bold text-sm md:text-lg lg:text-xl
                             transition-all duration-300
                             ${esCentro 
                               ? 'bg-[#ffd402] text-[#1d1d1b]' 
@@ -181,16 +181,6 @@ export function CartonGanadorModal({ ganador, numerosSorteados, onClose }: Carto
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Botón cerrar - Fijo abajo */}
-      <div className="p-2 md:p-4 shrink-0">
-        <button
-          onClick={onClose}
-          className="w-full max-w-md mx-auto block py-2 md:py-3 bg-[#ffd402] text-[#1d1d1b] font-bold text-base md:text-lg rounded-xl hover:bg-[#f8df7e] transition-colors"
-        >
-          Cerrar
-        </button>
       </div>
     </div>
   );

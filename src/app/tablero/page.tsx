@@ -110,7 +110,6 @@ export default function TableroPage() {
         onReiniciar={reiniciar}
         onFinalizarRonda={finalizarRonda}
         onSiguienteRonda={siguienteRonda}
-        totalCartones={cartonesEnJuego.length}
         pavosoActivo={pavosoActivo}
         menosAciertosActivo={menosAciertosActivo}
         rondaActual={rondaActual}

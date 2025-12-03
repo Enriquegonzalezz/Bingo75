@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Trophy, XCircle, SkipForward, Flag, Search, X } from 'lucide-react';
+import { Trophy, XCircle, SkipForward, Flag, Search, X, Menu, RotateCcw, LogOut } from 'lucide-react';
 import { Modalidad } from '@/shared/constants/modalidades';
 import { Ganador, CartonConAciertos } from '@/presentation/hooks/useSorteoV2';
 import { CartonGanadorModal } from './CartonGanadorModal';
@@ -21,7 +21,6 @@ interface TableroFullscreenV2Props {
   onReiniciar: () => void;
   onFinalizarRonda: () => void;
   onSiguienteRonda: () => void;
-  totalCartones: number;
   pavosoActivo?: boolean;
   menosAciertosActivo?: boolean;
   rondaActual: number;
@@ -35,14 +34,14 @@ interface TableroFullscreenV2Props {
 // Componente para mostrar un patrón de modalidad - GRANDE
 function PatronModalidad({ modalidad, numero }: { modalidad: Modalidad; numero: number }) {
   return (
-    <div className="flex flex-col items-center bg-[#124723] rounded-xl p-4 border-2 border-transparent">
-      {/* Grid del patrón - GRANDE */}
-      <div className="grid grid-cols-5 gap-1 w-full aspect-square max-w-[10vw]">
+    <div className="flex flex-col items-center bg-[#124723] rounded-xl p-3 border-2 border-transparent">
+      {/* Grid del patrón - MÁS GRANDE */}
+      <div className="grid grid-cols-5 gap-1.5 w-full aspect-square max-w-[14vw]">
         {modalidad.patron.map((fila, i) =>
           fila.map((activo, j) => (
             <div
               key={`${i}-${j}`}
-              className={`rounded aspect-square ${
+              className={`rounded-lg aspect-square ${
                 i === 2 && j === 2
                   ? 'bg-white'
                   : activo
@@ -54,9 +53,9 @@ function PatronModalidad({ modalidad, numero }: { modalidad: Modalidad; numero: 
         )}
       </div>
       {/* Info debajo */}
-      <div className="mt-3 text-center w-full">
-        <p className="text-white font-bold text-sm truncate">{modalidad.nombre}</p>
-        <p className="text-[#ffd402] text-xs">Figura #{numero}</p>
+      <div className="mt-2 text-center w-full">
+        <p className="text-white font-bold text-base truncate">{modalidad.nombre}</p>
+        <p className="text-[#ffd402] text-sm">Figura #{numero}</p>
       </div>
     </div>
   );
@@ -74,7 +73,6 @@ export function TableroFullscreenV2({
   onReiniciar,
   onFinalizarRonda,
   onSiguienteRonda,
-  totalCartones,
   pavosoActivo = true,
   rondaActual,
   totalRondas,
@@ -95,6 +93,10 @@ export function TableroFullscreenV2({
   const [busquedaCarton, setBusquedaCarton] = useState('');
   const [cartonBuscado, setCartonBuscado] = useState<{ carton: Carton; aciertos: number; totalNumeros: number } | null>(null);
 
+  // Estado para el menú hamburguesa
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const [mostrarBuscador, setMostrarBuscador] = useState(false);
+
   // Buscar cartón cuando cambia el input
   const handleBuscarCarton = (valor: string) => {
     setBusquedaCarton(valor);
@@ -111,6 +113,7 @@ export function TableroFullscreenV2({
   const cerrarBuscador = () => {
     setBusquedaCarton('');
     setCartonBuscado(null);
+    setMostrarBuscador(false);
   };
 
   // Generar la matriz de números organizados por filas (B, I, N, G, O)
@@ -202,26 +205,27 @@ export function TableroFullscreenV2({
               </div>
             </div>
 
-            {/* DERECHA: Buscador + Botones */}
+            {/* DERECHA: Botones de ronda + Menú hamburguesa */}
             <div className="flex items-center gap-2">
-              {/* Buscador de cartones */}
-              <div className="flex items-center gap-1 bg-white rounded-lg lg:rounded-xl px-2 py-1">
-                <Search className="w-4 h-4 lg:w-5 lg:h-5 text-[#124723]" />
-                <input
-                  type="number"
-                  value={busquedaCarton}
-                  onChange={(e) => handleBuscarCarton(e.target.value)}
-                  placeholder="Cartón..."
-                  className="w-20 lg:w-24 px-1 py-0.5 text-sm lg:text-base text-[#124723] font-bold focus:outline-none bg-transparent"
-                />
-                {cartonBuscado && (
+              {/* Buscador de cartones - Solo visible cuando está activo */}
+              {mostrarBuscador && (
+                <div className="flex items-center gap-1 bg-white rounded-lg lg:rounded-xl px-2 py-1">
+                  <Search className="w-4 h-4 lg:w-5 lg:h-5 text-[#124723]" />
+                  <input
+                    type="number"
+                    value={busquedaCarton}
+                    onChange={(e) => handleBuscarCarton(e.target.value)}
+                    placeholder="Cartón..."
+                    className="w-20 lg:w-24 px-1 py-0.5 text-sm lg:text-base text-[#124723] font-bold focus:outline-none bg-transparent"
+                    autoFocus
+                  />
                   <button onClick={cerrarBuscador} className="text-gray-500 hover:text-red-500">
                     <X className="w-4 h-4" />
                   </button>
-                )}
-              </div>
+                </div>
+              )}
               
-              {/* Botones */}
+              {/* Botones de ronda - Siempre visibles */}
               {ganadores.length > 0 && !rondaFinalizada && (
                 <button onClick={onFinalizarRonda} className="px-2 lg:px-3 py-1.5 bg-[#68b258] text-white text-sm lg:text-base font-bold rounded-lg lg:rounded-xl flex items-center gap-1">
                   <Flag className="w-4 h-4" /> <span className="hidden lg:inline">Finalizar</span>
@@ -232,13 +236,57 @@ export function TableroFullscreenV2({
                   <SkipForward className="w-4 h-4" /> <span className="hidden lg:inline">Siguiente</span>
                 </button>
               )}
-              <button onClick={onReiniciar} className="px-2 lg:px-3 py-1.5 bg-[#baa115] text-[#1d1d1b] text-sm lg:text-base font-bold rounded-lg lg:rounded-xl">
-                <span className="lg:hidden">↺</span>
-                <span className="hidden lg:inline">Reiniciar</span>
-              </button>
-              <button onClick={onSalir} className="px-2 lg:px-3 py-1.5 bg-[#1d1d1b] text-[#ffd402] text-sm lg:text-base font-bold rounded-lg lg:rounded-xl border-2 border-[#ffd402]">
-                Salir
-              </button>
+
+              {/* Menú hamburguesa */}
+              <div className="relative">
+                <button 
+                  onClick={() => setMenuAbierto(!menuAbierto)} 
+                  className="p-2 bg-[#1d1d1b] text-[#ffd402] rounded-lg lg:rounded-xl border-2 border-[#ffd402] hover:bg-[#2d2d2b] transition-colors"
+                >
+                  <Menu className="w-5 h-5 lg:w-6 lg:h-6" />
+                </button>
+                
+                {/* Dropdown del menú */}
+                {menuAbierto && (
+                  <>
+                    {/* Overlay para cerrar al hacer clic fuera */}
+                    <div className="fixed inset-0 z-40" onClick={() => setMenuAbierto(false)} />
+                    
+                    <div className="absolute right-0 top-full mt-2 bg-[#1d1d1b] rounded-xl border-2 border-[#ffd402] shadow-2xl z-50 min-w-[180px] overflow-hidden">
+                      {/* Buscar cartón */}
+                      <button 
+                        onClick={() => { setMostrarBuscador(true); setMenuAbierto(false); }}
+                        className="w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-[#124723] transition-colors text-left"
+                      >
+                        <Search className="w-5 h-5 text-[#ffd402]" />
+                        <span className="font-medium">Buscar cartón</span>
+                      </button>
+                      
+                      <div className="border-t border-[#ffd402]/30" />
+                      
+                      {/* Reiniciar */}
+                      <button 
+                        onClick={() => { onReiniciar(); setMenuAbierto(false); }}
+                        className="w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-[#124723] transition-colors text-left"
+                      >
+                        <RotateCcw className="w-5 h-5 text-[#baa115]" />
+                        <span className="font-medium">Reiniciar sorteo</span>
+                      </button>
+                      
+                      <div className="border-t border-[#ffd402]/30" />
+                      
+                      {/* Salir */}
+                      <button 
+                        onClick={() => { onSalir(); setMenuAbierto(false); }}
+                        className="w-full px-4 py-3 flex items-center gap-3 text-red-400 hover:bg-red-900/30 transition-colors text-left"
+                      >
+                        <LogOut className="w-5 h-5" />
+                        <span className="font-medium">Salir del sorteo</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -423,25 +471,6 @@ export function TableroFullscreenV2({
               </div>
             </div>
           )}
-
-          {/* ESTADÍSTICAS */}
-          <div className="w-48 flex-shrink-0 bg-[#1d1d1b] rounded-2xl p-3 border-2 border-[#68b258] flex flex-col">
-            <h3 className="text-[#68b258] font-bold text-base mb-2 text-center flex-shrink-0">📊 INFO</h3>
-            <div className="space-y-2 flex-1">
-              <div className="bg-[#124723] rounded-lg p-2 text-center border border-[#68b258]">
-                <p className="text-[#f8df7e] text-xs">Cartones</p>
-                <p className="text-white text-lg font-black">{totalCartones.toLocaleString()}</p>
-              </div>
-              <div className="bg-[#124723] rounded-lg p-2 text-center border border-[#68b258]">
-                <p className="text-[#f8df7e] text-xs">Sorteados</p>
-                <p className="text-white text-lg font-black">{totalSorteados}/75</p>
-              </div>
-              <div className="bg-[#124723] rounded-lg p-2 text-center border border-[#ffd402]">
-                <p className="text-[#f8df7e] text-xs">Ronda</p>
-                <p className="text-[#ffd402] text-lg font-black">{rondaActual}/{totalRondas}</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
