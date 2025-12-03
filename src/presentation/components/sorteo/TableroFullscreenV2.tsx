@@ -35,7 +35,7 @@ interface TableroFullscreenV2Props {
 // Componente para mostrar un patrón de modalidad - GRANDE
 function PatronModalidad({ modalidad, numero }: { modalidad: Modalidad; numero: number }) {
   return (
-    <div className="flex flex-col items-center bg-[#124723] rounded-xl p-4 border-2 border-[#68b258]">
+    <div className="flex flex-col items-center bg-[#124723] rounded-xl p-4 border-2 border-transparent">
       {/* Grid del patrón - GRANDE */}
       <div className="grid grid-cols-5 gap-1 w-full aspect-square max-w-[10vw]">
         {modalidad.patron.map((fila, i) =>
@@ -246,7 +246,7 @@ export function TableroFullscreenV2({
           <div className="flex-1 flex gap-3 min-h-0 overflow-hidden">
             {/* TABLERO 75 NÚMEROS */}
             <div className={`bg-[#1d1d1b] rounded-2xl p-3 border-4 border-[#ffd402] ${cartonBuscado ? 'w-3/4' : 'w-full'}`}>
-              <div className="h-full bg-[#ffd402] rounded-xl p-2">
+              <div className="h-full bg-[#fff] rounded-xl p-2">
                 {filas.map((fila) => (
                   <div key={fila.letra} className="flex items-center mb-1 last:mb-0 h-[18%]">
                     {/* Letra */}
@@ -263,7 +263,7 @@ export function TableroFullscreenV2({
                             key={numero}
                             onClick={() => onClickNumero(numero)}
                             className={`
-                              rounded-full font-bold text-xl flex items-center justify-center transition-all cursor-pointer
+                              rounded-full font-bold text-3xl flex items-center justify-center transition-all cursor-pointer
                               ${sorteado
                                 ? esUltimo
                                   ? 'bg-[#68b258] text-white ring-4 ring-white scale-110 hover:bg-red-500 hover:ring-red-300'
@@ -350,7 +350,7 @@ export function TableroFullscreenV2({
         <div className="col-span-5 row-span-2 row-start-4 flex gap-2 min-h-0 overflow-hidden">
           
           {/* FIGURAS EN JUEGO - Scroll vertical */}
-          <div className="flex-1 bg-[#1d1d1b] rounded-2xl p-3 border-2 border-[#ffd402] flex flex-col min-w-0 min-h-0">
+          <div className="flex-1 bg-transparent rounded-2xl p-3 border-2 border-transparent flex flex-col min-w-0 min-h-0">
             <h3 className="text-[#ffd402] font-bold text-base mb-2 text-center flex-shrink-0">🎯 FIGURAS ({modalidadesActivas.length})</h3>
             <div className="flex-1 overflow-y-auto space-y-2">
               {modalidadesActivas.map((mod, index) => (
@@ -360,7 +360,7 @@ export function TableroFullscreenV2({
           </div>
 
           {/* GANADORES */}
-          <div className="flex-1 bg-[#1d1d1b] rounded-2xl p-3 border-2 border-[#68b258] flex flex-col min-w-0 min-h-0">
+          <div className="flex-1 bg-transparent rounded-2xl p-3 border-2 border-transparent flex flex-col min-w-0 min-h-0">
             <div className="flex items-center justify-center gap-2 mb-2 flex-shrink-0">
               <Trophy className="w-5 h-5 text-[#ffd402]" />
               <h3 className="text-[#68b258] font-bold text-base">GANADORES ({ganadoresReales.length})</h3>
@@ -385,7 +385,7 @@ export function TableroFullscreenV2({
 
           {/* PAVOSOS - Solo si está activo */}
           {pavosoActivo && (
-            <div className="flex-1 bg-[#1d1d1b] rounded-2xl p-3 border-2 border-[#ffd402] flex flex-col min-w-0 min-h-0">
+            <div className="flex-1 bg-transparent rounded-2xl p-3 border-2 border-transparent flex flex-col min-w-0 min-h-0">
               <h3 className="text-[#ffd402] font-bold text-base mb-2 text-center flex-shrink-0">😅 PAVOSOS ({pavosos.length})</h3>
               <div className="flex-1 overflow-y-auto space-y-2">
                 {pavosos.length === 0 ? (
