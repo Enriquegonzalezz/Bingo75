@@ -408,7 +408,7 @@ export function TableroFullscreenV2({
 
           {/* MENOS ACIERTOS - Solo si hay datos */}
           {cartonesConMenosAciertos.length > 0 && (
-            <div className="flex-1 bg-[#1d1d1b] rounded-2xl p-3 border-2 border-[#68b258] flex flex-col min-w-0 min-h-0">
+            <div className="flex-1 bg-transparent rounded-2xl p-3 border-2 border-transparent flex flex-col min-w-0 min-h-0">
               <div className="flex items-center justify-center gap-1 mb-2 flex-shrink-0">
                 <XCircle className="w-4 h-4 text-[#ffd402]" />
                 <h3 className="text-white font-bold text-base">MENOS ACIERTOS</h3>
