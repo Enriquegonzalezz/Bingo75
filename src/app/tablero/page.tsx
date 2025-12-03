@@ -19,6 +19,7 @@ export default function TableroPage() {
 
   const {
     numerosSorteados,
+    ultimoNumero,
     ganadores,
     cartones,
     cartonesEnJuego,
@@ -99,6 +100,7 @@ export default function TableroPage() {
     return (
       <TableroFullscreenV2
         numerosSorteados={numerosSorteados}
+        ultimoNumero={ultimoNumero}
         totalSorteados={totalSorteados}
         ganadores={ganadores}
         cartonesConMenosAciertos={cartonesConMenosAciertos}

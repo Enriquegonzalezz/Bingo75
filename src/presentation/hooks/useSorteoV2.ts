@@ -38,6 +38,7 @@ export interface HistorialRonda {
 
 export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
   const [numerosSorteados, setNumerosSorteados] = useState<Set<number>>(new Set());
+  const [ultimoNumeroClickeado, setUltimoNumeroClickeado] = useState<number | null>(null);
   const [ganadores, setGanadores] = useState<Ganador[]>([]);
   const [cartones, setCartones] = useState<Carton[]>([]);
   const [cartonesEnJuego, setCartonesEnJuego] = useState<Carton[]>([]);
@@ -253,7 +254,39 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     [pavosoValidator, pavosoActivo]
   );
 
-  // Sortear número (CLICK MANUAL)
+  // Quitar un número sorteado (para corregir errores)
+  const quitarNumero = useCallback(
+    (numero: number) => {
+      if (!numerosSorteados.has(numero)) {
+        return;
+      }
+
+      const nuevosNumeros = new Set(numerosSorteados);
+      nuevosNumeros.delete(numero);
+      setNumerosSorteados(nuevosNumeros);
+
+      // Recalcular ganadores: quitar los que ya no cumplen el patrón
+      setGanadores((prevGanadores) => {
+        const ganadoresValidos = prevGanadores.filter((ganador) => {
+          // Para cada ganador, verificar si aún cumple su patrón
+          const validador = validadores.find((v) => v.id === ganador.patronId);
+          if (!validador) {
+            // Si es pavoso, verificar con el validador de pavoso
+            if (ganador.tipo === 'pavoso') {
+              return pavosoValidator.validate(ganador.carton, nuevosNumeros);
+            }
+            return false;
+          }
+          return validador.validator.validate(ganador.carton, nuevosNumeros);
+        });
+        return ganadoresValidos;
+      });
+
+    },
+    [numerosSorteados, validadores, pavosoValidator]
+  );
+
+  // Sortear número (CLICK MANUAL) - Funciona como toggle
   const sortearNumero = useCallback(
     (numero: number) => {
       if (numero < 1 || numero > 75) {
@@ -261,14 +294,16 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
         return;
       }
 
+      // Si el número ya está sorteado, quitarlo (toggle)
       if (numerosSorteados.has(numero)) {
-        console.error(`El número ${numero} ya fue sorteado`);
+        quitarNumero(numero);
         return;
       }
 
       const nuevosNumeros = new Set(numerosSorteados);
       nuevosNumeros.add(numero);
       setNumerosSorteados(nuevosNumeros);
+      setUltimoNumeroClickeado(numero);
 
       const nuevosGanadores: Ganador[] = [];
       const BATCH_SIZE = 100;
@@ -310,12 +345,13 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
 
      
     },
-    [numerosSorteados, cartonesEnJuego, validarCarton, validarPavoso, ganadores]
+    [numerosSorteados, cartonesEnJuego, validarCarton, validarPavoso, ganadores, quitarNumero]
   );
 
   // Reiniciar sorteo completo
   const reiniciar = useCallback(() => {
     setNumerosSorteados(new Set());
+    setUltimoNumeroClickeado(null);
     setGanadores([]);
     setCartonesConMenosAciertos([]);
     setRondaActual(1);
@@ -365,12 +401,12 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     
     // Limpiar estado para nueva ronda
     setNumerosSorteados(new Set());
+    setUltimoNumeroClickeado(null);
     setGanadores([]);
     setCartonesConMenosAciertos([]);
     setRondaFinalizada(false);
     setRondaActual(prev => prev + 1);
     
-    toast.info(`🎯 Iniciando Ronda ${rondaActual + 1} de ${totalRondas}`);
   }, [rondaActual, totalRondas]);
 
   // Obtener letra del número
@@ -407,6 +443,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
 
   return {
     numerosSorteados: Array.from(numerosSorteados).sort((a, b) => a - b),
+    ultimoNumero: ultimoNumeroClickeado,
     ganadores,
     cartones,
     cartonesEnJuego,

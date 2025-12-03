@@ -11,6 +11,7 @@ import { Carton } from '@/domain/entities/Carton';
 
 interface TableroFullscreenV2Props {
   numerosSorteados: number[];
+  ultimoNumero: number | null;
   totalSorteados: number;
   ganadores: Ganador[];
   cartonesConMenosAciertos: CartonConAciertos[];
@@ -63,6 +64,7 @@ function PatronModalidad({ modalidad, numero }: { modalidad: Modalidad; numero: 
 
 export function TableroFullscreenV2({
   numerosSorteados,
+  ultimoNumero,
   totalSorteados,
   ganadores,
   cartonesConMenosAciertos,
@@ -124,9 +126,6 @@ export function TableroFullscreenV2({
   const ganadoresReales = ganadores.filter((g) => g.tipo !== 'pavoso');
   const pavosos = ganadores.filter((g) => g.tipo === 'pavoso');
 
-  // Último número sorteado
-  const ultimoNumero = numerosSorteados.length > 0 ? numerosSorteados[numerosSorteados.length - 1] : null;
-
   // Hay más rondas disponibles
   const hayMasRondas = rondaActual < totalRondas;
 
@@ -157,88 +156,89 @@ export function TableroFullscreenV2({
         
         {/* ===== FILA 1-3: HEADER + TABLERO (5 columnas, 3 filas) ===== */}
         <div className="col-span-5 row-span-3 flex flex-col min-h-0 overflow-hidden">
-          {/* Header compacto */}
-          <div className="flex justify-between items-center mb-2 px-2">
-            {/* Logo */}
-            <div className="flex items-center gap-4">
+          {/* Header compacto - Responsive para laptops */}
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2 px-2">
+            {/* Logo + Ronda */}
+            <div className="flex items-center gap-2 lg:gap-3">
               <Image
                 src="/logo.png"
                 alt="Bingo Carabobo"
                 width={180}
                 height={60}
-                className="h-14 w-auto"
+                className="h-10 lg:h-12 xl:h-14 w-auto"
               />
-              {/* Ronda */}
-              <div className="bg-[#1d1d1b] px-4 py-2 rounded-xl border-2 border-[#ffd402]">
-                <span className="text-[#ffd402] text-3xl font-black">RONDA {rondaActual}</span>
-                <span className="text-[#f8df7e] text-lg ml-2">/ {totalRondas}</span>
+              <div className="bg-[#1d1d1b] px-2 lg:px-3 py-1 lg:py-2 rounded-lg lg:rounded-xl border-2 border-[#ffd402]">
+                <span className="text-[#ffd402] text-lg lg:text-xl xl:text-2xl font-black">R{rondaActual}</span>
+                <span className="text-[#f8df7e] text-sm lg:text-base ml-1">/{totalRondas}</span>
               </div>
             </div>
 
-            {/* PREMIO Y NÚMERO DE SOPORTE - CENTRO */}
-            <div className="flex items-center gap-4">
+            {/* CENTRO: Premio + Soporte + Último + Contador */}
+            <div className="flex items-center gap-2 lg:gap-3 flex-1 justify-center">
               {/* Premio */}
               {premioRonda > 0 && (
-                <div className="bg-[#68b258] rounded-xl px-6 py-3 text-center shadow-lg border-4 border-[#4a9c3e]">
-                  <p className="text-white/80 text-xs font-bold uppercase tracking-wider">💰 Premio</p>
-                  <p className="text-white text-3xl font-black">${premioRonda.toLocaleString()}</p>
+                <div className="bg-[#68b258] rounded-lg lg:rounded-xl px-3 lg:px-4 py-1 lg:py-2 text-center shadow-lg border-2 lg:border-4 border-[#4a9c3e]">
+                  <p className="text-white/80 text-[10px] lg:text-xs font-bold uppercase">💰 Premio</p>
+                  <p className="text-white text-lg lg:text-xl xl:text-2xl font-black">${premioRonda.toLocaleString()}</p>
                 </div>
               )}
               {/* Número de Soporte */}
-              <div className="bg-[#ffd402] rounded-xl px-8 py-3 text-center shadow-lg border-4 border-[#baa115]">
-                <p className="text-[#1d1d1b]/70 text-xs font-bold uppercase tracking-wider">Nº Soporte</p>
-                <p className="text-[#1d1d1b] text-4xl font-black">{numeroSoporte || '---'}</p>
+              <div className="bg-[#ffd402] rounded-lg lg:rounded-xl px-3 lg:px-5 py-1 lg:py-2 text-center shadow-lg border-2 lg:border-4 border-[#baa115]">
+                <p className="text-[#1d1d1b]/70 text-[10px] lg:text-xs font-bold uppercase">Nº Soporte</p>
+                <p className="text-[#1d1d1b] text-xl lg:text-2xl xl:text-3xl font-black">{numeroSoporte || '---'}</p>
               </div>
-            </div>
-
-            {/* Info derecha */}
-            <div className="flex items-center gap-4">
-              {/* Buscador de cartones - Solo input */}
-              <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-1">
-                <Search className="w-5 h-5 text-[#124723]" />
-                <input
-                  type="number"
-                  value={busquedaCarton}
-                  onChange={(e) => handleBuscarCarton(e.target.value)}
-                  placeholder="Buscar cartón..."
-                  className="w-32 px-2 py-1 text-[#124723] font-bold focus:outline-none bg-transparent"
-                />
-                {cartonBuscado && (
-                  <button onClick={cerrarBuscador} className="text-gray-500 hover:text-red-500">
-                    <X className="w-5 h-5" />
-                  </button>
-                )}
-              </div>
-
-              {/* Último número - Sin animación */}
+              {/* Último número */}
               {ultimoNumero && (
-                <div className="flex items-center gap-2">
-                  <span className="text-white font-bold">ÚLTIMO:</span>
-                  <div className="w-14 h-14 bg-[#ffd402] rounded-full flex items-center justify-center border-4 border-white/50">
-                    <span className="text-3xl font-black text-[#1d1d1b]">{ultimoNumero}</span>
+                <div className="flex items-center gap-1 lg:gap-2">
+                  <span className="text-white font-bold text-xs lg:text-sm hidden xl:inline">ÚLTIMO:</span>
+                  <div className="w-10 h-10 lg:w-12 lg:h-12 bg-[#ffd402] rounded-full flex items-center justify-center border-2 lg:border-4 border-white/50">
+                    <span className="text-xl lg:text-2xl font-black text-[#1d1d1b]">{ultimoNumero}</span>
                   </div>
                 </div>
               )}
               {/* Contador */}
-              <div className="bg-white rounded-xl px-4 py-2 text-center">
-                <p className="text-2xl font-black text-[#1d1d1b]">{totalSorteados}<span className="text-gray-400">/75</span></p>
+              <div className="bg-white rounded-lg lg:rounded-xl px-2 lg:px-3 py-1 text-center">
+                <p className="text-lg lg:text-xl font-black text-[#1d1d1b]">{totalSorteados}<span className="text-gray-400">/75</span></p>
               </div>
             </div>
-            
-            {/* Botones */}
-            <div className="flex gap-2">
+
+            {/* DERECHA: Buscador + Botones */}
+            <div className="flex items-center gap-2">
+              {/* Buscador de cartones */}
+              <div className="flex items-center gap-1 bg-white rounded-lg lg:rounded-xl px-2 py-1">
+                <Search className="w-4 h-4 lg:w-5 lg:h-5 text-[#124723]" />
+                <input
+                  type="number"
+                  value={busquedaCarton}
+                  onChange={(e) => handleBuscarCarton(e.target.value)}
+                  placeholder="Cartón..."
+                  className="w-20 lg:w-24 px-1 py-0.5 text-sm lg:text-base text-[#124723] font-bold focus:outline-none bg-transparent"
+                />
+                {cartonBuscado && (
+                  <button onClick={cerrarBuscador} className="text-gray-500 hover:text-red-500">
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              
+              {/* Botones */}
               {ganadores.length > 0 && !rondaFinalizada && (
-                <button onClick={onFinalizarRonda} className="px-4 py-2 bg-[#68b258] text-white font-bold rounded-xl flex items-center gap-2">
-                  <Flag className="w-5 h-5" /> Finalizar Ronda
+                <button onClick={onFinalizarRonda} className="px-2 lg:px-3 py-1.5 bg-[#68b258] text-white text-sm lg:text-base font-bold rounded-lg lg:rounded-xl flex items-center gap-1">
+                  <Flag className="w-4 h-4" /> <span className="hidden lg:inline">Finalizar</span>
                 </button>
               )}
               {rondaFinalizada && hayMasRondas && (
-                <button onClick={onSiguienteRonda} className="px-4 py-2 bg-[#ffd402] text-[#1d1d1b] font-bold rounded-xl flex items-center gap-2 animate-pulse">
-                  <SkipForward className="w-5 h-5" /> Siguiente Ronda
+                <button onClick={onSiguienteRonda} className="px-2 lg:px-3 py-1.5 bg-[#ffd402] text-[#1d1d1b] text-sm lg:text-base font-bold rounded-lg lg:rounded-xl flex items-center gap-1 animate-pulse">
+                  <SkipForward className="w-4 h-4" /> <span className="hidden lg:inline">Siguiente</span>
                 </button>
               )}
-              <button onClick={onReiniciar} className="px-4 py-2 bg-[#baa115] text-[#1d1d1b] font-bold rounded-xl">Reiniciar</button>
-              <button onClick={onSalir} className="px-4 py-2 bg-[#1d1d1b] text-[#ffd402] font-bold rounded-xl border-2 border-[#ffd402]">Salir</button>
+              <button onClick={onReiniciar} className="px-2 lg:px-3 py-1.5 bg-[#baa115] text-[#1d1d1b] text-sm lg:text-base font-bold rounded-lg lg:rounded-xl">
+                <span className="lg:hidden">↺</span>
+                <span className="hidden lg:inline">Reiniciar</span>
+              </button>
+              <button onClick={onSalir} className="px-2 lg:px-3 py-1.5 bg-[#1d1d1b] text-[#ffd402] text-sm lg:text-base font-bold rounded-lg lg:rounded-xl border-2 border-[#ffd402]">
+                Salir
+              </button>
             </div>
           </div>
 
@@ -261,17 +261,17 @@ export function TableroFullscreenV2({
                         return (
                           <button
                             key={numero}
-                            onClick={() => !sorteado && onClickNumero(numero)}
-                            disabled={sorteado}
+                            onClick={() => onClickNumero(numero)}
                             className={`
-                              rounded-full font-bold text-xl flex items-center justify-center transition-all
+                              rounded-full font-bold text-xl flex items-center justify-center transition-all cursor-pointer
                               ${sorteado
                                 ? esUltimo
-                                  ? 'bg-[#68b258] text-white ring-4 ring-white scale-110'
-                                  : 'bg-[#68b258] text-white'
-                                : 'bg-white text-[#1d1d1b] hover:bg-[#ffd402] hover:scale-110 cursor-pointer'
+                                  ? 'bg-[#68b258] text-white ring-4 ring-white scale-110 hover:bg-red-500 hover:ring-red-300'
+                                  : 'bg-[#68b258] text-white hover:bg-red-500'
+                                : 'bg-white text-[#1d1d1b] hover:bg-[#ffd402] hover:scale-110'
                               }
                             `}
+                            title={sorteado ? 'Clic para quitar este número' : 'Clic para sortear este número'}
                           >
                             {numero}
                           </button>
