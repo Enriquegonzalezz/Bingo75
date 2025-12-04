@@ -2,7 +2,6 @@
 
 import { X, Trophy } from 'lucide-react';
 import { Ganador } from '@/presentation/hooks/useSorteoV2';
-import { getModalidadById } from '@/shared/constants/modalidades';
 
 interface CartonGanadorModalProps {
   ganador: Ganador | null;
@@ -13,20 +12,10 @@ interface CartonGanadorModalProps {
 export function CartonGanadorModal({ ganador, numerosSorteados, onClose }: CartonGanadorModalProps) {
   if (!ganador) return null;
 
-  const modalidad = getModalidadById(ganador.patronId);
   const numerosSet = new Set(numerosSorteados);
 
-  // Patrón vacío para Pavoso (no tiene patrón visual)
-  const patronVacio = [
-    [false, false, false, false, false],
-    [false, false, false, false, false],
-    [false, false, false, false, false],
-    [false, false, false, false, false],
-    [false, false, false, false, false],
-  ];
-
-  // Obtener el patrón para mostrar
-  const patron = ganador.tipo === 'pavoso' ? patronVacio : (modalidad?.patron || patronVacio);
+  // Usar el patrón guardado directamente en el ganador (soporta patrones personalizados)
+  const patron = ganador.patronMatriz;
 
   return (
     <div className="fixed inset-0 bg-[#124723] z-100 flex flex-col" style={{ height: '100dvh', maxHeight: '100dvh' }}>

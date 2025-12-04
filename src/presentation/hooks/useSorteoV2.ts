@@ -13,6 +13,7 @@ export interface Ganador {
   carton: Carton;
   patron: string;
   patronId: string;
+  patronMatriz: boolean[][]; // Matriz del patrón para mostrar visualmente
   numero_carton: number;
   timestamp: Date;
   tipo: 'normal' | 'pavoso';
@@ -196,7 +197,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
       const nuevosGanadores: Ganador[] = [];
 
       // Validar cada patrón activo
-      for (const { id, nombre, validator } of validadores) {
+      for (const { id, nombre, patron, validator } of validadores) {
         // Verificar si este cartón ya ganó con este patrón específico
         const yaGanoEstePatron = ganadoresActuales.some(
           (g) => g.numero_carton === carton.numero_carton && g.patronId === id
@@ -211,6 +212,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
             carton,
             patron: nombre,
             patronId: id,
+            patronMatriz: patron, // Guardar la matriz del patrón
             numero_carton: carton.numero_carton,
             timestamp: new Date(),
             tipo: 'normal',
@@ -239,10 +241,19 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
       const esPavoso = pavosoValidator.validate(carton, numerosSet);
 
       if (esPavoso) {
+        // Patrón vacío para pavoso
+        const patronVacio = [
+          [false, false, false, false, false],
+          [false, false, false, false, false],
+          [false, false, false, false, false],
+          [false, false, false, false, false],
+          [false, false, false, false, false],
+        ];
         return {
           carton,
           patron: 'Pavoso',
           patronId: 'pavoso',
+          patronMatriz: patronVacio,
           numero_carton: carton.numero_carton,
           timestamp: new Date(),
           tipo: 'pavoso',
