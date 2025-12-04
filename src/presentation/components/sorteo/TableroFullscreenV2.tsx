@@ -478,6 +478,7 @@ export function TableroFullscreenV2({
       <CartonGanadorModal
         ganador={ganadorSeleccionado}
         numerosSorteados={numerosSorteados}
+        modalidadesActivas={modalidadesActivas}
         onClose={() => setGanadorSeleccionado(null)}
       />
     </div>

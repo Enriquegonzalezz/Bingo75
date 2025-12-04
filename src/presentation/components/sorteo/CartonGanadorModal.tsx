@@ -2,20 +2,28 @@
 
 import { X, Trophy } from 'lucide-react';
 import { Ganador } from '@/presentation/hooks/useSorteoV2';
+import { Modalidad } from '@/shared/constants/modalidades';
 
 interface CartonGanadorModalProps {
   ganador: Ganador | null;
   numerosSorteados: number[];
+  modalidadesActivas: Modalidad[];
   onClose: () => void;
 }
 
-export function CartonGanadorModal({ ganador, numerosSorteados, onClose }: CartonGanadorModalProps) {
+export function CartonGanadorModal({ ganador, numerosSorteados, modalidadesActivas, onClose }: CartonGanadorModalProps) {
   if (!ganador) return null;
 
   const numerosSet = new Set(numerosSorteados);
 
-  // Usar el patrón guardado directamente en el ganador (soporta patrones personalizados)
-  const patron = ganador.patronMatriz;
+  // Para pavoso: mostrar la primera figura que se está jugando
+  // Para ganadores normales: usar el patrón guardado en el ganador
+  const patron = ganador.tipo === 'pavoso' && modalidadesActivas.length > 0
+    ? modalidadesActivas[0].patron
+    : ganador.patronMatriz;
+  
+  // Nombre del patrón para pavoso
+  const nombrePatronPavoso = modalidadesActivas.length > 0 ? modalidadesActivas[0].nombre : 'Figura';
 
   return (
     <div className="fixed inset-0 bg-[#124723] z-100 flex flex-col" style={{ height: '100dvh', maxHeight: '100dvh' }}>
@@ -112,7 +120,7 @@ export function CartonGanadorModal({ ganador, numerosSorteados, onClose }: Carto
           {/* Patrón ganador */}
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <h3 className="text-[#ffd402] font-bold text-base md:text-xl mb-2 text-center shrink-0">
-              PATRÓN: {ganador.patron}
+              {ganador.tipo === 'pavoso' ? `FIGURA: ${nombrePatronPavoso}` : `PATRÓN: ${ganador.patron}`}
             </h3>
             <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden">
               <div className="bg-[#1d1d1b] rounded-xl md:rounded-2xl p-3 md:p-6 flex flex-col items-center justify-center max-w-[min(100%,40vh)]">
