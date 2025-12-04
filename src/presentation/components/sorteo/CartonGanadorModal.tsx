@@ -14,7 +14,12 @@ interface CartonGanadorModalProps {
 export function CartonGanadorModal({ ganador, numerosSorteados, modalidadesActivas, onClose }: CartonGanadorModalProps) {
   if (!ganador) return null;
 
-  const numerosSet = new Set(numerosSorteados);
+  // Para pavosos: usar los números congelados al momento de ganar
+  // Para ganadores normales: usar los números actuales del sorteo
+  const numerosParaMostrar = ganador.tipo === 'pavoso' && ganador.numerosSorteadosAlGanar
+    ? ganador.numerosSorteadosAlGanar
+    : numerosSorteados;
+  const numerosSet = new Set(numerosParaMostrar);
 
   // Para pavoso: mostrar la primera figura que se está jugando
   // Para ganadores normales: usar el patrón guardado en el ganador

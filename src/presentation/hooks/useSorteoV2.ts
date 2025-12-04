@@ -17,6 +17,7 @@ export interface Ganador {
   numero_carton: number;
   timestamp: Date;
   tipo: 'normal' | 'pavoso';
+  numerosSorteadosAlGanar?: number[]; // Números sorteados al momento de ganar (para congelar estado de pavosos)
 }
 
 export interface CartonConAciertos {
@@ -257,6 +258,9 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
           numero_carton: carton.numero_carton,
           timestamp: new Date(),
           tipo: 'pavoso',
+          // Congelar los números sorteados al momento de ser pavoso
+          // para que el cartón no se actualice después
+          numerosSorteadosAlGanar: Array.from(numerosSet),
         };
       }
 
