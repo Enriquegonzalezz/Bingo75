@@ -180,14 +180,14 @@ export function TableroFullscreenV2({
             <div className="flex items-center gap-2 lg:gap-3 flex-1 justify-center">
               {/* Premio */}
               {premioRonda > 0 && (
-                <div className="bg-[#68b258] rounded-lg lg:rounded-xl px-3 lg:px-4 py-1 lg:py-2 text-center shadow-lg border-2 lg:border-4 border-[#4a9c3e]">
+                <div className="bg-[#448137] rounded-lg lg:rounded-xl px-3 lg:px-4 py-1 lg:py-2 text-center shadow-lg border-2 lg:border-4 border-[#4a9c3e]">
                   <p className="text-white/80 text-[10px] lg:text-xs font-bold uppercase">💰 Premio</p>
                   <p className="text-white text-lg lg:text-xl xl:text-2xl font-black">${premioRonda.toLocaleString()}</p>
                 </div>
               )}
               {/* Número de Soporte */}
-              <div className="bg-[#ffd402] rounded-lg lg:rounded-xl px-3 lg:px-5 py-1 lg:py-2 text-center shadow-lg border-2 lg:border-4 border-[#baa115]">
-                <p className="text-[#1d1d1b]/70 text-[10px] lg:text-xs font-bold uppercase">Nº Soporte</p>
+              <div className="bg-[#ffd402] rounded-lg lg:rounded-xl px-6 lg:px-10 py-1 lg:py-2 text-center shadow-lg border-2 lg:border-4 border-[#baa115]">
+                <p className="text-[#1d1d1b]/70 text-[20px] lg:text-2xl font-bold uppercase">Nº Soporte</p>
                 <p className="text-[#1d1d1b] text-xl lg:text-2xl xl:text-3xl font-black">{numeroSoporte || '---'}</p>
               </div>
               {/* Último número */}

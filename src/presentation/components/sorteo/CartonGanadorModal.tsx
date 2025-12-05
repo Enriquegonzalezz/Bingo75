@@ -102,7 +102,7 @@ export function CartonGanadorModal({ ganador, numerosSorteados, modalidadesActiv
                             ${esCentro 
                               ? 'bg-[#ffd402] text-[#1d1d1b]' 
                               : estaSorteado && esParteDelPatron
-                                ? 'bg-[#27ae60] text-white ring-2 md:ring-4 ring-[#ffd402] scale-105 shadow-lg'
+                                ? 'bg-[#27ae60] text-white ring-2 md:ring-4 ring-[#ff0000] scale-105 shadow-lg'
                                 : estaSorteado
                                   ? 'bg-[#27ae60] text-white'
                                   : 'bg-white text-[#1d1d1b]'
