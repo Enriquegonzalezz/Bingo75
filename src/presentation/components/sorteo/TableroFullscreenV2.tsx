@@ -188,7 +188,7 @@ export function TableroFullscreenV2({
               {/* Número de Soporte */}
               <div className="bg-[#ffd402] rounded-lg lg:rounded-xl px-6 lg:px-10 py-1 lg:py-2 text-center shadow-lg border-2 lg:border-4 border-[#baa115]">
                 <p className="text-[#1d1d1b]/70 text-[20px] lg:text-2xl font-bold uppercase">Nº Soporte</p>
-                <p className="text-[#1d1d1b] text-xl lg:text-2xl xl:text-3xl font-black">{numeroSoporte || '---'}</p>
+                <p className="text-[#1d1d1b] text-2xl lg:text-3xl xl:text-4xl font-black">{numeroSoporte || '---'}</p>
               </div>
               {/* Último número */}
               {ultimoNumero && (
