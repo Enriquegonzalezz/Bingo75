@@ -311,7 +311,7 @@ export function TableroFullscreenV2({
                             key={numero}
                             onClick={() => onClickNumero(numero)}
                             className={`
-                              rounded-full font-bold text-3xl flex items-center justify-center transition-all cursor-pointer
+                              rounded-full font-bold text-5xl flex items-center justify-center transition-all cursor-pointer
                               ${sorteado
                                 ? esUltimo
                                   ? 'bg-[#68b258] text-white ring-4 ring-white scale-110 hover:bg-red-500 hover:ring-red-300'

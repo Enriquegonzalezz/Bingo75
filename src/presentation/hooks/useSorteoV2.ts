@@ -281,15 +281,17 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
       setNumerosSorteados(nuevosNumeros);
 
       // Recalcular ganadores: quitar los que ya no cumplen el patrón
+      // IMPORTANTE: Los pavosos NUNCA se quitan una vez detectados (están congelados)
       setGanadores((prevGanadores) => {
         const ganadoresValidos = prevGanadores.filter((ganador) => {
-          // Para cada ganador, verificar si aún cumple su patrón
+          // Los pavosos están congelados - nunca se quitan una vez detectados
+          if (ganador.tipo === 'pavoso') {
+            return true;
+          }
+          
+          // Para cada ganador normal, verificar si aún cumple su patrón
           const validador = validadores.find((v) => v.id === ganador.patronId);
           if (!validador) {
-            // Si es pavoso, verificar con el validador de pavoso
-            if (ganador.tipo === 'pavoso') {
-              return pavosoValidator.validate(ganador.carton, nuevosNumeros);
-            }
             return false;
           }
           return validador.validator.validate(ganador.carton, nuevosNumeros);
