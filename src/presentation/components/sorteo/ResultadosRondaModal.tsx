@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, SkipForward, Trophy, XCircle } from 'lucide-react';
+import { X, SkipForward, Trophy } from 'lucide-react';
 import { Ganador, CartonConAciertos } from '@/presentation/hooks/useSorteoV2';
 import { CartonGanadorModal } from './CartonGanadorModal';
 import { Modalidad } from '@/shared/constants/modalidades';
@@ -100,7 +100,7 @@ export function ResultadosRondaModal({
             {pavosoActivo && (
               <div className="bg-[#1d1d1b] rounded-2xl p-6 shadow-xl">
                 <h3 className="text-[#ffd402] font-black text-2xl md:text-3xl mb-6 text-center">
-                  😅 PAVOSOS ({pavosos.length})
+                  PAVOSOS ({pavosos.length})
                 </h3>
                 <div className="space-y-4 max-h-[50vh] overflow-y-auto">
                   {pavosos.length === 0 ? (

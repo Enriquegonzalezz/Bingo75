@@ -32,7 +32,7 @@ interface TableroFullscreenV2Props {
 }
 
 // Componente para mostrar un patrón de modalidad - GRANDE (para la vista principal)
-function PatronModalidadGrande({ modalidad, numero, totalFiguras }: { modalidad: Modalidad; numero: number; totalFiguras: number }) {
+function PatronModalidadGrande({ modalidad, totalFiguras }: { modalidad: Modalidad; totalFiguras: number }) {
   // Calcular el ancho según cantidad de figuras
   const getWidthClass = () => {
     if (totalFiguras === 1) return 'w-full max-w-[400px]'; // Una sola figura ocupa todo el ancho disponible
@@ -400,11 +400,10 @@ export function TableroFullscreenV2({
               ? 'flex-1 justify-center' 
               : 'flex-1 overflow-x-auto'
           }`}>
-            {modalidadesActivas.map((mod, index) => (
+            {modalidadesActivas.map((mod) => (
               <PatronModalidadGrande 
                 key={mod.id} 
                 modalidad={mod} 
-                numero={index + 1} 
                 totalFiguras={modalidadesActivas.length}
               />
             ))}

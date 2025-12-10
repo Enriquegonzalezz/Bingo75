@@ -374,7 +374,7 @@ export function ConfiguracionModal({
                   rondaActual?.pavosoActivo ? 'bg-[#68b258] text-white' : 'bg-gray-600 text-gray-300'
                 }`}
               >
-                😅 Pavoso {rondaActual?.pavosoActivo ? '✓' : '✗'}
+                 Pavoso {rondaActual?.pavosoActivo ? '✓' : '✗'}
               </button>
               <button
                 onClick={() => toggleMenosAciertosRonda(rondaSeleccionada)}
@@ -382,7 +382,7 @@ export function ConfiguracionModal({
                   rondaActual?.menosAciertosActivo ? 'bg-[#68b258] text-white' : 'bg-gray-600 text-gray-300'
                 }`}
               >
-                ❌ Menos Aciertos {rondaActual?.menosAciertosActivo ? '✓' : '✗'}
+                Menos Aciertos {rondaActual?.menosAciertosActivo ? '✓' : '✗'}
               </button>
               {rondaSeleccionada > 1 && (
                 <button
