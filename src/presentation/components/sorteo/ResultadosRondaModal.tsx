@@ -41,8 +41,8 @@ export function ResultadosRondaModal({
 
   return (
     <>
-      {/* Pantalla completa con fondo blanco */}
-      <div className="fixed inset-0 bg-white z-60 flex flex-col" style={{ height: '100dvh' }}>
+      {/* Pantalla completa con fondo verde */}
+      <div className="fixed inset-0 bg-[#124723] z-60 flex flex-col" style={{ height: '100dvh' }}>
         {/* Header - Fondo amarillo con buen contraste */}
         <div className="bg-[#ffd402] py-6 px-6 md:px-12 shrink-0 relative">
           <div className="flex items-center justify-between max-w-7xl mx-auto">
@@ -69,9 +69,9 @@ export function ResultadosRondaModal({
           </div>
         </div>
 
-        {/* Contenido - Fondo blanco */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Contenido - Fondo verde, listas centradas */}
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 flex items-center justify-center">
+          <div className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 place-items-center">
             {/* GANADORES */}
             <div className="bg-[#1d1d1b] rounded-2xl p-6 shadow-xl">
               <div className="flex items-center justify-center gap-3 mb-6">
@@ -145,8 +145,8 @@ export function ResultadosRondaModal({
         </div>
 
         {/* Footer */}
-        <div className="py-4 px-6 bg-[#1d1d1b] text-center shrink-0">
-          <p className="text-white/80 text-base">
+        <div className="py-4 px-6 bg-[#ffd402] text-center shrink-0">
+          <p className="text-[#1d1d1b] text-base font-medium">
             Haz clic en cualquier cartón para ver los detalles
           </p>
         </div>

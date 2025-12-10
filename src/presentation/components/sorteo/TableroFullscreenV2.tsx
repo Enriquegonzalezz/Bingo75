@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { Search, X, Menu, RotateCcw, LogOut, Flag, SkipForward } from 'lucide-react';
 import { Modalidad } from '@/shared/constants/modalidades';
 import { Ganador, CartonConAciertos } from '@/presentation/hooks/useSorteoV2';
@@ -391,9 +392,21 @@ export function TableroFullscreenV2({
           </div>
         </div>
 
-        {/* ===== FILA INFERIOR: FIGURAS + SOPORTE + ÚLTIMO NÚMERO ===== */}
-        <div className="col-span-5 row-span-2 row-start-4 flex gap-4 min-h-0 overflow-hidden px-2">
+        {/* ===== FILA INFERIOR: LOGO + FIGURAS + SOPORTE + ÚLTIMO NÚMERO ===== */}
+        <div className="col-span-5 row-span-2 row-start-4 flex gap-4 min-h-0 overflow-hidden px-2 items-center">
           
+          {/* LOGO DEL BINGO - Responsivo */}
+          <div className="shrink-0 flex items-center justify-center h-full py-2">
+            <Image
+              src="/logo.png"
+              alt="Bingo 75"
+              width={180}
+              height={180}
+              className="object-contain h-full w-auto max-h-[150px] md:max-h-[180px] lg:max-h-[200px]"
+              priority
+            />
+          </div>
+
           {/* FIGURAS EN JUEGO - Responsivo según cantidad */}
           <div className={`flex items-center gap-4 py-2 ${
             modalidadesActivas.length <= 2 
@@ -410,27 +423,27 @@ export function TableroFullscreenV2({
           </div>
 
           {/* NÚMERO DE SOPORTE - Grande */}
-          <div className="bg-[transparent] rounded-2xl px-8 py-4 flex flex-col items-center justify-center min-w-[200px]">
-            <p className="text-[#fff]/70 text-xl font-bold uppercase">Nº Soporte</p>
-            <p className="text-[#fff] text-5xl font-white">{numeroSoporte || '---'}</p>
+          <div className="bg-[transparent] rounded-2xl px-6 py-2 flex flex-col items-center justify-center min-w-[150px] md:min-w-[180px]">
+            <p className="text-[#fff]/70 text-lg md:text-xl font-bold uppercase">Nº Soporte</p>
+            <p className="text-[#fff] text-5xl md:text-5xl font-black">{numeroSoporte || '---'}</p>
           </div>
 
           {/* ÚLTIMO NÚMERO CLICKEADO - MÁS GRANDE */}
-          <div className="bg-[transparent] rounded-2xl px-8 py-4 flex flex-col items-center justify-center min-w-[220px]">
-            <p className="text-white/70 text-2xl font-bold uppercase mb-2">Último</p>
+          <div className="bg-[transparent] rounded-2xl px-6 py-2 flex flex-col items-center justify-center min-w-[150px] md:min-w-[200px]">
+            <p className="text-white/70 text-lg md:text-2xl font-bold uppercase mb-1">Último</p>
             {ultimoNumero ? (
-              <div className="w-28 h-28 bg-[#fff] rounded-full flex items-center justify-center border-4 border-white/50 shadow-lg">
-                <span className="text-6xl font-black text-[#1d1d1b]">{ultimoNumero}</span>
+              <div className="w-20 h-20 md:w-28 md:h-28 bg-[#fff] rounded-full flex items-center justify-center border-4 border-white/50 shadow-lg">
+                <span className="text-4xl md:text-6xl font-black text-[#1d1d1b]">{ultimoNumero}</span>
               </div>
             ) : (
-              <p className="text-[#ffd402] text-7xl font-black">--</p>
+              <p className="text-[#ffd402] text-5xl md:text-7xl font-black">--</p>
             )}
           </div>
 
           {/* CONTADOR - MÁS GRANDE */}
-          <div className="bg-[transparent] rounded-2xl px-8 py-4 flex flex-col items-center justify-center min-w-[180px]">
-            <p className="text-white/70 text-2xl font-bold uppercase mb-2">Bolas</p>
-            <p className="text-7xl font-black text-white">{totalSorteados}<span className="text-white/50 text-4xl">/75</span></p>
+          <div className="bg-[transparent] rounded-2xl px-6 py-2 flex flex-col items-center justify-center min-w-[120px] md:min-w-[160px]">
+            <p className="text-white/70 text-lg md:text-2xl font-bold uppercase mb-1">Bolas</p>
+            <p className="text-5xl md:text-7xl font-black text-white">{totalSorteados}<span className="text-white/50 text-3xl md:text-4xl">/75</span></p>
           </div>
         </div>
       </div>

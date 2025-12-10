@@ -32,24 +32,24 @@ export function CartonGanadorModal({ ganador, numerosSorteados, modalidadesActiv
 
   return (
     <div className="fixed inset-0 bg-[#124723] z-100 flex flex-col" style={{ height: '100dvh', maxHeight: '100dvh' }}>
-      {/* Header - Número a la izquierda, GANADOR a la derecha */}
+      {/* Header - GANADOR a la izquierda, Número en el centro */}
       <div className="bg-linear-to-r from-[#ffd402] to-[#baa115] py-4 md:py-6 px-6 md:px-12 shrink-0 relative">
-        <div className="flex items-center justify-between max-w-5xl mx-auto">
-          {/* Número del cartón GIGANTE a la izquierda */}
-          <p className="text-[#124723] font-black text-6xl md:text-8xl lg:text-9xl leading-none">
-            #{ganador.numero_carton}
-          </p>
-          {/* GANADOR/PAVOSO a la derecha del mismo tamaño */}
+        <div className="flex items-center justify-center gap-6 md:gap-12 max-w-5xl mx-auto">
+          {/* GANADOR/PAVOSO a la izquierda */}
           <div className="flex items-center gap-3">
             {ganador.tipo === 'pavoso' ? (
-              <span className="text-6xl md:text-8xl lg:text-9xl">😅</span>
+              <span className="text-5xl md:text-7xl lg:text-8xl">😅</span>
             ) : (
-              <Trophy className="w-16 h-16 md:w-24 md:h-24 lg:w-28 lg:h-28 text-[#124723]" />
+              <Trophy className="w-14 h-14 md:w-20 md:h-20 lg:w-24 lg:h-24 text-[#124723]" />
             )}
-            <h2 className="text-5xl md:text-7xl lg:text-8xl font-black text-[#124723]">
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-[#124723]">
               {ganador.tipo === 'pavoso' ? 'PAVOSO' : 'GANADOR'}
             </h2>
           </div>
+          {/* Número del cartón GIGANTE en el centro */}
+          <p className="text-[#124723] font-black text-6xl md:text-8xl lg:text-9xl leading-none">
+            #{ganador.numero_carton}
+          </p>
         </div>
         {/* Botón cerrar */}
         <button
@@ -66,7 +66,7 @@ export function CartonGanadorModal({ ganador, numerosSorteados, modalidadesActiv
           
           {/* Cartón del ganador */}
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-            <h3 className="text-[#ffd402] font-bold text-base md:text-xl mb-2 text-center shrink-0">CARTÓN</h3>
+            <h3 className="text-[#ffd402] font-bold text-base md:text-xl mb-1 text-center shrink-0">CARTÓN</h3>
             <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden">
               <div className="bg-[#f8df7e] rounded-xl md:rounded-2xl p-2 md:p-4 w-fit h-fit max-w-full max-h-full">
                 {/* Header BINGO */}
@@ -124,7 +124,7 @@ export function CartonGanadorModal({ ganador, numerosSorteados, modalidadesActiv
 
           {/* Patrón ganador */}
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-            <h3 className="text-[#ffd402] font-bold text-base md:text-xl mb-2 text-center shrink-0">
+            <h3 className="text-[#ffd402] font-bold text-base md:text-xl mb-1 text-center shrink-0">
               {ganador.tipo === 'pavoso' ? `FIGURA: ${nombrePatronPavoso}` : `PATRÓN: ${ganador.patron}`}
             </h3>
             <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden">
