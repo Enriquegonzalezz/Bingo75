@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
-import { Trophy, XCircle, SkipForward, Flag, Search, X, Menu, RotateCcw, LogOut } from 'lucide-react';
+import { Search, X, Menu, RotateCcw, LogOut, Flag, SkipForward } from 'lucide-react';
 import { Modalidad } from '@/shared/constants/modalidades';
 import { Ganador, CartonConAciertos } from '@/presentation/hooks/useSorteoV2';
 import { CartonGanadorModal } from './CartonGanadorModal';
+import { ResultadosRondaModal } from './ResultadosRondaModal';
 import { CelebrationEffect } from '../effects/CelebrationEffect';
 import { Carton } from '@/domain/entities/Carton';
 
@@ -31,17 +31,24 @@ interface TableroFullscreenV2Props {
   buscarCarton: (numero: number) => { carton: Carton; aciertos: number; totalNumeros: number } | null;
 }
 
-// Componente para mostrar un patrón de modalidad - GRANDE
-function PatronModalidad({ modalidad, numero }: { modalidad: Modalidad; numero: number }) {
+// Componente para mostrar un patrón de modalidad - GRANDE (para la vista principal)
+function PatronModalidadGrande({ modalidad, numero, totalFiguras }: { modalidad: Modalidad; numero: number; totalFiguras: number }) {
+  // Calcular el ancho según cantidad de figuras
+  const getWidthClass = () => {
+    if (totalFiguras === 1) return 'w-full max-w-[400px]'; // Una sola figura ocupa todo el ancho disponible
+    if (totalFiguras === 2) return 'w-[280px]'; // Dos figuras se ajustan bien
+    return 'w-[220px]'; // 3+ figuras con scroll
+  };
+
   return (
-    <div className="flex flex-col items-center bg-[#124723] rounded-xl p-3 border-2 border-transparent">
-      {/* Grid del patrón - MÁS GRANDE */}
-      <div className="grid grid-cols-5 gap-1.5 w-full aspect-square max-w-[14vw]">
+    <div className={`flex flex-col items-center bg-[#1d1d1b] rounded-2xl p-4 border-4 border-[#ffd402] h-full shrink-0 ${getWidthClass()}`}>
+      {/* Grid del patrón - Ocupa todo el height disponible */}
+      <div className="grid grid-cols-5 gap-2 flex-1 w-full max-h-[calc(100%-3rem)] aspect-square">
         {modalidad.patron.map((fila, i) =>
           fila.map((activo, j) => (
             <div
               key={`${i}-${j}`}
-              className={`rounded-lg aspect-square ${
+              className={`rounded-xl aspect-square ${
                 i === 2 && j === 2
                   ? 'bg-white'
                   : activo
@@ -53,9 +60,8 @@ function PatronModalidad({ modalidad, numero }: { modalidad: Modalidad; numero: 
         )}
       </div>
       {/* Info debajo */}
-      <div className="mt-2 text-center w-full">
-        <p className="text-white font-bold text-base truncate">{modalidad.nombre}</p>
-        <p className="text-[#ffd402] text-sm">Figura #{numero}</p>
+      <div className="mt-3 text-center w-full">
+        <p className="text-white font-bold text-xl truncate">{modalidad.nombre}</p>
       </div>
     </div>
   );
@@ -78,7 +84,6 @@ export function TableroFullscreenV2({
   totalRondas,
   rondaFinalizada,
   numeroSoporte = '',
-  premioRonda = 0,
   buscarCarton,
 }: TableroFullscreenV2Props) {
   // Estado para mostrar modal de ganador
@@ -96,6 +101,9 @@ export function TableroFullscreenV2({
   // Estado para el menú hamburguesa
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [mostrarBuscador, setMostrarBuscador] = useState(false);
+
+  // Estado para mostrar modal de resultados (cuando finaliza la ronda)
+  const [mostrarResultados, setMostrarResultados] = useState(false);
 
   // Buscar cartón cuando cambia el input
   const handleBuscarCarton = (valor: string) => {
@@ -125,12 +133,25 @@ export function TableroFullscreenV2({
     { letra: 'O', color: '#ff9800', gradiente: 'from-orange-500 to-orange-700', numeros: Array.from({ length: 15 }, (_, i) => i + 61) },
   ];
 
+  // Hay más rondas disponibles
+  const hayMasRondas = rondaActual < totalRondas;
+
   // Separar ganadores y pavosos
   const ganadoresReales = ganadores.filter((g) => g.tipo !== 'pavoso');
   const pavosos = ganadores.filter((g) => g.tipo === 'pavoso');
 
-  // Hay más rondas disponibles
-  const hayMasRondas = rondaActual < totalRondas;
+  // Mostrar modal de resultados automáticamente cuando se finaliza la ronda
+  useEffect(() => {
+    if (rondaFinalizada) {
+      setMostrarResultados(true);
+    }
+  }, [rondaFinalizada]);
+
+  // Handler para siguiente ronda desde el modal
+  const handleSiguienteRonda = () => {
+    setMostrarResultados(false);
+    onSiguienteRonda();
+  };
 
   // Detectar nuevos ganadores/pavosos para animaciones
   useEffect(() => {
@@ -157,136 +178,112 @@ export function TableroFullscreenV2({
       {/* GRID PRINCIPAL 5x5 - Optimizado para TV */}
       <div className="h-full w-full p-2 grid grid-cols-5 grid-rows-5 gap-2" style={{ maxHeight: '100dvh' }}>
         
-        {/* ===== FILA 1-3: HEADER + TABLERO (5 columnas, 3 filas) ===== */}
-        <div className="col-span-5 row-span-3 flex flex-col min-h-0 overflow-hidden">
-          {/* Header compacto - Responsive para laptops */}
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2 px-2">
-            {/* Logo + Ronda */}
-            <div className="flex items-center gap-2 lg:gap-3">
-              <Image
-                src="/logo.png"
-                alt="Bingo Carabobo"
-                width={180}
-                height={60}
-                className="h-10 lg:h-12 xl:h-14 w-auto"
-              />
-              <div className="bg-[#1d1d1b] px-2 lg:px-3 py-1 lg:py-2 rounded-lg lg:rounded-xl border-2 border-[#ffd402]">
-                <span className="text-[#ffd402] text-lg lg:text-xl xl:text-2xl font-black">R{rondaActual}</span>
-                <span className="text-[#f8df7e] text-sm lg:text-base ml-1">/{totalRondas}</span>
+        {/* ===== TABLERO NUMÉRICO (ocupa todo el espacio superior) ===== */}
+        <div className="col-span-5 row-span-3 flex flex-col min-h-0 overflow-hidden relative">
+          
+          {/* Menú flotante en esquina superior derecha */}
+          <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
+            {/* Buscador de cartones - Solo visible cuando está activo */}
+            {mostrarBuscador && (
+              <div className="flex items-center gap-1 bg-white rounded-xl px-3 py-2 shadow-lg">
+                <Search className="w-5 h-5 text-[#124723]" />
+                <input
+                  type="number"
+                  value={busquedaCarton}
+                  onChange={(e) => handleBuscarCarton(e.target.value)}
+                  placeholder="Nº Cartón..."
+                  className="w-28 px-2 py-1 text-base text-[#124723] font-bold focus:outline-none bg-transparent"
+                  autoFocus
+                />
+                <button onClick={cerrarBuscador} className="text-gray-500 hover:text-red-500">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-            </div>
+            )}
+            
+            {/* Botón Finalizar Ronda */}
+            {ganadores.length > 0 && !rondaFinalizada && (
+              <button 
+                onClick={onFinalizarRonda} 
+                className="px-4 py-2 bg-[#68b258] text-white font-bold rounded-xl flex items-center gap-2 shadow-lg hover:bg-[#5a9e4a] transition-colors"
+              >
+                <Flag className="w-5 h-5" /> Finalizar
+              </button>
+            )}
+            
+            {/* Botón Siguiente Ronda */}
+            {rondaFinalizada && hayMasRondas && (
+              <button 
+                onClick={handleSiguienteRonda} 
+                className="px-4 py-2 bg-[#ffd402] text-[#1d1d1b] font-bold rounded-xl flex items-center gap-2 shadow-lg animate-pulse hover:bg-[#e6c000] transition-colors"
+              >
+                <SkipForward className="w-5 h-5" /> Siguiente
+              </button>
+            )}
 
-            {/* CENTRO: Premio + Soporte + Último + Contador */}
-            <div className="flex items-center gap-2 lg:gap-3 flex-1 justify-center">
-              {/* Premio */}
-              {premioRonda > 0 && (
-                <div className="bg-[#448137] rounded-lg lg:rounded-xl px-3 lg:px-4 py-1 lg:py-2 text-center shadow-lg border-2 lg:border-4 border-[#4a9c3e]">
-                  <p className="text-white/80 text-[10px] lg:text-xs font-bold uppercase">💰 Premio</p>
-                  <p className="text-white text-lg lg:text-xl xl:text-2xl font-black">${premioRonda.toLocaleString()}</p>
-                </div>
-              )}
-              {/* Número de Soporte */}
-              <div className="bg-[#ffd402] rounded-lg lg:rounded-xl px-6 lg:px-10 py-1 lg:py-2 text-center shadow-lg border-2 lg:border-4 border-[#baa115]">
-                <p className="text-[#1d1d1b]/70 text-[20px] lg:text-2xl font-bold uppercase">Nº Soporte</p>
-                <p className="text-[#1d1d1b] text-3xl lg:text-3xl xl:text-4xl font-black">{numeroSoporte || '---'}</p>
-              </div>
-              {/* Último número */}
-              {ultimoNumero && (
-                <div className="flex items-center gap-1 lg:gap-2">
-                  <span className="text-white font-bold text-xs lg:text-sm hidden xl:inline">ÚLTIMO:</span>
-                  <div className="w-10 h-10 lg:w-12 lg:h-12 bg-[#ffd402] rounded-full flex items-center justify-center border-2 lg:border-4 border-white/50">
-                    <span className="text-xl lg:text-2xl font-black text-[#1d1d1b]">{ultimoNumero}</span>
-                  </div>
-                </div>
-              )}
-              {/* Contador */}
-              <div className="bg-white rounded-lg lg:rounded-xl px-2 lg:px-3 py-1 text-center">
-                <p className="text-lg lg:text-xl font-black text-[#1d1d1b]">{totalSorteados}<span className="text-gray-400">/75</span></p>
-              </div>
-            </div>
-
-            {/* DERECHA: Botones de ronda + Menú hamburguesa */}
-            <div className="flex items-center gap-2">
-              {/* Buscador de cartones - Solo visible cuando está activo */}
-              {mostrarBuscador && (
-                <div className="flex items-center gap-1 bg-white rounded-lg lg:rounded-xl px-2 py-1">
-                  <Search className="w-4 h-4 lg:w-5 lg:h-5 text-[#124723]" />
-                  <input
-                    type="number"
-                    value={busquedaCarton}
-                    onChange={(e) => handleBuscarCarton(e.target.value)}
-                    placeholder="Cartón..."
-                    className="w-20 lg:w-24 px-1 py-0.5 text-sm lg:text-base text-[#124723] font-bold focus:outline-none bg-transparent"
-                    autoFocus
-                  />
-                  <button onClick={cerrarBuscador} className="text-gray-500 hover:text-red-500">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
+            {/* Menú hamburguesa */}
+            <div className="relative">
+              <button 
+                onClick={() => setMenuAbierto(!menuAbierto)} 
+                className="p-3 bg-[#1d1d1b] text-[#ffd402] rounded-xl border-2 border-[#ffd402] hover:bg-[#2d2d2b] transition-colors shadow-lg"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
               
-              {/* Botones de ronda - Siempre visibles */}
-              {ganadores.length > 0 && !rondaFinalizada && (
-                <button onClick={onFinalizarRonda} className="px-2 lg:px-3 py-1.5 bg-[#68b258] text-white text-sm lg:text-base font-bold rounded-lg lg:rounded-xl flex items-center gap-1">
-                  <Flag className="w-4 h-4" /> <span className="hidden lg:inline">Finalizar</span>
-                </button>
-              )}
-              {rondaFinalizada && hayMasRondas && (
-                <button onClick={onSiguienteRonda} className="px-2 lg:px-3 py-1.5 bg-[#ffd402] text-[#1d1d1b] text-sm lg:text-base font-bold rounded-lg lg:rounded-xl flex items-center gap-1 animate-pulse">
-                  <SkipForward className="w-4 h-4" /> <span className="hidden lg:inline">Siguiente</span>
-                </button>
-              )}
-
-              {/* Menú hamburguesa */}
-              <div className="relative">
-                <button 
-                  onClick={() => setMenuAbierto(!menuAbierto)} 
-                  className="p-2 bg-[#1d1d1b] text-[#ffd402] rounded-lg lg:rounded-xl border-2 border-[#ffd402] hover:bg-[#2d2d2b] transition-colors"
-                >
-                  <Menu className="w-5 h-5 lg:w-6 lg:h-6" />
-                </button>
-                
-                {/* Dropdown del menú */}
-                {menuAbierto && (
-                  <>
-                    {/* Overlay para cerrar al hacer clic fuera */}
-                    <div className="fixed inset-0 z-40" onClick={() => setMenuAbierto(false)} />
+              {/* Dropdown del menú */}
+              {menuAbierto && (
+                <>
+                  {/* Overlay para cerrar al hacer clic fuera */}
+                  <div className="fixed inset-0 z-40" onClick={() => setMenuAbierto(false)} />
+                  
+                  <div className="absolute right-0 top-full mt-2 bg-[#1d1d1b] rounded-xl border-2 border-[#ffd402] shadow-2xl z-50 min-w-[200px] overflow-hidden">
+                    {/* Buscar cartón */}
+                    <button 
+                      onClick={() => { setMostrarBuscador(true); setMenuAbierto(false); }}
+                      className="w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-[#124723] transition-colors text-left"
+                    >
+                      <Search className="w-5 h-5 text-[#ffd402]" />
+                      <span className="font-medium">Buscar cartón</span>
+                    </button>
                     
-                    <div className="absolute right-0 top-full mt-2 bg-[#1d1d1b] rounded-xl border-2 border-[#ffd402] shadow-2xl z-50 min-w-[180px] overflow-hidden">
-                      {/* Buscar cartón */}
-                      <button 
-                        onClick={() => { setMostrarBuscador(true); setMenuAbierto(false); }}
-                        className="w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-[#124723] transition-colors text-left"
-                      >
-                        <Search className="w-5 h-5 text-[#ffd402]" />
-                        <span className="font-medium">Buscar cartón</span>
-                      </button>
-                      
-                      <div className="border-t border-[#ffd402]/30" />
-                      
-                      {/* Reiniciar */}
-                      <button 
-                        onClick={() => { onReiniciar(); setMenuAbierto(false); }}
-                        className="w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-[#124723] transition-colors text-left"
-                      >
-                        <RotateCcw className="w-5 h-5 text-[#baa115]" />
-                        <span className="font-medium">Reiniciar sorteo</span>
-                      </button>
-                      
-                      <div className="border-t border-[#ffd402]/30" />
-                      
-                      {/* Salir */}
-                      <button 
-                        onClick={() => { onSalir(); setMenuAbierto(false); }}
-                        className="w-full px-4 py-3 flex items-center gap-3 text-red-400 hover:bg-red-900/30 transition-colors text-left"
-                      >
-                        <LogOut className="w-5 h-5" />
-                        <span className="font-medium">Salir del sorteo</span>
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+                    <div className="border-t border-[#ffd402]/30" />
+
+                    {/* Ver Resultados */}
+                    {ganadores.length > 0 && (
+                      <>
+                        <button 
+                          onClick={() => { setMostrarResultados(true); setMenuAbierto(false); }}
+                          className="w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-[#124723] transition-colors text-left"
+                        >
+                          <span className="text-[#ffd402]">🏆</span>
+                          <span className="font-medium">Ver Resultados</span>
+                        </button>
+                        <div className="border-t border-[#ffd402]/30" />
+                      </>
+                    )}
+                    
+                    {/* Reiniciar */}
+                    <button 
+                      onClick={() => { onReiniciar(); setMenuAbierto(false); }}
+                      className="w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-[#124723] transition-colors text-left"
+                    >
+                      <RotateCcw className="w-5 h-5 text-[#baa115]" />
+                      <span className="font-medium">Reiniciar sorteo</span>
+                    </button>
+                    
+                    <div className="border-t border-[#ffd402]/30" />
+                    
+                    {/* Salir */}
+                    <button 
+                      onClick={() => { onSalir(); setMenuAbierto(false); }}
+                      className="w-full px-4 py-3 flex items-center gap-3 text-red-400 hover:bg-red-900/30 transition-colors text-left"
+                    >
+                      <LogOut className="w-5 h-5" />
+                      <span className="font-medium">Salir del sorteo</span>
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -314,8 +311,8 @@ export function TableroFullscreenV2({
                               rounded-full font-bold text-5xl flex items-center justify-center transition-all cursor-pointer
                               ${sorteado
                                 ? esUltimo
-                                  ? 'bg-[#68b258] text-white ring-4 ring-white scale-110 hover:bg-red-500 hover:ring-red-300'
-                                  : 'bg-[#68b258] text-white hover:bg-red-500'
+                                  ? 'bg-red-600 text-white ring-4 ring-white scale-110 hover:bg-red-700 hover:ring-red-300'
+                                  : 'bg-red-600 text-white hover:bg-red-700'
                                 : 'bg-white text-[#1d1d1b] hover:bg-[#ffd402] hover:scale-110'
                               }
                             `}
@@ -394,83 +391,48 @@ export function TableroFullscreenV2({
           </div>
         </div>
 
-        {/* ===== FILA INFERIOR - RESPONSIVE ===== */}
-        <div className="col-span-5 row-span-2 row-start-4 flex gap-2 min-h-0 overflow-hidden">
+        {/* ===== FILA INFERIOR: FIGURAS + SOPORTE + ÚLTIMO NÚMERO ===== */}
+        <div className="col-span-5 row-span-2 row-start-4 flex gap-4 min-h-0 overflow-hidden px-2">
           
-          {/* FIGURAS EN JUEGO - Scroll vertical */}
-          <div className="flex-1 bg-transparent rounded-2xl p-3 border-2 border-transparent flex flex-col min-w-0 min-h-0">
-            <h3 className="text-[#ffd402] font-bold text-base mb-2 text-center flex-shrink-0">🎯 FIGURAS ({modalidadesActivas.length})</h3>
-            <div className="flex-1 overflow-y-auto space-y-2">
-              {modalidadesActivas.map((mod, index) => (
-                <PatronModalidad key={mod.id} modalidad={mod} numero={index + 1} />
-              ))}
-            </div>
+          {/* FIGURAS EN JUEGO - Responsivo según cantidad */}
+          <div className={`flex items-center gap-4 py-2 ${
+            modalidadesActivas.length <= 2 
+              ? 'flex-1 justify-center' 
+              : 'flex-1 overflow-x-auto'
+          }`}>
+            {modalidadesActivas.map((mod, index) => (
+              <PatronModalidadGrande 
+                key={mod.id} 
+                modalidad={mod} 
+                numero={index + 1} 
+                totalFiguras={modalidadesActivas.length}
+              />
+            ))}
           </div>
 
-          {/* GANADORES */}
-          <div className="flex-1 bg-transparent rounded-2xl p-3 border-2 border-transparent flex flex-col min-w-0 min-h-0">
-            <div className="flex items-center justify-center gap-2 mb-2 flex-shrink-0">
-              <Trophy className="w-5 h-5 text-[#ffd402]" />
-              <h3 className="text-[#68b258] font-bold text-base">GANADORES ({ganadoresReales.length})</h3>
-            </div>
-            <div className="flex-1 overflow-y-auto space-y-2">
-              {ganadoresReales.length === 0 ? (
-                <p className="text-[#f8df7e] text-center py-4">🎰 Esperando...</p>
-              ) : (
-                ganadoresReales.map((g, i) => (
-                  <button
-                    key={`${g.numero_carton}-${i}`}
-                    onClick={() => setGanadorSeleccionado(g)}
-                    className="w-full bg-[#124723] rounded-xl p-3 text-left hover:bg-[#1a5a2a] transition-all border border-[#68b258]"
-                  >
-                    <p className="text-[#ffd402] font-bold">🏆 #{g.numero_carton}</p>
-                    <p className="text-white/80 text-sm truncate">{g.patron}</p>
-                  </button>
-                ))
-              )}
-            </div>
+          {/* NÚMERO DE SOPORTE - Grande */}
+          <div className="bg-[transparent] rounded-2xl px-8 py-4 flex flex-col items-center justify-center min-w-[200px]">
+            <p className="text-[#fff]/70 text-xl font-bold uppercase">Nº Soporte</p>
+            <p className="text-[#fff] text-5xl font-white">{numeroSoporte || '---'}</p>
           </div>
 
-          {/* PAVOSOS - Solo si está activo */}
-          {pavosoActivo && (
-            <div className="flex-1 bg-transparent rounded-2xl p-3 border-2 border-transparent flex flex-col min-w-0 min-h-0">
-              <h3 className="text-[#ffd402] font-bold text-base mb-2 text-center flex-shrink-0">😅 PAVOSOS ({pavosos.length})</h3>
-              <div className="flex-1 overflow-y-auto space-y-2">
-                {pavosos.length === 0 ? (
-                  <p className="text-[#f8df7e]/70 text-center py-4">Sin pavosos...</p>
-                ) : (
-                  pavosos.map((g, i) => (
-                    <button
-                      key={`${g.numero_carton}-${i}`}
-                      onClick={() => setGanadorSeleccionado(g)}
-                      className="w-full bg-[#124723] rounded-xl p-3 text-left hover:bg-[#1a5a2a] transition-all border border-[#ffd402]"
-                    >
-                      <p className="text-[#ffd402] font-bold">😅 #{g.numero_carton}</p>
-                      <p className="text-white/70 text-sm">0 aciertos</p>
-                    </button>
-                  ))
-                )}
+          {/* ÚLTIMO NÚMERO CLICKEADO - MÁS GRANDE */}
+          <div className="bg-[transparent] rounded-2xl px-8 py-4 flex flex-col items-center justify-center min-w-[220px]">
+            <p className="text-white/70 text-2xl font-bold uppercase mb-2">Último</p>
+            {ultimoNumero ? (
+              <div className="w-28 h-28 bg-[#fff] rounded-full flex items-center justify-center border-4 border-white/50 shadow-lg">
+                <span className="text-6xl font-black text-[#1d1d1b]">{ultimoNumero}</span>
               </div>
-            </div>
-          )}
+            ) : (
+              <p className="text-[#ffd402] text-7xl font-black">--</p>
+            )}
+          </div>
 
-          {/* MENOS ACIERTOS - Solo si hay datos */}
-          {cartonesConMenosAciertos.length > 0 && (
-            <div className="flex-1 bg-transparent rounded-2xl p-3 border-2 border-transparent flex flex-col min-w-0 min-h-0">
-              <div className="flex items-center justify-center gap-1 mb-2 flex-shrink-0">
-                <XCircle className="w-4 h-4 text-[#ffd402]" />
-                <h3 className="text-white font-bold text-base">MENOS ACIERTOS</h3>
-              </div>
-              <div className="flex-1 overflow-y-auto space-y-2">
-                {cartonesConMenosAciertos.map((item) => (
-                  <div key={item.numero_carton} className="bg-[#124723] rounded-xl p-3 border border-[#68b258]">
-                    <p className="text-[#ffd402] font-bold">❌ #{item.numero_carton}</p>
-                    <p className="text-white/70 text-sm">{item.aciertos} aciertos</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* CONTADOR - MÁS GRANDE */}
+          <div className="bg-[transparent] rounded-2xl px-8 py-4 flex flex-col items-center justify-center min-w-[180px]">
+            <p className="text-white/70 text-2xl font-bold uppercase mb-2">Bolas</p>
+            <p className="text-7xl font-black text-white">{totalSorteados}<span className="text-white/50 text-4xl">/75</span></p>
+          </div>
         </div>
       </div>
 
@@ -480,6 +442,20 @@ export function TableroFullscreenV2({
         numerosSorteados={numerosSorteados}
         modalidadesActivas={modalidadesActivas}
         onClose={() => setGanadorSeleccionado(null)}
+      />
+
+      {/* Modal de Resultados de Ronda */}
+      <ResultadosRondaModal
+        isOpen={mostrarResultados}
+        ganadores={ganadores}
+        cartonesConMenosAciertos={cartonesConMenosAciertos}
+        pavosoActivo={pavosoActivo}
+        rondaActual={rondaActual}
+        totalRondas={totalRondas}
+        numerosSorteados={numerosSorteados}
+        modalidadesActivas={modalidadesActivas}
+        onClose={() => setMostrarResultados(false)}
+        onSiguienteRonda={handleSiguienteRonda}
       />
     </div>
   );

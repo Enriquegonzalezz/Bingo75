@@ -32,22 +32,22 @@ export function CartonGanadorModal({ ganador, numerosSorteados, modalidadesActiv
 
   return (
     <div className="fixed inset-0 bg-[#124723] z-100 flex flex-col" style={{ height: '100dvh', maxHeight: '100dvh' }}>
-      {/* Header - Número del cartón GIGANTE centrado */}
-      <div className="bg-linear-to-r from-[#ffd402] to-[#baa115] py-2 md:py-4 px-4 shrink-0">
-        <div className="flex flex-col items-center justify-center">
-          {/* Número del cartón GIGANTE */}
-          <p className="text-[#124723] font-black text-5xl md:text-7xl lg:text-8xl leading-none">
+      {/* Header - Número a la izquierda, GANADOR a la derecha */}
+      <div className="bg-linear-to-r from-[#ffd402] to-[#baa115] py-4 md:py-6 px-6 md:px-12 shrink-0 relative">
+        <div className="flex items-center justify-between max-w-5xl mx-auto">
+          {/* Número del cartón GIGANTE a la izquierda */}
+          <p className="text-[#124723] font-black text-6xl md:text-8xl lg:text-9xl leading-none">
             #{ganador.numero_carton}
           </p>
-          {/* Tipo de ganador */}
-          <div className="flex items-center gap-2 mt-1">
+          {/* GANADOR/PAVOSO a la derecha del mismo tamaño */}
+          <div className="flex items-center gap-3">
             {ganador.tipo === 'pavoso' ? (
-              <span className="text-2xl md:text-3xl">😅</span>
+              <span className="text-6xl md:text-8xl lg:text-9xl">😅</span>
             ) : (
-              <Trophy className="w-6 h-6 md:w-8 md:h-8 text-[#124723]" />
+              <Trophy className="w-16 h-16 md:w-24 md:h-24 lg:w-28 lg:h-28 text-[#124723]" />
             )}
-            <h2 className="text-xl md:text-2xl lg:text-3xl font-black text-[#124723]">
-              {ganador.tipo === 'pavoso' ? '¡PAVOSO!' : '¡GANADOR!'}
+            <h2 className="text-5xl md:text-7xl lg:text-8xl font-black text-[#124723]">
+              {ganador.tipo === 'pavoso' ? 'PAVOSO' : 'GANADOR'}
             </h2>
           </div>
         </div>
