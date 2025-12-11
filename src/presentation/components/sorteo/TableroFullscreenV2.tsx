@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Search, X, Menu, RotateCcw, LogOut, Flag, SkipForward } from 'lucide-react';
+import { Search, X, Menu, RotateCcw, LogOut, Flag, SkipForward, Trophy } from 'lucide-react';
 import { Modalidad } from '@/shared/constants/modalidades';
 import { Ganador, CartonConAciertos } from '@/presentation/hooks/useSorteoV2';
-import { CartonGanadorModal } from './CartonGanadorModal';
+import { CartonGanadorModal, DatosCartonModal } from './CartonGanadorModal';
 import { ResultadosRondaModal } from './ResultadosRondaModal';
 import { CelebrationEffect } from '../effects/CelebrationEffect';
 import { Carton } from '@/domain/entities/Carton';
@@ -29,44 +29,65 @@ interface TableroFullscreenV2Props {
   rondaFinalizada: boolean;
   numeroSoporte?: string;
   premioRonda?: number;
-  buscarCarton: (numero: number) => { carton: Carton; aciertos: number; totalNumeros: number } | null;
+  historialRondas: Record<number, any>;
+  buscarCarton: (
+    numero: number
+  ) => { carton: Carton; aciertos: number; totalNumeros: number } | null;
 }
 
-// Componente para mostrar un patrón de modalidad - GRANDE (para la vista principal)
-function PatronModalidadGrande({ modalidad, totalFiguras }: { modalidad: Modalidad; totalFiguras: number }) {
-  // Calcular el ancho según cantidad de figuras
-  const getWidthClass = () => {
-    if (totalFiguras === 1) return 'w-full max-w-[400px]'; // Una sola figura ocupa todo el ancho disponible
-    if (totalFiguras === 2) return 'w-[280px]'; // Dos figuras se ajustan bien
-    return 'w-[220px]'; // 3+ figuras con scroll
-  };
-
+// --- Componentes UI ---
+function PatronGigante({ modalidad }: { modalidad: Modalidad }) {
   return (
-    <div className={`flex flex-col items-center bg-[#1d1d1b] rounded-2xl p-4 border-4 border-[#ffd402] h-full shrink-0 ${getWidthClass()}`}>
-      {/* Grid del patrón - Ocupa todo el height disponible */}
-      <div className="grid grid-cols-5 gap-2 flex-1 w-full max-h-[calc(100%-3rem)] aspect-square">
+    <div className="h-full aspect-square flex flex-col items-center justify-center bg-[#052e16] border-2 border-[#ffd402] rounded-2xl p-3 shadow-xl relative overflow-hidden">
+      <div className="grid grid-cols-5 gap-2 w-full h-full">
         {modalidad.patron.map((fila, i) =>
           fila.map((activo, j) => (
             <div
               key={`${i}-${j}`}
-              className={`rounded-xl aspect-square ${
+              className={`rounded-full w-full h-full shadow-sm transition-all duration-300 ${
                 i === 2 && j === 2
-                  ? 'bg-white'
+                  ? 'bg-white/50 animate-pulse'
                   : activo
-                    ? 'bg-[#ffd402]'
-                    : 'bg-[#0d2a0d]'
+                    ? 'bg-[#ffd402] shadow-[0_0_15px_#ffd402]'
+                    : 'bg-[#1b4d2e]/40'
               }`}
             />
           ))
         )}
       </div>
-      {/* Info debajo */}
-      <div className="mt-3 text-center w-full">
-        <p className="text-white font-bold text-xl truncate">{modalidad.nombre}</p>
+      <div className="absolute bottom-2 inset-x-0 text-center pointer-events-none">
+        <span className="text-[#ffd402] text-[10px] font-black uppercase tracking-widest bg-black/60 px-2 py-0.5 rounded-full">
+          {modalidad.nombre}
+        </span>
       </div>
     </div>
   );
 }
+
+const BingoBall = ({
+  numero,
+  sorteado,
+  esUltimo,
+  onClick,
+}: {
+  numero: number;
+  sorteado: boolean;
+  esUltimo: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    className={`relative w-full aspect-square rounded-full flex items-center justify-center text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black transition-all duration-200 ${
+      sorteado
+        ? esUltimo
+          ? 'bg-[#ff8a80] text-white ring-4 ring-[#ffb74d] scale-110 z-10 shadow-lg'
+          : 'bg-[#1d1d1b] text-white scale-100'
+        : 'bg-[#f3f4f6] text-[#1d1d1b] hover:bg-[#ffd402] hover:scale-105'
+    }`}
+  >
+    {numero}
+  </button>
+);
 
 export function TableroFullscreenV2({
   numerosSorteados,
@@ -85,387 +106,366 @@ export function TableroFullscreenV2({
   totalRondas,
   rondaFinalizada,
   numeroSoporte = '',
+  premioRonda = 0,
   buscarCarton,
+  historialRondas,
 }: TableroFullscreenV2Props) {
-  // Estado para mostrar modal de ganador
-  const [ganadorSeleccionado, setGanadorSeleccionado] = useState<Ganador | null>(null);
-  
-  // Estado para animaciones de celebración
-  const [celebracion, setCelebracion] = useState<{ tipo: 'ganador' | 'pavoso'; activo: boolean }>({ tipo: 'ganador', activo: false });
-  const prevGanadoresRef = useRef<number>(0);
-  const prevPavososRef = useRef<number>(0);
-
-  // Estado para el buscador de cartones
+  const [modalData, setModalData] = useState<DatosCartonModal | null>(null);
+  const [celebracion, setCelebracion] = useState<{ tipo: 'ganador' | 'pavoso'; activo: boolean }>({
+    tipo: 'ganador',
+    activo: false,
+  });
   const [busquedaCarton, setBusquedaCarton] = useState('');
-  const [cartonBuscado, setCartonBuscado] = useState<{ carton: Carton; aciertos: number; totalNumeros: number } | null>(null);
-
-  // Estado para el menú hamburguesa
+  const [cartonBuscado, setCartonBuscado] = useState<{
+    carton: Carton;
+    aciertos: number;
+    totalNumeros: number;
+  } | null>(null);
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [mostrarBuscador, setMostrarBuscador] = useState(false);
-
-  // Estado para mostrar modal de resultados (cuando finaliza la ronda)
   const [mostrarResultados, setMostrarResultados] = useState(false);
 
-  // Buscar cartón cuando cambia el input
+  // Refs para controlar cambios en la cantidad de ganadores/pavosos
+  const prevGanadoresRef = useRef<number>(0);
+  const prevPavososRef = useRef<number>(0); // <--- AGREGADO
+
   const handleBuscarCarton = (valor: string) => {
     setBusquedaCarton(valor);
     const numero = parseInt(valor);
     if (!isNaN(numero) && numero > 0) {
-      const resultado = buscarCarton(numero);
-      setCartonBuscado(resultado);
+      setCartonBuscado(buscarCarton(numero));
     } else {
       setCartonBuscado(null);
     }
   };
 
-  // Cerrar buscador
   const cerrarBuscador = () => {
     setBusquedaCarton('');
     setCartonBuscado(null);
     setMostrarBuscador(false);
   };
 
-  // Generar la matriz de números organizados por filas (B, I, N, G, O)
-  const filas = [
-    { letra: 'B', color: '#e91e63', gradiente: 'from-pink-600 to-pink-800', numeros: Array.from({ length: 15 }, (_, i) => i + 1) },
-    { letra: 'I', color: '#9c27b0', gradiente: 'from-purple-600 to-purple-800', numeros: Array.from({ length: 15 }, (_, i) => i + 16) },
-    { letra: 'N', color: '#ffd402', gradiente: 'from-yellow-400 to-yellow-600', numeros: Array.from({ length: 15 }, (_, i) => i + 31) },
-    { letra: 'G', color: '#4caf50', gradiente: 'from-green-500 to-green-700', numeros: Array.from({ length: 15 }, (_, i) => i + 46) },
-    { letra: 'O', color: '#ff9800', gradiente: 'from-orange-500 to-orange-700', numeros: Array.from({ length: 15 }, (_, i) => i + 61) },
-  ];
-
-  // Hay más rondas disponibles
-  const hayMasRondas = rondaActual < totalRondas;
-
-  // Separar ganadores y pavosos
+  // Separar listas
   const ganadoresReales = ganadores.filter((g) => g.tipo !== 'pavoso');
-  const pavosos = ganadores.filter((g) => g.tipo === 'pavoso');
+  const pavosos = ganadores.filter((g) => g.tipo === 'pavoso'); // <--- AGREGADO
 
-  // Mostrar modal de resultados automáticamente cuando se finaliza la ronda
+  // Auto-mostrar resultados al finalizar ronda
   useEffect(() => {
-    if (rondaFinalizada) {
-      setMostrarResultados(true);
-    }
+    if (rondaFinalizada) setMostrarResultados(true);
   }, [rondaFinalizada]);
 
-  // Handler para siguiente ronda desde el modal
   const handleSiguienteRonda = () => {
     setMostrarResultados(false);
     onSiguienteRonda();
   };
 
-  // Detectar nuevos ganadores/pavosos para animaciones
+  // 1. Detectar Ganador para Celebración
   useEffect(() => {
     if (ganadoresReales.length > prevGanadoresRef.current) {
       setCelebracion({ tipo: 'ganador', activo: true });
-      setTimeout(() => setCelebracion(prev => ({ ...prev, activo: false })), 4000);
+      setTimeout(() => setCelebracion((prev) => ({ ...prev, activo: false })), 4000);
     }
     prevGanadoresRef.current = ganadoresReales.length;
   }, [ganadoresReales.length]);
 
+  // 2. Detectar Pavoso para Celebración (NUEVO)
   useEffect(() => {
     if (pavosos.length > prevPavososRef.current) {
       setCelebracion({ tipo: 'pavoso', activo: true });
-      setTimeout(() => setCelebracion(prev => ({ ...prev, activo: false })), 3000);
+      setTimeout(() => setCelebracion((prev) => ({ ...prev, activo: false })), 4000);
     }
     prevPavososRef.current = pavosos.length;
   }, [pavosos.length]);
 
   return (
-    <div className="fixed inset-0 bg-[#124723] z-50 overflow-hidden" style={{ height: '100dvh' }}>
-      {/* Animación de celebración */}
+    <div className="fixed inset-0 bg-[#052e16] font-sans flex flex-col overflow-hidden select-none z-50">
       <CelebrationEffect tipo={celebracion.tipo} activo={celebracion.activo} />
 
-      {/* GRID PRINCIPAL 5x5 - Optimizado para TV */}
-      <div className="h-full w-full p-2 grid grid-cols-5 grid-rows-5 gap-2" style={{ maxHeight: '100dvh' }}>
-        
-        {/* ===== TABLERO NUMÉRICO (ocupa todo el espacio superior) ===== */}
-        <div className="col-span-5 row-span-3 flex flex-col min-h-0 overflow-hidden relative">
-          
-          {/* Menú flotante en esquina superior derecha */}
-          <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-            {/* Buscador de cartones - Solo visible cuando está activo */}
-            {mostrarBuscador && (
-              <div className="flex items-center gap-1 bg-white rounded-xl px-3 py-2 shadow-lg">
-                <Search className="w-5 h-5 text-[#124723]" />
-                <input
-                  type="number"
-                  value={busquedaCarton}
-                  onChange={(e) => handleBuscarCarton(e.target.value)}
-                  placeholder="Nº Cartón..."
-                  className="w-28 px-2 py-1 text-base text-[#124723] font-bold focus:outline-none bg-transparent"
-                  autoFocus
-                />
-                <button onClick={cerrarBuscador} className="text-gray-500 hover:text-red-500">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            )}
-            
-            {/* Botón Finalizar Ronda */}
-            {ganadores.length > 0 && !rondaFinalizada && (
-              <button 
-                onClick={onFinalizarRonda} 
-                className="px-4 py-2 bg-[#68b258] text-white font-bold rounded-xl flex items-center gap-2 shadow-lg hover:bg-[#5a9e4a] transition-colors"
-              >
-                <Flag className="w-5 h-5" /> Finalizar
+      {/* ===== TABLERO (70% Height) ===== */}
+      <div className="h-[70%] w-full flex px-4 pt-4 pb-2 md:px-8 lg:px-12 lg:pt-6 gap-6">
+        {/* Panel Tablero */}
+        <div
+          className={`relative flex flex-col bg-white rounded-[2.5rem] shadow-2xl transition-all duration-500 overflow-hidden ${cartonBuscado ? 'w-3/4' : 'w-full'}`}
+        >
+          {mostrarBuscador && (
+            <div className="absolute top-4 right-4 z-30 flex items-center gap-2 bg-white border border-gray-200 shadow-xl rounded-full px-4 py-2">
+              <Search className="w-4 h-4 text-gray-400" />
+              <input
+                type="number"
+                value={busquedaCarton}
+                onChange={(e) => handleBuscarCarton(e.target.value)}
+                placeholder="Nº Cartón..."
+                className="w-24 outline-none text-lg font-bold text-[#0f391b] bg-transparent"
+                autoFocus
+              />
+              <button onClick={cerrarBuscador}>
+                <X className="w-4 h-4 text-gray-500" />
               </button>
-            )}
-            
-            {/* Botón Siguiente Ronda */}
-            {rondaFinalizada && hayMasRondas && (
-              <button 
-                onClick={handleSiguienteRonda} 
-                className="px-4 py-2 bg-[#ffd402] text-[#1d1d1b] font-bold rounded-xl flex items-center gap-2 shadow-lg animate-pulse hover:bg-[#e6c000] transition-colors"
-              >
-                <SkipForward className="w-5 h-5" /> Siguiente
-              </button>
-            )}
-
-            {/* Menú hamburguesa */}
-            <div className="relative">
-              <button 
-                onClick={() => setMenuAbierto(!menuAbierto)} 
-                className="p-3 bg-[#1d1d1b] text-[#ffd402] rounded-xl border-2 border-[#ffd402] hover:bg-[#2d2d2b] transition-colors shadow-lg"
-              >
-                <Menu className="w-6 h-6" />
-              </button>
-              
-              {/* Dropdown del menú */}
-              {menuAbierto && (
-                <>
-                  {/* Overlay para cerrar al hacer clic fuera */}
-                  <div className="fixed inset-0 z-40" onClick={() => setMenuAbierto(false)} />
-                  
-                  <div className="absolute right-0 top-full mt-2 bg-[#1d1d1b] rounded-xl border-2 border-[#ffd402] shadow-2xl z-50 min-w-[200px] overflow-hidden">
-                    {/* Buscar cartón */}
-                    <button 
-                      onClick={() => { setMostrarBuscador(true); setMenuAbierto(false); }}
-                      className="w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-[#124723] transition-colors text-left"
-                    >
-                      <Search className="w-5 h-5 text-[#ffd402]" />
-                      <span className="font-medium">Buscar cartón</span>
-                    </button>
-                    
-                    <div className="border-t border-[#ffd402]/30" />
-
-                    {/* Ver Resultados */}
-                    {ganadores.length > 0 && (
-                      <>
-                        <button 
-                          onClick={() => { setMostrarResultados(true); setMenuAbierto(false); }}
-                          className="w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-[#124723] transition-colors text-left"
-                        >
-                          <span className="text-[#ffd402]">🏆</span>
-                          <span className="font-medium">Ver Resultados</span>
-                        </button>
-                        <div className="border-t border-[#ffd402]/30" />
-                      </>
-                    )}
-                    
-                    {/* Reiniciar */}
-                    <button 
-                      onClick={() => { onReiniciar(); setMenuAbierto(false); }}
-                      className="w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-[#124723] transition-colors text-left"
-                    >
-                      <RotateCcw className="w-5 h-5 text-[#baa115]" />
-                      <span className="font-medium">Reiniciar sorteo</span>
-                    </button>
-                    
-                    <div className="border-t border-[#ffd402]/30" />
-                    
-                    {/* Salir */}
-                    <button 
-                      onClick={() => { onSalir(); setMenuAbierto(false); }}
-                      className="w-full px-4 py-3 flex items-center gap-3 text-red-400 hover:bg-red-900/30 transition-colors text-left"
-                    >
-                      <LogOut className="w-5 h-5" />
-                      <span className="font-medium">Salir del sorteo</span>
-                    </button>
-                  </div>
-                </>
-              )}
             </div>
-          </div>
+          )}
 
-          {/* CONTENEDOR TABLERO + CARTÓN BUSCADO */}
-          <div className="flex-1 flex gap-3 min-h-0 overflow-hidden">
-            {/* TABLERO 75 NÚMEROS */}
-            <div className={`bg-[#1d1d1b] rounded-2xl p-3 border-4 border-[#ffd402] ${cartonBuscado ? 'w-3/4' : 'w-full'}`}>
-              <div className="h-full bg-[#fff] rounded-xl p-2">
-                {filas.map((fila) => (
-                  <div key={fila.letra} className="flex items-center mb-1 last:mb-0 h-[18%]">
-                    {/* Letra */}
-                    <div className={`w-16 h-full rounded-xl flex items-center justify-center text-white font-black text-4xl mr-2 bg-gradient-to-b ${fila.gradiente}`}>
-                      {fila.letra}
-                    </div>
-                    {/* Números */}
-                    <div className="flex-1 h-full grid grid-cols-15 gap-1">
-                      {fila.numeros.map((numero) => {
-                        const sorteado = numerosSorteados.includes(numero);
-                        const esUltimo = numero === ultimoNumero;
-                        return (
-                          <button
-                            key={numero}
-                            onClick={() => onClickNumero(numero)}
-                            className={`
-                              rounded-full font-bold text-5xl flex items-center justify-center transition-all cursor-pointer
-                              ${sorteado
-                                ? esUltimo
-                                  ? 'bg-red-600 text-white ring-4 ring-white scale-110 hover:bg-red-700 hover:ring-red-300'
-                                  : 'bg-red-600 text-white hover:bg-red-700'
-                                : 'bg-white text-[#1d1d1b] hover:bg-[#ffd402] hover:scale-110'
-                              }
-                            `}
-                            title={sorteado ? 'Clic para quitar este número' : 'Clic para sortear este número'}
-                          >
-                            {numero}
-                          </button>
-                        );
-                      })}
-                    </div>
+          <div className="flex-1 flex flex-col justify-between p-4 lg:px-8 lg:py-6 h-full">
+            {[
+              { l: 'B', c: 'bg-[#e91e63]', n: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] },
+              {
+                l: 'I',
+                c: 'bg-[#9c27b0]',
+                n: [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
+              },
+              {
+                l: 'N',
+                c: 'bg-[#ffd402]',
+                n: [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45],
+              },
+              {
+                l: 'G',
+                c: 'bg-[#4caf50]',
+                n: [46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60],
+              },
+              {
+                l: 'O',
+                c: 'bg-[#ff9800]',
+                n: [61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
+              },
+            ].map((fila) => (
+              <div key={fila.l} className="flex items-center gap-4 lg:gap-6 h-[18%]">
+                <div
+                  className={`${fila.c} h-[90%] aspect-[4/5] lg:aspect-square rounded-2xl lg:rounded-3xl flex items-center justify-center shadow-md`}
+                >
+                  <span className="text-white font-black text-5xl lg:text-7xl drop-shadow-sm">
+                    {fila.l}
+                  </span>
+                </div>
+                <div className="flex-1 grid grid-cols-15 gap-1 lg:gap-2 h-[90%] items-center">
+                  {fila.n.map((num) => (
+                    <BingoBall
+                      key={num}
+                      numero={num}
+                      sorteado={numerosSorteados.includes(num)}
+                      esUltimo={num === ultimoNumero}
+                      onClick={() => onClickNumero(num)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Panel Lateral Búsqueda */}
+        {cartonBuscado && (
+          <div className="w-1/4 bg-[#1a4a2d] border-4 border-[#ffd402] rounded-[2.5rem] p-4 flex flex-col shadow-2xl animate-in slide-in-from-right-10">
+            <div className="flex justify-between items-center mb-2 px-2">
+              <div>
+                <p className="text-[#ffd402] text-xs font-bold uppercase">Cartón</p>
+                <p className="text-white text-3xl font-black">
+                  #{cartonBuscado.carton.numero_carton}
+                </p>
+              </div>
+              <div className="text-right">
+                <span className="text-green-400 text-2xl font-bold">{cartonBuscado.aciertos}</span>
+                <span className="text-white/50 text-sm">/{cartonBuscado.totalNumeros}</span>
+              </div>
+            </div>
+            <div className="flex-1 bg-[#fefce8] rounded-2xl p-3 text-gray-900 shadow-inner flex flex-col">
+              <div className="grid grid-cols-5 mb-1 gap-1">
+                {['B', 'I', 'N', 'G', 'O'].map((l, i) => (
+                  <div
+                    key={i}
+                    className="bg-[#0f391b] text-[#ffd402] font-black text-center rounded py-0.5 text-sm"
+                  >
+                    {l}
                   </div>
                 ))}
               </div>
-            </div>
-
-            {/* CARTÓN BUSCADO - Panel lateral responsivo */}
-            {cartonBuscado && (
-              <div className="w-1/4 bg-[#1d1d1b] rounded-2xl p-2 border-4 border-[#ffd402] flex flex-col min-h-0 overflow-hidden">
-                {/* Header del cartón */}
-                <div className="text-center mb-2 shrink-0">
-                  <p className="text-[#ffd402] font-black text-2xl lg:text-4xl">#{cartonBuscado.carton.numero_carton}</p>
-                  <p className="text-white text-sm lg:text-base">
-                    <span className="text-[#68b258] font-bold text-lg lg:text-xl">{cartonBuscado.aciertos}</span>
-                    <span className="text-gray-400">/{cartonBuscado.totalNumeros}</span>
-                  </p>
-                </div>
-                
-                {/* Cartón - Se ajusta al espacio disponible */}
-                <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden">
-                  <div className="bg-[#f8df7e] rounded-xl p-2 w-full h-full max-h-full flex flex-col">
-                    {/* Header BINGO */}
-                    <div className="grid grid-cols-5 gap-1 mb-1 shrink-0">
-                      {['B', 'I', 'N', 'G', 'O'].map((letra, i) => {
-                        const colores = ['#e91e63', '#9c27b0', '#ffd402', '#4caf50', '#ff9800'];
-                        return (
-                          <div
-                            key={letra}
-                            className="aspect-square rounded flex items-center justify-center text-white font-black text-xs lg:text-sm"
-                            style={{ backgroundColor: colores[i] }}
-                          >
-                            {letra}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    {/* Números del cartón - Grid que se ajusta */}
-                    <div className="flex-1 grid grid-cols-5 grid-rows-5 gap-1 min-h-0">
-                      {cartonBuscado.carton.matriz.map((fila, i) =>
-                        fila.map((numero, j) => {
-                          const esCentro = i === 2 && j === 2;
-                          const estaSorteado = esCentro || numerosSorteados.includes(numero);
-                          return (
-                            <div
-                              key={`${i}-${j}`}
-                              className={`rounded flex items-center justify-center font-bold text-xs lg:text-sm ${
-                                esCentro
-                                  ? 'bg-[#ffd402] text-[#1d1d1b]'
-                                  : estaSorteado
-                                    ? 'bg-[#68b258] text-white'
-                                    : 'bg-white text-[#1d1d1b]'
-                              }`}
-                            >
-                              {esCentro ? '★' : numero}
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Serial */}
-                <p className="text-[#f8df7e] text-xs text-center mt-1 shrink-0 truncate">Serial: {cartonBuscado.carton.serial}</p>
+              <div className="flex-1 grid grid-cols-5 grid-rows-5 gap-1">
+                {cartonBuscado.carton.matriz.map((fila, i) =>
+                  fila.map((n, j) => {
+                    const esCentro = i === 2 && j === 2;
+                    const marcado = esCentro || numerosSorteados.includes(n);
+                    return (
+                      <div
+                        key={`${i}-${j}`}
+                        className={`flex items-center justify-center rounded font-bold text-base md:text-lg border ${esCentro ? 'bg-[#ffd402] border-[#ffd402]' : marcado ? 'bg-[#ef4444] text-white border-[#ef4444]' : 'bg-white border-gray-200'}`}
+                      >
+                        {esCentro ? '★' : n}
+                      </div>
+                    );
+                  })
+                )}
               </div>
+            </div>
+            <button
+              onClick={cerrarBuscador}
+              className="mt-2 w-full py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold text-sm"
+            >
+              Cerrar
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ===== FOOTER (30% Height) ===== */}
+      <div className="h-[30%] w-full px-6 lg:px-12 pb-6 pt-2 flex items-stretch justify-between gap-0">
+        {/* COL 1: Figura */}
+        <div className="flex-1 flex justify-center items-center py-2 border-r-2 border-white/10 pr-8">
+          {modalidadesActivas.map((mod) => (
+            <PatronGigante key={mod.id} modalidad={mod} />
+          ))}
+        </div>
+
+        {/* COL 2: Centro (Logo/Soporte/Menu) */}
+        <div className="flex-1 flex flex-col items-center justify-center px-8 border-r-2 border-white/10 relative">
+          <div className="relative h-28 w-80 lg:h-36 lg:w-96 mb-1">
+            <Image src="/logo.png" alt="Logo Bingo" fill className="object-contain" priority />
+          </div>
+          <div className="flex flex-col items-center mb-2">
+            <p className="text-[#ffd402] text-sm font-bold uppercase tracking-[0.4em] mb-[-5px]">
+              Soporte
+            </p>
+            <p className="text-white font-black text-5xl lg:text-6xl tracking-wider">
+              {numeroSoporte || '0000'}
+            </p>
+          </div>
+
+          <div className="relative">
+            <button
+              onClick={() => setMenuAbierto(!menuAbierto)}
+              className="flex items-center gap-2 px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white/80 rounded-full transition-colors border border-white/10"
+            >
+              <Menu className="w-4 h-4" />
+              <span className="text-xs font-bold uppercase tracking-wider">Menú</span>
+            </button>
+            {menuAbierto && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setMenuAbierto(false)} />
+                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 bg-white rounded-xl shadow-2xl border border-gray-100 min-w-[220px] py-2 animate-in slide-in-from-bottom-2 text-gray-800">
+                  <button
+                    onClick={() => {
+                      setMostrarResultados(true);
+                      setMenuAbierto(false);
+                    }}
+                    className="w-full text-left px-4 py-3 hover:bg-purple-50 flex items-center gap-3 text-purple-700 font-bold border-b border-gray-100"
+                  >
+                    <Trophy className="w-5 h-5" /> Ver Resultados
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMostrarBuscador(true);
+                      setMenuAbierto(false);
+                    }}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3"
+                  >
+                    <Search className="w-5 h-5 text-blue-500" /> Buscar cartón
+                  </button>
+                  {rondaFinalizada && rondaActual < totalRondas && (
+                    <button
+                      onClick={() => {
+                        handleSiguienteRonda();
+                        setMenuAbierto(false);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 text-purple-600 font-bold"
+                    >
+                      <SkipForward className="w-5 h-5" /> Siguiente Ronda
+                    </button>
+                  )}
+                  {ganadores.length > 0 && !rondaFinalizada && (
+                    <button
+                      onClick={() => {
+                        onFinalizarRonda();
+                        setMenuAbierto(false);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 text-green-600 font-bold"
+                    >
+                      <Flag className="w-5 h-5" /> Finalizar Ronda
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      onReiniciar();
+                      setMenuAbierto(false);
+                    }}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3"
+                  >
+                    <RotateCcw className="w-5 h-5 text-orange-500" /> Reiniciar
+                  </button>
+                  <div className="h-px bg-gray-100 my-1" />
+                  <button
+                    onClick={() => {
+                      onSalir();
+                      setMenuAbierto(false);
+                    }}
+                    className="w-full text-left px-4 py-3 hover:bg-red-50 text-red-600 flex items-center gap-3"
+                  >
+                    <LogOut className="w-5 h-5" /> Salir
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </div>
 
-        {/* ===== FILA INFERIOR: LOGO + FIGURAS + SOPORTE + ÚLTIMO NÚMERO ===== */}
-        <div className="col-span-5 row-span-2 row-start-4 flex gap-4 min-h-0 overflow-hidden px-2 items-center">
-          
-          {/* LOGO DEL BINGO - Responsivo */}
-          <div className="shrink-0 flex items-center justify-center h-full py-2">
-            <Image
-              src="/logo.png"
-              alt="Bingo 75"
-              width={180}
-              height={180}
-              className="object-contain h-full w-auto max-h-[150px] md:max-h-[180px] lg:max-h-[200px]"
-              priority
-            />
-          </div>
+        {/* COL 3: Stats + Premio (GIGANTE) */}
+        <div className="flex-1 flex items-center justify-end gap-10 pl-8">
+          <div className="flex flex-col items-end gap-3">
+            <div className="text-right">
+              <p className="text-white/70 text-sm font-bold uppercase tracking-widest mb-1">
+                Cantadas
+              </p>
+              <p className="text-white font-black text-7xl lg:text-8xl leading-none flex items-baseline justify-end">
+                {totalSorteados}
+                <span className="text-4xl text-white/40 ml-1">/75</span>
+              </p>
+            </div>
 
-          {/* FIGURAS EN JUEGO - Responsivo según cantidad */}
-          <div className={`flex items-center gap-4 py-2 ${
-            modalidadesActivas.length <= 2 
-              ? 'flex-1 justify-center' 
-              : 'flex-1 overflow-x-auto'
-          }`}>
-            {modalidadesActivas.map((mod) => (
-              <PatronModalidadGrande 
-                key={mod.id} 
-                modalidad={mod} 
-                totalFiguras={modalidadesActivas.length}
-              />
-            ))}
-          </div>
-
-          {/* NÚMERO DE SOPORTE - Grande */}
-          <div className="bg-[transparent] rounded-2xl px-6 py-2 flex flex-col items-center justify-center min-w-[150px] md:min-w-[180px]">
-            <p className="text-[#fff]/70 text-lg md:text-xl font-bold uppercase">Nº Soporte</p>
-            <p className="text-[#fff] text-5xl md:text-5xl font-black">{numeroSoporte || '---'}</p>
-          </div>
-
-          {/* ÚLTIMO NÚMERO CLICKEADO - MÁS GRANDE */}
-          <div className="bg-[transparent] rounded-2xl px-6 py-2 flex flex-col items-center justify-center min-w-[150px] md:min-w-[200px]">
-            <p className="text-white/70 text-lg md:text-2xl font-bold uppercase mb-1">Último</p>
-            {ultimoNumero ? (
-              <div className="w-20 h-20 md:w-28 md:h-28 bg-[#fff] rounded-full flex items-center justify-center border-4 border-white/50 shadow-lg">
-                <span className="text-4xl md:text-6xl font-black text-[#1d1d1b]">{ultimoNumero}</span>
+            {/* PREMIO GIGANTE */}
+            {premioRonda > 0 && (
+              <div className="bg-[#1d1d1b] border-4 border-[#ffd402] px-6 py-2 rounded-2xl shadow-[0_0_20px_rgba(255,212,2,0.4)] animate-in fade-in flex flex-col items-end">
+                <p className="text-[#ffd402] text-sm font-black uppercase tracking-[0.2em] mb-[-5px]">
+                  Premio Ronda
+                </p>
+                <p className="text-white font-black text-5xl xl:text-6xl tracking-tighter shadow-black drop-shadow-md">
+                  ${premioRonda.toLocaleString()}
+                </p>
               </div>
-            ) : (
-              <p className="text-[#ffd402] text-5xl md:text-7xl font-black">--</p>
             )}
           </div>
 
-          {/* CONTADOR - MÁS GRANDE */}
-          <div className="bg-[transparent] rounded-2xl px-6 py-2 flex flex-col items-center justify-center min-w-[120px] md:min-w-[160px]">
-            <p className="text-white/70 text-lg md:text-2xl font-bold uppercase mb-1">Bolas</p>
-            <p className="text-5xl md:text-7xl font-black text-white">{totalSorteados}<span className="text-white/50 text-3xl md:text-4xl">/75</span></p>
+          <div className="h-[90%] aspect-[5/4] bg-[#1d1d1b] border-4 border-[#ffd402] rounded-xl flex flex-col shadow-2xl relative overflow-hidden">
+            <div className="bg-[#ffd402] h-10 w-full flex items-center justify-center shrink-0">
+              <span className="text-[#1d1d1b] font-black text-sm lg:text-base uppercase tracking-[0.3em]">
+                Última
+              </span>
+            </div>
+            <div className="flex-1 flex items-center justify-center bg-[#1d1d1b]">
+              <span
+                className={`font-black text-8xl lg:text-[10rem] text-white transition-transform duration-200 ${ultimoNumero ? 'scale-100' : 'scale-0'}`}
+              >
+                {ultimoNumero || '-'}
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Modal de Cartón Ganador */}
       <CartonGanadorModal
-        ganador={ganadorSeleccionado}
+        data={modalData}
         numerosSorteados={numerosSorteados}
         modalidadesActivas={modalidadesActivas}
-        onClose={() => setGanadorSeleccionado(null)}
+        onClose={() => setModalData(null)}
       />
 
-      {/* Modal de Resultados de Ronda */}
       <ResultadosRondaModal
         isOpen={mostrarResultados}
         ganadores={ganadores}
         cartonesConMenosAciertos={cartonesConMenosAciertos}
+        historialRondas={historialRondas}
         pavosoActivo={pavosoActivo}
         rondaActual={rondaActual}
         totalRondas={totalRondas}
         numerosSorteados={numerosSorteados}
         modalidadesActivas={modalidadesActivas}
+        premioRonda={premioRonda}
         onClose={() => setMostrarResultados(false)}
         onSiguienteRonda={handleSiguienteRonda}
       />

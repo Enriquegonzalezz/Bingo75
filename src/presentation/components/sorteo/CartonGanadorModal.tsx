@@ -1,184 +1,203 @@
 'use client';
 
-import { X, Trophy } from 'lucide-react';
-import { Ganador } from '@/presentation/hooks/useSorteoV2';
+import { X, Trophy, Frown } from 'lucide-react';
 import { Modalidad } from '@/shared/constants/modalidades';
 
+// Tipo unificado para mostrar cualquier cartón
+export type DatosCartonModal = {
+  tipo: 'ganador' | 'pavoso' | 'menos_aciertos';
+  numero_carton: number;
+  serial: string;
+  matriz: number[][];
+  aciertos?: number; // Para menos aciertos
+  patronNombre?: string;
+  timestamp?: Date;
+  // Para pavosos/menos aciertos, necesitamos saber qué números tenían marcados vs el patrón
+  numerosMarcados?: number[];
+};
+
 interface CartonGanadorModalProps {
-  ganador: Ganador | null;
-  numerosSorteados: number[];
+  data: DatosCartonModal | null;
+  numerosSorteados: number[]; // Todos los números sorteados hasta el momento
   modalidadesActivas: Modalidad[];
   onClose: () => void;
 }
 
-export function CartonGanadorModal({ ganador, numerosSorteados, modalidadesActivas, onClose }: CartonGanadorModalProps) {
-  if (!ganador) return null;
+export function CartonGanadorModal({
+  data,
+  numerosSorteados,
+  modalidadesActivas,
+  onClose,
+}: CartonGanadorModalProps) {
+  if (!data) return null;
 
-  // Para pavosos: usar los números congelados al momento de ganar
-  // Para ganadores normales: usar los números actuales del sorteo
-  const numerosParaMostrar = ganador.tipo === 'pavoso' && ganador.numerosSorteadosAlGanar
-    ? ganador.numerosSorteadosAlGanar
-    : numerosSorteados;
-  const numerosSet = new Set(numerosParaMostrar);
+  const esGanador = data.tipo === 'ganador';
+  const esPavoso = data.tipo === 'pavoso';
 
-  // Para pavoso: mostrar la primera figura que se está jugando
-  // Para ganadores normales: usar el patrón guardado en el ganador
-  const patron = ganador.tipo === 'pavoso' && modalidadesActivas.length > 0
-    ? modalidadesActivas[0].patron
-    : ganador.patronMatriz;
-  
-  // Nombre del patrón para pavoso
-  const nombrePatronPavoso = modalidadesActivas.length > 0 ? modalidadesActivas[0].nombre : 'Figura';
+  // Determinar el patrón a mostrar (si hay modalidades activas, usamos la primera para comparar)
+  const patron = modalidadesActivas.length > 0 ? modalidadesActivas[0].patron : null;
+
+  // Set de números sorteados para búsqueda rápida
+  const numerosSet = new Set(numerosSorteados);
+
+  // Título y Color según tipo
+  let titulo = 'DETALLE';
+  let icono = <Trophy className="w-16 h-16" />;
+  let headerColor = 'bg-[#ffd402]';
+  let textColor = 'text-[#1d1d1b]';
+
+  if (esGanador) {
+    titulo = '¡BINGO!';
+  } else if (esPavoso) {
+    titulo = 'PAVOSO';
+    icono = <span className="text-6xl">😅</span>;
+    headerColor = 'bg-[#baa115]'; // Dorado oscuro
+  } else {
+    titulo = 'MENOS ACIERTOS';
+    icono = <Frown className="w-16 h-16 text-white" />;
+    headerColor = 'bg-red-600';
+    textColor = 'text-white';
+  }
 
   return (
-    <div className="fixed inset-0 bg-[#124723] z-100 flex flex-col" style={{ height: '100dvh', maxHeight: '100dvh' }}>
-      {/* Header - GANADOR a la izquierda, Número en el centro */}
-      <div className="bg-linear-to-r from-[#ffd402] to-[#baa115] py-4 md:py-6 px-6 md:px-12 shrink-0 relative">
-        <div className="flex items-center justify-center gap-6 md:gap-12 max-w-5xl mx-auto">
-          {/* GANADOR/PAVOSO a la izquierda */}
-          <div className="flex items-center gap-3">
-            {ganador.tipo === 'pavoso' ? (
-              <span className="text-5xl md:text-7xl lg:text-8xl">😅</span>
-            ) : (
-              <Trophy className="w-14 h-14 md:w-20 md:h-20 lg:w-24 lg:h-24 text-[#124723]" />
-            )}
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-[#124723]">
-              {ganador.tipo === 'pavoso' ? 'PAVOSO' : 'GANADOR'}
-            </h2>
-          </div>
-          {/* Número del cartón GIGANTE en el centro */}
-          <p className="text-[#124723] font-black text-6xl md:text-8xl lg:text-9xl leading-none">
-            #{ganador.numero_carton}
-          </p>
-        </div>
-        {/* Botón cerrar */}
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex flex-col items-center justify-center p-4 animate-in fade-in duration-200">
+      {/* Tarjeta Principal */}
+      <div className="bg-[#1d1d1b] border-4 border-[#ffd402] rounded-[2.5rem] w-full max-w-6xl max-h-[90vh] flex flex-col relative shadow-2xl">
+        {/* BOTÓN CERRAR (FLOTANTE FUERA DE LA TARJETA) */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-12 h-12 bg-[#124723] rounded-full flex items-center justify-center hover:bg-[#1d1d1b] transition-colors"
+          className="absolute -top-5 -right-5 md:-top-8 md:-right-8 bg-red-600 hover:bg-red-700 text-white rounded-full p-3 shadow-[0_0_20px_rgba(0,0,0,0.5)] transition-transform hover:scale-110 border-4 border-[#1d1d1b] z-50 group"
         >
-          <X className="w-8 h-8 text-[#ffd402]" />
+          <X className="w-8 h-8 group-hover:rotate-90 transition-transform" />
         </button>
-      </div>
 
-      {/* Contenido - Ocupa todo el espacio disponible */}
-      <div className="flex-1 p-2 md:p-4 overflow-hidden min-h-0">
-        <div className="h-full flex flex-col md:flex-row gap-3 md:gap-4 max-w-7xl mx-auto">
-          
-          {/* Cartón del ganador */}
-          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-            <h3 className="text-[#ffd402] font-bold text-base md:text-xl mb-1 text-center shrink-0">CARTÓN</h3>
-            <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden">
-              <div className="bg-[#f8df7e] rounded-xl md:rounded-2xl p-2 md:p-4 w-fit h-fit max-w-full max-h-full">
-                {/* Header BINGO */}
-                <div className="grid grid-cols-5 gap-1 md:gap-2 mb-1 md:mb-2">
-                  {['B', 'I', 'N', 'G', 'O'].map((letra, i) => {
-                    const colores = ['#e91e63', '#9c27b0', '#ffd402', '#4caf50', '#ff9800'];
-                    return (
-                      <div
-                        key={letra}
-                        className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-lg md:rounded-xl flex items-center justify-center text-white font-black text-sm md:text-xl lg:text-2xl"
-                        style={{ backgroundColor: colores[i] }}
-                      >
-                        {letra}
-                      </div>
-                    );
-                  })}
-                </div>
-                
-                {/* Números del cartón */}
-                <div className="grid grid-cols-5 gap-1 md:gap-2">
-                  {ganador.carton.matriz.map((fila, i) =>
-                    fila.map((numero, j) => {
-                      const esCentro = i === 2 && j === 2;
-                      const estaSorteado = esCentro || numerosSet.has(numero);
-                      const esParteDelPatron = patron[i]?.[j] || false;
-                      
-                      return (
-                        <div
-                          key={`${i}-${j}`}
-                          className={`
-                            w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-lg md:rounded-xl flex items-center justify-center font-bold text-sm md:text-lg lg:text-xl
-                            transition-all duration-300
-                            ${esCentro 
-                              ? 'bg-[#ffd402] text-[#1d1d1b]' 
-                              : estaSorteado && esParteDelPatron
-                                ? 'bg-[#27ae60] text-white ring-2 md:ring-4 ring-[#ff0000] scale-105 shadow-lg'
-                                : estaSorteado
-                                  ? 'bg-[#27ae60] text-white'
-                                  : 'bg-white text-[#1d1d1b]'
-                            }
-                          `}
-                        >
-                          {esCentro ? '★' : numero}
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
+        {/* HEADER */}
+        <div
+          className={`${headerColor} px-8 py-4 flex items-center justify-between shrink-0 rounded-t-[2.2rem]`}
+        >
+          <div className={`flex items-center gap-4 ${textColor}`}>
+            {icono}
+            <div>
+              <h2 className="font-black text-3xl md:text-5xl leading-none tracking-tighter">
+                {titulo}
+              </h2>
+              <p className="font-bold text-sm md:text-lg opacity-80 uppercase tracking-widest">
+                {data.patronNombre || (modalidadesActivas[0]?.nombre ?? 'Figura')}
+              </p>
             </div>
-            <p className="text-center text-[#f8df7e] text-sm md:text-base mt-2 shrink-0">
-              Serial: {ganador.carton.serial}
-            </p>
           </div>
 
-          {/* Patrón ganador */}
-          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-            <h3 className="text-[#ffd402] font-bold text-base md:text-xl mb-1 text-center shrink-0">
-              {ganador.tipo === 'pavoso' ? `FIGURA: ${nombrePatronPavoso}` : `PATRÓN: ${ganador.patron}`}
-            </h3>
-            <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden">
-              <div className="bg-[#1d1d1b] rounded-xl md:rounded-2xl p-3 md:p-6 flex flex-col items-center justify-center max-w-[min(100%,40vh)]">
-                {/* Header BINGO */}
-                <div className="flex gap-1 md:gap-2 mb-2 md:mb-3">
-                  {['B', 'I', 'N', 'G', 'O'].map((letra) => (
-                    <div
-                      key={letra}
-                      className="w-8 h-6 md:w-12 md:h-8 rounded flex items-center justify-center text-[#ffd402] font-bold text-sm md:text-lg"
-                    >
-                      {letra}
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Patrón visual - Responsivo */}
-                <div className="grid grid-cols-5 gap-1 md:gap-2">
-                  {patron.map((fila: boolean[], i: number) =>
-                    fila.map((activo: boolean, j: number) => {
-                      const esCentro = i === 2 && j === 2;
-                      return (
-                        <div
-                          key={`patron-${i}-${j}`}
-                          className={`
-                            w-8 h-8 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-lg md:rounded-xl flex items-center justify-center
-                            transition-all duration-300
-                            ${esCentro
-                              ? 'bg-white'
-                              : activo
-                                ? 'bg-[#ffd402]'
-                                : 'bg-[#124723] border border-[#68b258] md:border-2'
-                            }
-                          `}
-                        >
-                          {esCentro && <span className="text-[#1d1d1b] font-bold text-lg md:text-xl">★</span>}
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
+          <div className={`text-right ${textColor}`}>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] mb-1 opacity-70">
+              Cartón Número
+            </p>
+            <p className="font-black text-5xl md:text-7xl leading-none">#{data.numero_carton}</p>
+          </div>
+        </div>
 
-                {/* Info adicional */}
-                <div className="mt-3 md:mt-4 text-center">
-                  <p className="text-[#68b258] text-sm md:text-base">
-                    {ganador.tipo === 'pavoso' 
-                      ? '0 coincidencias en 16 números'
-                      : `Patrón completado`
+        {/* BODY */}
+        <div className="flex-1 flex flex-col md:flex-row p-6 lg:p-10 gap-8 min-h-0 overflow-y-auto">
+          {/* IZQUIERDA: EL CARTÓN */}
+          <div className="flex-1 flex flex-col items-center">
+            <div className="bg-[#fff] p-3 md:p-4 rounded-3xl shadow-xl w-full max-w-sm aspect-[4/5] flex flex-col">
+              {/* Header BINGO */}
+              <div className="grid grid-cols-5 gap-1 md:gap-2 mb-2">
+                {['B', 'I', 'N', 'G', 'O'].map((l, i) => (
+                  <div
+                    key={i}
+                    className={`h-8 md:h-10 rounded-lg flex items-center justify-center text-white font-black text-xl`}
+                    style={{
+                      backgroundColor: ['#e91e63', '#9c27b0', '#ffd402', '#4caf50', '#ff9800'][i],
+                    }}
+                  >
+                    {l}
+                  </div>
+                ))}
+              </div>
+
+              {/* Matriz Números */}
+              <div className="flex-1 grid grid-cols-5 grid-rows-5 gap-1 md:gap-2">
+                {data.matriz.map((fila, i) =>
+                  fila.map((n, j) => {
+                    const esCentro = i === 2 && j === 2;
+                    // Lógica para marcar:
+                    // 1. Si es centro -> Amarillo
+                    // 2. Si salió el número -> Marcado (Verde si es ganador/parte figura, Rojo si es solo acierto)
+                    const sorteado = esCentro || numerosSet.has(n);
+
+                    // Verificamos si este número es parte de la figura que se está jugando
+                    const esParteDeLaFigura = patron ? patron[i][j] : false;
+
+                    let bgClass = 'bg-gray-100 text-gray-800'; // Default
+
+                    if (esCentro) {
+                      bgClass = 'bg-[#ffd402] text-black shadow-lg scale-105 z-10';
+                    } else if (sorteado) {
+                      if (esParteDeLaFigura) {
+                        // Salió y es parte de la figura (Bueno)
+                        bgClass = 'bg-[#4caf50] text-white font-black';
+                      } else {
+                        // Salió pero no es parte de la figura (Neutro)
+                        bgClass = 'bg-[#81c784] text-white';
+                      }
+                    } else if (esParteDeLaFigura) {
+                      // No ha salido pero ES parte de la figura (Lo que falta)
+                      bgClass = 'bg-white border-2 border-red-500 text-red-500 relative';
                     }
-                  </p>
-                  <p className="text-[#f8df7e] text-xs md:text-sm mt-1">
-                    {ganador.timestamp.toLocaleTimeString()}
-                  </p>
+
+                    return (
+                      <div
+                        key={`${i}-${j}`}
+                        className={`rounded-lg flex items-center justify-center font-bold text-lg md:text-xl relative ${bgClass}`}
+                      >
+                        {esCentro ? '★' : n}
+                        {/* Indicador de "Falta este" para menos aciertos */}
+                        {!sorteado && esParteDeLaFigura && !esGanador && (
+                          <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+            <p className="mt-3 text-gray-400 font-mono text-sm">Serial: {data.serial}</p>
+          </div>
+
+          {/* DERECHA: ESTADÍSTICAS */}
+          <div className="flex-1 flex flex-col justify-center space-y-4">
+            {/* Caja de Info */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center">
+              <p className="text-[#ffd402] font-bold uppercase tracking-widest mb-2">
+                Estado del Cartón
+              </p>
+
+              {esGanador ? (
+                <p className="text-4xl font-black text-white">¡GANADOR!</p>
+              ) : (
+                <div className="flex flex-col items-center">
+                  <span className="text-6xl font-black text-white">{data.aciertos ?? 0}</span>
+                  <span className="text-gray-400 uppercase font-bold text-sm">
+                    Aciertos Totales
+                  </span>
                 </div>
+              )}
+            </div>
+
+            {/* Comparativa Visual Pequeña */}
+            <div className="bg-[#0a2e16] rounded-2xl p-4 border border-[#68b258] flex flex-col items-center">
+              <p className="text-white text-xs uppercase mb-2">
+                Figura Jugada: {modalidadesActivas[0]?.nombre}
+              </p>
+              <div className="grid grid-cols-5 gap-2 w-32 h-32">
+                {patron?.map((fila, i) =>
+                  fila.map((activo, j) => (
+                    <div
+                      key={`${i}-${j}`}
+                      className={`rounded-sm ${activo || (i === 2 && j === 2) ? 'bg-[#ffd402]' : 'bg-white/10'}`}
+                    />
+                  ))
+                )}
               </div>
             </div>
           </div>

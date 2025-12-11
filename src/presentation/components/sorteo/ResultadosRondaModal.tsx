@@ -1,20 +1,29 @@
 'use client';
 
-import { useState } from 'react';
-import { X, SkipForward, Trophy } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { X, SkipForward, Trophy, Frown } from 'lucide-react';
 import { Ganador, CartonConAciertos } from '@/presentation/hooks/useSorteoV2';
-import { CartonGanadorModal } from './CartonGanadorModal';
+import { CartonGanadorModal, DatosCartonModal } from './CartonGanadorModal';
 import { Modalidad } from '@/shared/constants/modalidades';
+import { cn } from '@/shared/utils/cn';
+
+type HistorialData = {
+  ganadores: Ganador[];
+  pavosos: Ganador[];
+  menosAciertos: CartonConAciertos[];
+};
 
 interface ResultadosRondaModalProps {
   isOpen: boolean;
   ganadores: Ganador[];
   cartonesConMenosAciertos: CartonConAciertos[];
+  historialRondas?: Record<number, HistorialData>;
   pavosoActivo: boolean;
   rondaActual: number;
   totalRondas: number;
   numerosSorteados: number[];
   modalidadesActivas: Modalidad[];
+  premioRonda?: number;
   onClose: () => void;
   onSiguienteRonda: () => void;
 }
@@ -23,73 +32,159 @@ export function ResultadosRondaModal({
   isOpen,
   ganadores,
   cartonesConMenosAciertos,
+  historialRondas = {},
   pavosoActivo,
   rondaActual,
   totalRondas,
   numerosSorteados,
   modalidadesActivas,
+  premioRonda = 0,
   onClose,
   onSiguienteRonda,
 }: ResultadosRondaModalProps) {
-  const [ganadorSeleccionado, setGanadorSeleccionado] = useState<Ganador | null>(null);
+  const [modalData, setModalData] = useState<DatosCartonModal | null>(null);
+  const [rondaFiltro, setRondaFiltro] = useState<number>(rondaActual);
+
+  // Lógica de datos (Tiempo real vs Historial)
+  const datosMostrados = useMemo(() => {
+    if (rondaFiltro === rondaActual) {
+      return {
+        ganadores: ganadores.filter((g) => g.tipo !== 'pavoso'),
+        pavosos: ganadores.filter((g) => g.tipo === 'pavoso'),
+        menosAciertos: cartonesConMenosAciertos, // Aseguramos que pase la data en vivo
+      };
+    }
+    const historico = historialRondas[rondaFiltro];
+    return {
+      ganadores: historico?.ganadores || [],
+      pavosos: historico?.pavosos || [],
+      menosAciertos: historico?.menosAciertos || [],
+    };
+  }, [rondaFiltro, rondaActual, ganadores, cartonesConMenosAciertos, historialRondas]);
+
+  const hayMasRondas = rondaActual < totalRondas;
 
   if (!isOpen) return null;
 
-  const ganadoresReales = ganadores.filter((g) => g.tipo !== 'pavoso');
-  const pavosos = ganadores.filter((g) => g.tipo === 'pavoso');
-  const hayMasRondas = rondaActual < totalRondas;
+  // --- CORRECCIÓN BUG MODAL ROJO ---
+  const abrirGanador = (g: Ganador) => {
+    setModalData({
+      // Forzamos el tipo 'ganador' si no es explícitamente pavoso
+      // Esto arregla que se abra como "Menos Aciertos"
+      tipo: g.tipo === 'pavoso' ? 'pavoso' : 'ganador',
+      numero_carton: g.numero_carton,
+      serial: g.carton.serial,
+      matriz: g.carton.matriz,
+      patronNombre: g.patron,
+      timestamp: g.timestamp,
+    });
+  };
+
+  const abrirMenosAciertos = (c: CartonConAciertos) => {
+    setModalData({
+      tipo: 'menos_aciertos',
+      numero_carton: c.numero_carton,
+      serial: c.carton.serial,
+      matriz: c.carton.matriz,
+      aciertos: c.aciertos,
+    });
+  };
 
   return (
     <>
-      {/* Pantalla completa con fondo verde */}
-      <div className="fixed inset-0 bg-[#124723] z-60 flex flex-col" style={{ height: '100dvh' }}>
-        {/* Header - Fondo amarillo con buen contraste */}
-        <div className="bg-[#ffd402] py-6 px-6 md:px-12 shrink-0 relative">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            <h2 className="text-[#1d1d1b] text-4xl md:text-5xl lg:text-6xl font-black">
-              🏆 RESULTADOS RONDA {rondaActual}
-            </h2>
-            <div className="flex items-center gap-4">
-              {hayMasRondas && (
-                <button
-                  onClick={onSiguienteRonda}
-                  className="px-6 py-3 bg-[#1d1d1b] text-white font-bold text-xl rounded-xl flex items-center gap-2 hover:bg-[#333] transition-colors"
-                >
-                  <SkipForward className="w-6 h-6" />
-                  Siguiente Ronda
-                </button>
+      <div className="fixed inset-0 bg-[#124723] z-[60] flex flex-col animate-in fade-in duration-300">
+        {/* HEADER */}
+        <div className="bg-[#ffd402] py-4 px-6 md:px-12 shrink-0 shadow-xl z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Trophy className="w-10 h-10 md:w-12 md:h-12 text-[#1d1d1b]" />
+            <div>
+              <h2 className="text-[#1d1d1b] text-3xl md:text-5xl font-black uppercase tracking-tighter leading-none">
+                Resultados
+              </h2>
+              {premioRonda > 0 && rondaFiltro === rondaActual && (
+                <p className="text-[#1d1d1b] font-bold text-lg">
+                  Premio: ${premioRonda.toLocaleString()}
+                </p>
               )}
-              <button
-                onClick={onClose}
-                className="p-3 bg-[#1d1d1b] text-white rounded-xl hover:bg-red-600 transition-colors"
-              >
-                <X className="w-8 h-8" />
-              </button>
             </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {hayMasRondas && rondaFiltro === rondaActual && (
+              <button
+                onClick={onSiguienteRonda}
+                className="px-6 py-3 bg-[#1d1d1b] text-white font-bold text-lg rounded-xl flex items-center gap-2 hover:bg-[#333] transition-colors shadow-lg"
+              >
+                Siguiente <SkipForward className="w-5 h-5" />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-3 bg-white/20 hover:bg-red-600 text-[#1d1d1b] hover:text-white rounded-xl transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
           </div>
         </div>
 
-        {/* Contenido - Fondo verde, listas centradas */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8 flex items-center justify-center">
-          <div className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 place-items-center">
+        {/* BARRA DE FILTRO */}
+        <div className="bg-[#1d1d1b] p-2 flex justify-center border-b border-[#ffd402]/30">
+          <div className="flex gap-2 overflow-x-auto max-w-4xl custom-scrollbar pb-1">
+            {Array.from({ length: totalRondas }).map((_, i) => {
+              const r = i + 1;
+              const disabled = r > rondaActual;
+              return (
+                <button
+                  key={r}
+                  onClick={() => !disabled && setRondaFiltro(r)}
+                  disabled={disabled}
+                  className={cn(
+                    'px-6 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap',
+                    rondaFiltro === r
+                      ? 'bg-[#ffd402] text-[#1d1d1b]'
+                      : disabled
+                        ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+                        : 'bg-[#124723] text-white hover:bg-[#1a5c2f]'
+                  )}
+                >
+                  RONDA {r}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* CONTENIDO */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-b from-[#124723] to-[#0a2e16]">
+          <div className="max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
             {/* GANADORES */}
-            <div className="bg-[#1d1d1b] rounded-2xl p-6 shadow-xl">
-              <div className="flex items-center justify-center gap-3 mb-6">
-                <Trophy className="w-10 h-10 text-[#ffd402]" />
-                <h3 className="text-[#ffd402] font-black text-2xl md:text-3xl">GANADORES ({ganadoresReales.length})</h3>
+            <div className="space-y-4">
+              <div className="bg-[#1d1d1b] p-4 rounded-xl border-l-4 border-[#ffd402] shadow-lg flex justify-between items-center sticky top-0 z-10">
+                <h3 className="text-white font-black text-xl uppercase">
+                  🏆 Ganadores ({datosMostrados.ganadores.length})
+                </h3>
               </div>
-              <div className="space-y-4 max-h-[50vh] overflow-y-auto">
-                {ganadoresReales.length === 0 ? (
-                  <p className="text-white/70 text-center py-8 text-lg">Sin ganadores en esta ronda</p>
+              <div className="space-y-3">
+                {datosMostrados.ganadores.length === 0 ? (
+                  <div className="bg-black/20 rounded-xl p-8 text-center text-white/50 italic">
+                    Sin ganadores en esta ronda
+                  </div>
                 ) : (
-                  ganadoresReales.map((g, i) => (
+                  datosMostrados.ganadores.map((g, i) => (
                     <button
-                      key={`${g.numero_carton}-${i}`}
-                      onClick={() => setGanadorSeleccionado(g)}
-                      className="w-full bg-[#ffd402] rounded-xl p-4 text-left hover:bg-[#e6c000] transition-all"
+                      key={i}
+                      onClick={() => abrirGanador(g)}
+                      className="w-full bg-[#ffd402] hover:bg-[#ffe04d] text-[#1d1d1b] p-4 rounded-xl shadow-md transition-transform hover:scale-[1.02] text-left group"
                     >
-                      <p className="text-[#1d1d1b] font-black text-xl">🏆 Cartón #{g.numero_carton}</p>
-                      <p className="text-[#1d1d1b]/70 text-base font-medium">{g.patron}</p>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-black text-2xl group-hover:underline">
+                            #{g.numero_carton}
+                          </p>
+                          <p className="text-sm font-bold opacity-80 uppercase">{g.patron}</p>
+                        </div>
+                        <Trophy className="w-6 h-6 opacity-50 group-hover:opacity-100" />
+                      </div>
                     </button>
                   ))
                 )}
@@ -97,67 +192,87 @@ export function ResultadosRondaModal({
             </div>
 
             {/* PAVOSOS */}
-            {pavosoActivo && (
-              <div className="bg-[#1d1d1b] rounded-2xl p-6 shadow-xl">
-                <h3 className="text-[#ffd402] font-black text-2xl md:text-3xl mb-6 text-center">
-                  PAVOSOS ({pavosos.length})
+            <div className="space-y-4">
+              <div className="bg-[#1d1d1b] p-4 rounded-xl border-l-4 border-orange-500 shadow-lg flex justify-between items-center sticky top-0 z-10">
+                <h3 className="text-white font-black text-xl uppercase">
+                  😅 Pavosos ({datosMostrados.pavosos.length})
                 </h3>
-                <div className="space-y-4 max-h-[50vh] overflow-y-auto">
-                  {pavosos.length === 0 ? (
-                    <p className="text-white/70 text-center py-8 text-lg">Sin pavosos en esta ronda</p>
+              </div>
+              {pavosoActivo ? (
+                <div className="space-y-3">
+                  {datosMostrados.pavosos.length === 0 ? (
+                    <div className="bg-black/20 rounded-xl p-8 text-center text-white/50 italic">
+                      Nadie tiene mala suerte hoy
+                    </div>
                   ) : (
-                    pavosos.map((g, i) => (
+                    datosMostrados.pavosos.map((g, i) => (
                       <button
-                        key={`${g.numero_carton}-${i}`}
-                        onClick={() => setGanadorSeleccionado(g)}
-                        className="w-full bg-[#ffd402] rounded-xl p-4 text-left hover:bg-[#e6c000] transition-all"
+                        key={i}
+                        onClick={() => abrirGanador(g)}
+                        className="w-full bg-[#2a2a28] hover:bg-[#333] border border-orange-500/30 p-4 rounded-xl shadow-md transition-transform hover:scale-[1.02] text-left group"
                       >
-                        <p className="text-[#1d1d1b] font-black text-xl">😅 Cartón #{g.numero_carton}</p>
-                        <p className="text-[#1d1d1b]/70 text-base font-medium">0 aciertos</p>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-black text-2xl text-orange-500">
+                              #{g.numero_carton}
+                            </p>
+                            <p className="text-sm font-bold text-white/60">0 Aciertos</p>
+                          </div>
+                          <span className="text-2xl group-hover:scale-125 transition-transform">
+                            😅
+                          </span>
+                        </div>
                       </button>
                     ))
                   )}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="p-4 bg-white/5 rounded-xl text-center text-white/40 italic">
+                  Modalidad desactivada
+                </div>
+              )}
+            </div>
 
             {/* MENOS ACIERTOS */}
-            {cartonesConMenosAciertos.length > 0 && (
-              <div className="bg-[#1d1d1b] rounded-2xl p-6 shadow-xl">
-                <div className="flex items-center justify-center gap-3 mb-6">
-                 
-                  <h3 className="text-white font-black text-2xl md:text-3xl">MENOS ACIERTOS</h3>
-                </div>
-                <div className="space-y-4 max-h-[50vh] overflow-y-auto">
-                  {cartonesConMenosAciertos.map((item) => (
-                    <div
-                      key={item.numero_carton}
-                      className="bg-white/10 rounded-xl p-4"
-                    >
-                      <p className="text-white font-black text-xl">❌ Cartón #{item.numero_carton}</p>
-                      <p className="text-white/70 text-base font-medium">{item.aciertos} aciertos</p>
-                    </div>
-                  ))}
-                </div>
+            <div className="space-y-4">
+              <div className="bg-[#1d1d1b] p-4 rounded-xl border-l-4 border-red-500 shadow-lg flex justify-between items-center sticky top-0 z-10">
+                <h3 className="text-white font-black text-xl uppercase">❌ Menos Aciertos</h3>
               </div>
-            )}
+              <div className="space-y-3">
+                {datosMostrados.menosAciertos.length === 0 ? (
+                  <div className="bg-black/20 rounded-xl p-8 text-center text-white/50 italic">
+                    {rondaFiltro === rondaActual ? 'Esperando datos...' : 'Sin datos registrados'}
+                  </div>
+                ) : (
+                  datosMostrados.menosAciertos.map((item, i) => (
+                    <button
+                      key={i}
+                      onClick={() => abrirMenosAciertos(item)}
+                      className="w-full bg-[#1d1d1b] hover:bg-[#2d2d2b] p-4 rounded-xl border border-white/10 shadow-lg flex items-center gap-4 transition-transform hover:scale-[1.02] text-left group"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center shrink-0 group-hover:bg-red-600 transition-colors">
+                        <Frown className="w-6 h-6 text-red-500 group-hover:text-white" />
+                      </div>
+                      <div>
+                        <p className="text-white font-bold text-lg group-hover:text-[#ffd402]">
+                          Cartón #{item.numero_carton}
+                        </p>
+                        <p className="text-gray-400 text-sm">{item.aciertos} aciertos</p>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="py-4 px-6 bg-[#ffd402] text-center shrink-0">
-          <p className="text-[#1d1d1b] text-base font-medium">
-            Haz clic en cualquier cartón para ver los detalles
-          </p>
         </div>
       </div>
 
-      {/* Modal de Cartón Ganador */}
       <CartonGanadorModal
-        ganador={ganadorSeleccionado}
+        data={modalData}
         numerosSorteados={numerosSorteados}
         modalidadesActivas={modalidadesActivas}
-        onClose={() => setGanadorSeleccionado(null)}
+        onClose={() => setModalData(null)}
       />
     </>
   );
