@@ -35,10 +35,13 @@ export function CartonGanadorModal({
   const esPavoso = data.tipo === 'pavoso';
 
   // Determinar el patrón a mostrar (si hay modalidades activas, usamos la primera para comparar)
+  // Para pavosos mostramos el patrón solo para estética, pero no lo usamos para marcar celdas
   const patron = modalidadesActivas.length > 0 ? modalidadesActivas[0].patron : null;
 
   // Set de números sorteados para búsqueda rápida
-  const numerosSet = new Set(numerosSorteados);
+  // Para pavosos, usamos los números congelados al momento de ganar (16 bolas)
+  const numerosAUsar = esPavoso && data.numerosMarcados ? data.numerosMarcados : numerosSorteados;
+  const numerosSet = new Set(numerosAUsar);
 
   // Título y Color según tipo
   let titulo = 'DETALLE';
@@ -140,8 +143,9 @@ export function CartonGanadorModal({
                         // Salió pero no es parte de la figura (Neutro)
                         bgClass = 'bg-[#81c784] text-white';
                       }
-                    } else if (esParteDeLaFigura) {
+                    } else if (esParteDeLaFigura && !esPavoso) {
                       // No ha salido pero ES parte de la figura (Lo que falta)
+                      // No mostrar para pavosos ya que no tienen patrón
                       bgClass = 'bg-white border-2 border-red-500 text-red-500 relative';
                     }
 
@@ -151,8 +155,8 @@ export function CartonGanadorModal({
                         className={`rounded-lg flex items-center justify-center font-bold text-lg md:text-xl relative ${bgClass}`}
                       >
                         {esCentro ? '★' : n}
-                        {/* Indicador de "Falta este" para menos aciertos */}
-                        {!sorteado && esParteDeLaFigura && !esGanador && (
+                        {/* Indicador de "Falta este" para menos aciertos - No mostrar para pavosos */}
+                        {!sorteado && esParteDeLaFigura && !esGanador && !esPavoso && (
                           <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                         )}
                       </div>

@@ -323,7 +323,7 @@ export function TableroFullscreenV2({
             <p className="text-[#ffd402] text-sm font-bold uppercase tracking-[0.4em] mb-[-5px]">
               Soporte
             </p>
-            <p className="text-white font-black text-5xl lg:text-6xl tracking-wider">
+            <p className="text-white font-black text-4xl lg:text-5xl tracking-wider">
               {numeroSoporte || '0000'}
             </p>
           </div>

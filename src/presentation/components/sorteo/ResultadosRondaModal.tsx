@@ -77,6 +77,8 @@ export function ResultadosRondaModal({
       matriz: g.carton.matriz,
       patronNombre: g.patron,
       timestamp: g.timestamp,
+      // Para pavosos, pasar los números congelados al momento de ganar (16 bolas)
+      numerosMarcados: g.numerosSorteadosAlGanar,
     });
   };
 
