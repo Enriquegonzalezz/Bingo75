@@ -551,8 +551,8 @@ export function ConfiguracionModal({
                     type="text"
                     value={numeroSoporte}
                     onChange={(e) => setNumeroSoporte(e.target.value)}
-                    placeholder="Ej: 001234"
-                    className="flex-1 px-3 py-2 border-2 border-[#baa115] rounded-lg text-center font-bold 
+                    placeholder="Ej: 0414-0329023"
+                    className="flex-1 px-3 py-2 border-2 border-[#baa115] rounded-lg text-center font-bold text-black
                       focus:border-[#ffd402] focus:ring-2 focus:ring-[#ffd402]/20 outline-none"
                   />
                 </div>
