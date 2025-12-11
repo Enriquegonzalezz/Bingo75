@@ -34,22 +34,22 @@ interface TableroFullscreenV2Props {
 
 // Componente para mostrar un patrón de modalidad - GRANDE (para la vista principal)
 function PatronModalidadGrande({ modalidad, totalFiguras }: { modalidad: Modalidad; totalFiguras: number }) {
-  // Calcular el ancho según cantidad de figuras
+  // Ancho según cantidad de figuras - MÁS ANCHO para mejor visualización
   const getWidthClass = () => {
-    if (totalFiguras === 1) return 'w-full max-w-[400px]'; // Una sola figura ocupa todo el ancho disponible
-    if (totalFiguras === 2) return 'w-[280px]'; // Dos figuras se ajustan bien
-    return 'w-[220px]'; // 3+ figuras con scroll
+    if (totalFiguras === 1) return 'min-w-[280px]';
+    if (totalFiguras === 2) return 'min-w-[220px]';
+    return 'min-w-[180px]';
   };
 
   return (
-    <div className={`flex flex-col items-center bg-[#1d1d1b] rounded-2xl p-4 border-4 border-[#ffd402] h-full shrink-0 ${getWidthClass()}`}>
-      {/* Grid del patrón - Ocupa todo el height disponible */}
-      <div className="grid grid-cols-5 gap-2 flex-1 w-full max-h-[calc(100%-3rem)] aspect-square">
+    <div className={`flex flex-col items-center bg-[#1d1d1b] rounded-2xl p-4 border-4 border-[#ffd402] h-full max-h-full overflow-hidden ${getWidthClass()}`}>
+      {/* Grid del patrón - Respeta el contenedor */}
+      <div className="grid grid-cols-5 gap-2 flex-1 w-full aspect-square max-h-[calc(100%-2.5rem)]">
         {modalidad.patron.map((fila, i) =>
           fila.map((activo, j) => (
             <div
               key={`${i}-${j}`}
-              className={`rounded-xl aspect-square ${
+              className={`rounded-lg aspect-square ${
                 i === 2 && j === 2
                   ? 'bg-white'
                   : activo
@@ -61,7 +61,7 @@ function PatronModalidadGrande({ modalidad, totalFiguras }: { modalidad: Modalid
         )}
       </div>
       {/* Info debajo */}
-      <div className="mt-3 text-center w-full">
+      <div className="mt-2 text-center w-full shrink-0">
         <p className="text-white font-bold text-xl truncate">{modalidad.nombre}</p>
       </div>
     </div>
@@ -202,16 +202,6 @@ export function TableroFullscreenV2({
               </div>
             )}
             
-            {/* Botón Finalizar Ronda */}
-            {ganadores.length > 0 && !rondaFinalizada && (
-              <button 
-                onClick={onFinalizarRonda} 
-                className="px-4 py-2 bg-[#68b258] text-white font-bold rounded-xl flex items-center gap-2 shadow-lg hover:bg-[#5a9e4a] transition-colors"
-              >
-                <Flag className="w-5 h-5" /> Finalizar
-              </button>
-            )}
-            
             {/* Botón Siguiente Ronda */}
             {rondaFinalizada && hayMasRondas && (
               <button 
@@ -248,6 +238,20 @@ export function TableroFullscreenV2({
                     </button>
                     
                     <div className="border-t border-[#ffd402]/30" />
+
+                    {/* Finalizar Ronda */}
+                    {ganadores.length > 0 && !rondaFinalizada && (
+                      <>
+                        <button 
+                          onClick={() => { onFinalizarRonda(); setMenuAbierto(false); }}
+                          className="w-full px-4 py-3 flex items-center gap-3 text-[#68b258] hover:bg-[#124723] transition-colors text-left"
+                        >
+                          <Flag className="w-5 h-5" />
+                          <span className="font-medium">Finalizar Ronda</span>
+                        </button>
+                        <div className="border-t border-[#ffd402]/30" />
+                      </>
+                    )}
 
                     {/* Ver Resultados */}
                     {ganadores.length > 0 && (
@@ -392,26 +396,38 @@ export function TableroFullscreenV2({
           </div>
         </div>
 
-        {/* ===== FILA INFERIOR: LOGO + FIGURAS + SOPORTE + ÚLTIMO NÚMERO ===== */}
-        <div className="col-span-5 row-span-2 row-start-4 flex gap-4 min-h-0 overflow-hidden px-2 items-center">
+        {/* ===== FILA INFERIOR: TODO CENTRADO ===== */}
+        <div className="col-span-5 row-span-2 row-start-4 flex items-center justify-center gap-6 min-h-0 overflow-hidden px-4">
           
-          {/* LOGO DEL BINGO - Responsivo */}
-          <div className="shrink-0 flex items-center justify-center h-full py-2">
+          {/* COLUMNA IZQUIERDA: Logo + Último número */}
+          <div className="shrink-0 flex flex-col items-center justify-center gap-2 h-full py-2">
+            {/* LOGO DEL BINGO */}
             <Image
               src="/logo.png"
               alt="Bingo 75"
-              width={180}
-              height={180}
-              className="object-contain h-full w-auto max-h-[150px] md:max-h-[180px] lg:max-h-[200px]"
+              width={80}
+              height={80}
+              className="object-contain w-auto h-[60px]"
               priority
             />
+            {/* ÚLTIMO NÚMERO */}
+            <div className="flex flex-col items-center">
+              <p className="text-white/70 text-base font-bold uppercase">Último</p>
+              {ultimoNumero ? (
+                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center border-2 border-white/50 shadow-lg">
+                  <span className="text-5xl font-black text-[#1d1d1b]">{ultimoNumero}</span>
+                </div>
+              ) : (
+                <p className="text-[#ffd402] text-6xl font-black">--</p>
+              )}
+            </div>
           </div>
 
-          {/* FIGURAS EN JUEGO - Responsivo según cantidad */}
-          <div className={`flex items-center gap-4 py-2 ${
-            modalidadesActivas.length <= 2 
-              ? 'flex-1 justify-center' 
-              : 'flex-1 overflow-x-auto'
+          {/* FIGURAS EN JUEGO - PROTAGONISTA CENTRAL - Scroll horizontal si hay más de 1 figura */}
+          <div className={`flex items-center gap-4 h-full max-h-full py-2 flex-1 min-w-0 ${
+            modalidadesActivas.length > 1 
+              ? 'overflow-x-auto overflow-y-hidden' 
+              : 'justify-center'
           }`}>
             {modalidadesActivas.map((mod) => (
               <PatronModalidadGrande 
@@ -422,28 +438,18 @@ export function TableroFullscreenV2({
             ))}
           </div>
 
-          {/* NÚMERO DE SOPORTE - Grande */}
-          <div className="bg-[transparent] rounded-2xl px-6 py-2 flex flex-col items-center justify-center min-w-[150px] md:min-w-[180px]">
-            <p className="text-[#fff]/70 text-lg md:text-xl font-bold uppercase">Nº Soporte</p>
-            <p className="text-[#fff] text-5xl md:text-5xl font-black">{numeroSoporte || '---'}</p>
-          </div>
-
-          {/* ÚLTIMO NÚMERO CLICKEADO - MÁS GRANDE */}
-          <div className="bg-[transparent] rounded-2xl px-6 py-2 flex flex-col items-center justify-center min-w-[150px] md:min-w-[200px]">
-            <p className="text-white/70 text-lg md:text-2xl font-bold uppercase mb-1">Último</p>
-            {ultimoNumero ? (
-              <div className="w-20 h-20 md:w-28 md:h-28 bg-[#fff] rounded-full flex items-center justify-center border-4 border-white/50 shadow-lg">
-                <span className="text-4xl md:text-6xl font-black text-[#1d1d1b]">{ultimoNumero}</span>
-              </div>
-            ) : (
-              <p className="text-[#ffd402] text-5xl md:text-7xl font-black">--</p>
-            )}
-          </div>
-
-          {/* CONTADOR - MÁS GRANDE */}
-          <div className="bg-[transparent] rounded-2xl px-6 py-2 flex flex-col items-center justify-center min-w-[120px] md:min-w-[160px]">
-            <p className="text-white/70 text-lg md:text-2xl font-bold uppercase mb-1">Bolas</p>
-            <p className="text-5xl md:text-7xl font-black text-white">{totalSorteados}<span className="text-white/50 text-3xl md:text-4xl">/75</span></p>
+          {/* COLUMNA DERECHA: Soporte + Bolas */}
+          <div className="shrink-0 flex flex-col items-center justify-center gap-3 h-full py-2">
+            {/* NÚMERO DE SOPORTE */}
+            <div className="flex flex-col items-center">
+              <p className="text-[#fff]/70 text-base font-bold uppercase">Nº Soporte</p>
+              <p className="text-[#fff] text-5xl font-black">{numeroSoporte || '---'}</p>
+            </div>
+            {/* CONTADOR BOLAS */}
+            <div className="flex flex-col items-center">
+              <p className="text-white/70 text-sm font-bold uppercase">Bolas</p>
+              <p className="text-5xl font-black text-white">{totalSorteados}<span className="text-white/50 text-2xl">/75</span></p>
+            </div>
           </div>
         </div>
       </div>
