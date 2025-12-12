@@ -11,6 +11,7 @@ type HistorialData = {
   ganadores: Ganador[];
   pavosos: Ganador[];
   menosAciertos: CartonConAciertos[];
+  numerosSorteados?: number[]; // Números sorteados en esta ronda específica
 };
 
 interface ResultadosRondaModalProps {
@@ -51,7 +52,8 @@ export function ResultadosRondaModal({
       return {
         ganadores: ganadores.filter((g) => g.tipo !== 'pavoso'),
         pavosos: ganadores.filter((g) => g.tipo === 'pavoso'),
-        menosAciertos: cartonesConMenosAciertos, // Aseguramos que pase la data en vivo
+        menosAciertos: cartonesConMenosAciertos,
+        numerosSorteadosRonda: numerosSorteados, // Números de la ronda actual
       };
     }
     const historico = historialRondas[rondaFiltro];
@@ -59,8 +61,9 @@ export function ResultadosRondaModal({
       ganadores: historico?.ganadores || [],
       pavosos: historico?.pavosos || [],
       menosAciertos: historico?.menosAciertos || [],
+      numerosSorteadosRonda: historico?.numerosSorteados || [], // Números guardados de la ronda histórica
     };
-  }, [rondaFiltro, rondaActual, ganadores, cartonesConMenosAciertos, historialRondas]);
+  }, [rondaFiltro, rondaActual, ganadores, cartonesConMenosAciertos, historialRondas, numerosSorteados]);
 
   const hayMasRondas = rondaActual < totalRondas;
 
@@ -78,7 +81,10 @@ export function ResultadosRondaModal({
       patronNombre: g.patron,
       timestamp: g.timestamp,
       // Para pavosos, pasar los números congelados al momento de ganar (16 bolas)
-      numerosMarcados: g.numerosSorteadosAlGanar,
+      // Para ganadores normales, pasar los números de la ronda en que ganaron
+      numerosMarcados: g.tipo === 'pavoso' ? g.numerosSorteadosAlGanar : datosMostrados.numerosSorteadosRonda,
+      // Pasar el patrón específico con el que ganó (para mostrar la figura correcta de cada ronda)
+      patronMatriz: g.patronMatriz,
     });
   };
 
