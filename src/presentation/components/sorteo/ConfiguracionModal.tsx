@@ -135,13 +135,14 @@ export function ConfiguracionModal({
   const rondaActual = rondas.find(r => r.numero === rondaSeleccionada);
   const modalidadesRondaActual = new Set(rondaActual?.modalidades || []);
 
-  // Toggle modalidad para la ronda seleccionada
+  // Seleccionar modalidad para la ronda seleccionada (solo UNA por ronda)
   const toggleModalidad = (id: string) => {
     setRondas(prev => prev.map(r => {
       if (r.numero !== rondaSeleccionada) return r;
+      // Si ya está seleccionada, deseleccionar. Si no, reemplazar con la nueva (solo 1)
       const nuevasModalidades = r.modalidades.includes(id)
-        ? r.modalidades.filter(m => m !== id)
-        : [...r.modalidades, id];
+        ? []
+        : [id];
       return { ...r, modalidades: nuevasModalidades };
     }));
   };
@@ -340,10 +341,10 @@ export function ConfiguracionModal({
                   <span>Ronda {ronda.numero}</span>
                   {ronda.modalidades.length > 0 ? (
                     <span className="bg-[#68b258] text-white text-xs px-2 py-0.5 rounded-full">
-                      {ronda.modalidades.length}
+                      ✓
                     </span>
                   ) : (
-                    <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+                    <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">!</span>
                   )}
                 </button>
               ))}
@@ -619,16 +620,15 @@ export function ConfiguracionModal({
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-[#124723]">Ronda {ronda.numero}</span>
                       <span className={`text-xs font-bold ${ronda.modalidades.length === 0 ? 'text-red-500' : 'text-[#68b258]'}`}>
-                        {ronda.modalidades.length} figura(s)
+                        {ronda.modalidades.length === 0 ? 'Sin figura' : '1 figura'}
                       </span>
                     </div>
                     {ronda.modalidades.length > 0 && (
                       <p className="text-xs text-gray-600 mt-1 truncate">
-                        {ronda.modalidades.slice(0, 3).map(id => {
-                          const mod = modalidades.find(m => m.id === id);
-                          return mod?.nombre || id;
-                        }).join(', ')}
-                        {ronda.modalidades.length > 3 && ` +${ronda.modalidades.length - 3} más`}
+                        {(() => {
+                          const mod = modalidades.find(m => m.id === ronda.modalidades[0]);
+                          return mod?.nombre || ronda.modalidades[0];
+                        })()}
                       </p>
                     )}
                   </div>
