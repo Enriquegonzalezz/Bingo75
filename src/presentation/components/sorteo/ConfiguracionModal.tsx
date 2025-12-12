@@ -448,7 +448,7 @@ export function ConfiguracionModal({
                     value={nombrePatronPersonalizado}
                     onChange={(e) => setNombrePatronPersonalizado(e.target.value)}
                     placeholder="Ej: Mi figura especial"
-                    className="w-full px-3 py-2 border-2 border-[#124723] rounded-lg focus:outline-none focus:border-[#ffd402] text-center font-semibold"
+                    className="w-full px-3 py-2 border-2 border-[#124723] rounded-lg focus:outline-none focus:border-[#ffd402] text-center font-semibold text-black"
                     maxLength={30}
                   />
                 </div>
@@ -568,7 +568,7 @@ export function ConfiguracionModal({
                       onChange={(e) => handleRangoDesdeChange(e.target.value)}
                       min={1}
                       max={totalCartones}
-                      className="w-20 px-2 py-1 border-2 border-gray-300 rounded text-center font-bold"
+                      className="w-20 px-2 py-1 border-2 border-gray-300 rounded text-center font-bold text-black"
                     />
                     <span className="text-sm text-gray-600">Hasta</span>
                     <input
@@ -577,7 +577,7 @@ export function ConfiguracionModal({
                       onChange={(e) => handleRangoHastaChange(e.target.value)}
                       min={rangoDesde}
                       max={totalCartones}
-                      className="w-20 px-2 py-1 border-2 border-gray-300 rounded text-center font-bold"
+                      className="w-20 px-2 py-1 border-2 border-gray-300 rounded text-center font-bold text-black"
                     />
                   </div>
                 </div>
