@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Play, HelpCircle } from 'lucide-react';
 import { Modalidad, CategoriaModalidad } from '@/shared/constants/modalidades';
 
@@ -117,6 +117,20 @@ export function ConfiguracionModal({
   // Obtener patrón personalizado de la ronda seleccionada
   const patronPersonalizado = rondas.find(r => r.numero === rondaSeleccionada)?.patronPersonalizado || patronVacio;
   const nombrePatronPersonalizado = rondas.find(r => r.numero === rondaSeleccionada)?.nombrePatronPersonalizado || '';
+
+  // Handler para cerrar con Escape
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onClose();
+    }
+  }, [onClose]);
+
+  // Agregar listener para tecla Escape
+  useEffect(() => {
+    if (!isOpen) return;
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handleKeyDown]);
 
   if (!isOpen) return null;
 
@@ -276,14 +290,21 @@ export function ConfiguracionModal({
   const todasRondasTienenModalidades = rondas.every(r => r.modalidades.length > 0);
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-[#e8e8e8] rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden">
+    <div 
+      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-[#e8e8e8] rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="bg-[#124723] px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-[#ffd402]">Opciones de la nueva partida</h2>
           <button
-            onClick={onClose}
-            className="text-[#f8df7e] hover:text-white transition-colors"
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onClose(); }}
+            className="text-[#f8df7e] hover:text-white transition-colors z-50"
           >
             <X className="w-6 h-6" />
           </button>
@@ -640,7 +661,8 @@ export function ConfiguracionModal({
           {/* Botones de acción */}
           <div className="flex justify-end gap-3 mt-6">
             <button
-              onClick={onClose}
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onClose(); }}
               className="px-6 py-3 bg-[#ffcccc] text-[#990000] font-bold rounded-lg hover:bg-[#ff9999] transition-colors"
             >
               Salir (Esc)
