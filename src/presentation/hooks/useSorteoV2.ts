@@ -242,19 +242,26 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
       const esPavoso = pavosoValidator.validate(carton, numerosSet);
 
       if (esPavoso) {
-        // Patrón vacío para pavoso
-        const patronVacio = [
-          [false, false, false, false, false],
-          [false, false, false, false, false],
-          [false, false, false, false, false],
-          [false, false, false, false, false],
-          [false, false, false, false, false],
-        ];
+        // Usar el patrón de la modalidad activa para mostrar la figura que se estaba jugando
+        // Si no hay modalidad activa, usar un patrón vacío
+        const patronFigura = modalidadesActivas.length > 0 
+          ? modalidadesActivas[0].patron 
+          : [
+              [false, false, false, false, false],
+              [false, false, false, false, false],
+              [false, false, false, false, false],
+              [false, false, false, false, false],
+              [false, false, false, false, false],
+            ];
+        // Guardar el nombre de la figura que se estaba jugando (para mostrar en el modal)
+        const nombreFigura = modalidadesActivas.length > 0 
+          ? modalidadesActivas[0].nombre 
+          : 'Sin figura';
         return {
           carton,
-          patron: 'Pavoso',
+          patron: nombreFigura, // Guardar el nombre de la figura que se estaba jugando
           patronId: 'pavoso',
-          patronMatriz: patronVacio,
+          patronMatriz: patronFigura, // Guardar la matriz del patrón
           numero_carton: carton.numero_carton,
           timestamp: new Date(),
           tipo: 'pavoso',
@@ -266,7 +273,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
 
       return null;
     },
-    [pavosoValidator, pavosoActivo]
+    [pavosoValidator, pavosoActivo, modalidadesActivas]
   );
 
   // Quitar un número sorteado (para corregir errores)
