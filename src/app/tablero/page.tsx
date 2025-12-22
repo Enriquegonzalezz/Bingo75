@@ -21,7 +21,6 @@ type HistorialData = {
   ganadores: Ganador[];
   pavosos: Ganador[];
   menosAciertos: CartonConAciertos[];
-  numerosSorteados: number[]; // Números sorteados en esta ronda específica
 };
 
 const DashButton = ({ onClick, disabled, variant = 'primary', children, className }: any) => {
@@ -84,21 +83,13 @@ export default function TableroPage() {
     cargarCartones();
   }, [cargarCartones]);
 
-  // Guardar historial - copia profunda para preservar patronMatriz y números sorteados
-  // Solo actualizar si hay ganadores (evita sobrescribir con arrays vacíos al cambiar de ronda)
+  // Guardar historial
   useEffect(() => {
     if (!configuracionJuego) return;
-    // No actualizar el historial si no hay ganadores (evita sobrescribir al cambiar de ronda)
-    if (ganadores.length === 0 && cartonesConMenosAciertos.length === 0) return;
-    
     setHistorialRondas((prev) => {
-      const ganadoresReales = ganadores
-        .filter((g) => g.tipo !== 'pavoso')
-        .map(g => ({ ...g, patronMatriz: g.patronMatriz.map(row => [...row]) }));
-      const pavosos = ganadores
-        .filter((g) => g.tipo === 'pavoso')
-        .map(g => ({ ...g, patronMatriz: g.patronMatriz.map(row => [...row]) }));
-      const prevData = prev[rondaActual] || { ganadores: [], pavosos: [], menosAciertos: [], numerosSorteados: [] };
+      const ganadoresReales = ganadores.filter((g) => g.tipo !== 'pavoso');
+      const pavosos = ganadores.filter((g) => g.tipo === 'pavoso');
+      const prevData = prev[rondaActual] || { ganadores: [], pavosos: [], menosAciertos: [] };
       if (
         prevData.ganadores.length === ganadoresReales.length &&
         prevData.pavosos.length === pavosos.length &&
@@ -112,13 +103,12 @@ export default function TableroPage() {
           ganadores: ganadoresReales,
           pavosos: pavosos,
           menosAciertos: cartonesConMenosAciertos,
-          numerosSorteados: [...numerosSorteados], // Guardar copia de los números sorteados de esta ronda
         },
       };
     });
     // Si la ronda avanza, actualizamos el filtro para seguir al juego
     if (!rondaFinalizada) setRondaFiltro(rondaActual);
-  }, [ganadores, cartonesConMenosAciertos, rondaActual, rondaFinalizada, configuracionJuego, numerosSorteados]);
+  }, [ganadores, cartonesConMenosAciertos, rondaActual, rondaFinalizada, configuracionJuego]);
 
   useEffect(() => {
     if (totalSorteados === 1 && !isFullscreen) enterFullscreen();

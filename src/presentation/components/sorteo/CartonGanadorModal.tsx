@@ -14,8 +14,6 @@ export type DatosCartonModal = {
   timestamp?: Date;
   // Para pavosos/menos aciertos, necesitamos saber qué números tenían marcados vs el patrón
   numerosMarcados?: number[];
-  // Patrón específico con el que ganó (para mostrar la figura correcta de cada ronda)
-  patronMatriz?: boolean[][];
 };
 
 interface CartonGanadorModalProps {
@@ -36,15 +34,13 @@ export function CartonGanadorModal({
   const esGanador = data.tipo === 'ganador';
   const esPavoso = data.tipo === 'pavoso';
 
-  // Determinar el patrón a mostrar
-  // Prioridad: 1) Patrón específico del ganador, 2) Modalidad activa (fallback)
+  // Determinar el patrón a mostrar (si hay modalidades activas, usamos la primera para comparar)
   // Para pavosos mostramos el patrón solo para estética, pero no lo usamos para marcar celdas
-  const patron = data.patronMatriz || (modalidadesActivas.length > 0 ? modalidadesActivas[0].patron : null);
+  const patron = modalidadesActivas.length > 0 ? modalidadesActivas[0].patron : null;
 
   // Set de números sorteados para búsqueda rápida
-  // Prioridad: 1) numerosMarcados (números de la ronda específica), 2) numerosSorteados (fallback)
-  // Esto asegura que cada cartón ganador muestre los números de SU ronda, no de la actual
-  const numerosAUsar = data.numerosMarcados || numerosSorteados;
+  // Para pavosos, usamos los números congelados al momento de ganar (16 bolas)
+  const numerosAUsar = esPavoso && data.numerosMarcados ? data.numerosMarcados : numerosSorteados;
   const numerosSet = new Set(numerosAUsar);
 
   // Título y Color según tipo
@@ -195,7 +191,7 @@ export function CartonGanadorModal({
             {/* Comparativa Visual Pequeña */}
             <div className="bg-[#0a2e16] rounded-2xl p-4 border border-[#68b258] flex flex-col items-center">
               <p className="text-white text-xs uppercase mb-2">
-                Figura Jugada: {data.patronNombre || modalidadesActivas[0]?.nombre}
+                Figura Jugada: {modalidadesActivas[0]?.nombre}
               </p>
               <div className="grid grid-cols-5 gap-2 w-32 h-32">
                 {patron?.map((fila, i) =>
