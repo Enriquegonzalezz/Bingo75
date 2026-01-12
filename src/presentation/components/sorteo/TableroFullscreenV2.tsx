@@ -374,7 +374,7 @@ export function TableroFullscreenV2({
             <Image src="/logo.png" alt="Logo Bingo" fill className="object-contain" priority />
           </div>*/}
           <div className="flex flex-col items-center mb-8">
-            <p className="text-[#ffd74a] text-sm font-bold uppercase tracking-[0.4em] mb-[20px]">
+            <p className="text-[#ffd402] text-4xl font-bold uppercase tracking-[0.4em] mb-[20px]">
               Soporte
             </p>
             <p className="text-[#6a2818] font-black text-5xl lg:text-[54px] h-[30px] tracking-wider">
@@ -469,39 +469,54 @@ export function TableroFullscreenV2({
               </span>
             </div>
             <div className="flex-1 flex items-center justify-center bg-[#6a2818] relative">
-              {/* Grid de últimos 4 números */}
+              {/* Grid de últimos 4 números con animación slot machine */}
               <div className="grid grid-cols-2 grid-rows-3 w-full h-full">
                 {/* Div 1: Último número (más grande) - ocupa 3 filas */}
-                <div className="row-span-3 flex items-center justify-center">
-                  <span
-                    className={`font-black text-7xl lg:text-8xl text-white transition-transform duration-200 ${ultimoNumero ? 'scale-100' : 'scale-0'}`}
-                  >
-                    {ultimoNumero || '-'}
-                  </span>
+                <div className="row-span-3 flex items-center justify-center overflow-visible px-2">
+                  {ultimoNumero && (
+                    <span
+                      key={ultimoNumero}
+                      className="font-black text-7xl lg:text-8xl text-white slot-machine-enter-large ml-4 leading-none"
+                    >
+                      {ultimoNumero}
+                    </span>
+                  )}
+                  {!ultimoNumero && (
+                    <span className="font-black text-7xl lg:text-8xl text-white/30 ml-4">-</span>
+                  )}
                 </div>
                 
                 {/* Div 2: 2do número más reciente */}
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center overflow-hidden">
                   {historialClicks.length >= 2 && (
-                    <span className="font-black text-3xl lg:text-4xl text-white/80">
+                    <span 
+                      key={`pos2-${historialClicks[historialClicks.length - 2]}-${historialClicks.length}`}
+                      className="font-black text-3xl lg:text-4xl text-white/80 slot-machine-enter"
+                    >
                       {historialClicks[historialClicks.length - 2]}
                     </span>
                   )}
                 </div>
                 
                 {/* Div 3: 3er número más reciente */}
-                <div className="col-start-2 flex items-center justify-center">
+                <div className="col-start-2 flex items-center justify-center overflow-hidden">
                   {historialClicks.length >= 3 && (
-                    <span className="font-black text-3xl lg:text-4xl text-white/80">
+                    <span 
+                      key={`pos3-${historialClicks[historialClicks.length - 3]}-${historialClicks.length}`}
+                      className="font-black text-3xl lg:text-4xl text-white/80 slot-machine-enter"
+                    >
                       {historialClicks[historialClicks.length - 3]}
                     </span>
                   )}
                 </div>
                 
                 {/* Div 4: 4to número más reciente */}
-                <div className="col-start-2 row-start-3 flex items-center justify-center">
+                <div className="col-start-2 row-start-3 flex items-center justify-center overflow-hidden">
                   {historialClicks.length >= 4 && (
-                    <span className="font-black text-3xl lg:text-4xl text-white/80">
+                    <span 
+                      key={`pos4-${historialClicks[historialClicks.length - 4]}-${historialClicks.length}`}
+                      className="font-black text-3xl lg:text-4xl text-white/80 slot-machine-enter"
+                    >
                       {historialClicks[historialClicks.length - 4]}
                     </span>
                   )}

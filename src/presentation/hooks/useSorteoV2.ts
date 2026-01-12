@@ -202,6 +202,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
         numero_carton: carton.numero_carton,
         aciertos: calcularAciertos(carton, numerosSet)
       }))
+      .filter(c => c.aciertos > 0) // Excluir cartones con 0 aciertos (pavosos)
       .sort((a, b) => a.aciertos - b.aciertos)
       .slice(0, 5);
     
@@ -402,6 +403,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
               numero_carton: carton.numero_carton,
               aciertos: calcularAciertos(carton, nuevosNumeros)
             }))
+            .filter(c => c.aciertos > 0) // Excluir cartones con 0 aciertos (pavosos)
             .sort((a, b) => a.aciertos - b.aciertos)
             .slice(0, 5);
           
@@ -450,10 +452,11 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
           numero_carton: carton.numero_carton,
           aciertos: calcularAciertos(carton, numerosSet)
         }))
+        .filter(c => c.aciertos > 0) // Excluir cartones con 0 aciertos (pavosos)
         .sort((a, b) => a.aciertos - b.aciertos)
         .slice(0, 5);
       
-      setCartonesConMenosAciertos(cartonesConAciertosCalc);
+      setCartonesConMenosAciertos(cartonesConAciertosCalc.filter(c => c.aciertos > 0));
     }
 
     console.log(`🏁 Ronda ${rondaActual} finalizada`);

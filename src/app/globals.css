@@ -79,3 +79,37 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400;
 }
+
+/* Animaciones para historial de números (slot machine) */
+@keyframes slideInFromTop {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromTopLarge {
+  0% {
+    transform: translateY(-150%) scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(10%) scale(1.05);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.slot-machine-enter {
+  animation: slideInFromTop 0.4s ease-out forwards;
+}
+
+.slot-machine-enter-large {
+  animation: slideInFromTopLarge 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
