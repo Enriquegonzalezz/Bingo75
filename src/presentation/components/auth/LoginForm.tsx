@@ -123,7 +123,7 @@ export function LoginForm() {
 
         {/* Footer */}
         <p className="text-center text-[#6a2818]/70 text-sm mt-6 font-semibold">
-          © 2024 Bingo Carabobo - Todos los derechos reservados
+          © 2024 Bingo el gocho - Todos los derechos reservados
         </p>
       </div>
     </div>
