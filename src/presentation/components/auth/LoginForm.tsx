@@ -32,33 +32,33 @@ export function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a2e14] via-[#124723] to-[#0a2e14] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#fbf7da] via-[#f5efc8] to-[#fbf7da] flex items-center justify-center p-4">
       {/* Efectos de fondo */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#ffd402]/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#68b258]/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#ffd74a]/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#6a2818]/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
 
       <div className="relative w-full max-w-md">
         {/* Logo y título */}
         <div className="text-center mb-8">
           <Image
-            src="/logo.png"
+            src="/gocho.png"
             alt="Bingo Carabobo"
             width={280}
             height={100}
             className="mx-auto mb-4 rounded-xl shadow-lg shadow-yellow-500/30"
           />
-          <p className="text-[#f8df7e] mt-2">Sistema de Sorteo Profesional</p>
+          <p className="text-[#6a2818] mt-2 font-bold">Sistema de Sorteo Profesional</p>
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit} className="bg-gradient-to-b from-[#2d2d2b] to-[#1d1d1b] rounded-2xl p-8 shadow-2xl border-2 border-[#ffd402]/30">
+        <form onSubmit={handleSubmit} className="bg-gradient-to-b from-[#6a2818] to-[#5a2010] rounded-2xl p-8 shadow-2xl border-2 border-[#ffd74a]/30">
           <h2 className="text-xl font-bold text-white text-center mb-6">Iniciar Sesión</h2>
 
           {/* Campo Usuario */}
           <div className="mb-4">
-            <label className="block text-[#f8df7e] text-sm font-semibold mb-2">
+            <label className="block text-[#ffd74a] text-sm font-semibold mb-2">
               Usuario
             </label>
             <div className="relative">
@@ -68,7 +68,7 @@ export function LoginForm() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Ingresa tu usuario"
-                className="w-full pl-10 pr-4 py-3 bg-[#1d1d1b] border-2 border-[#3d3d3b] rounded-xl text-white placeholder-gray-500 focus:border-[#ffd402] focus:outline-none transition-colors"
+                className="w-full pl-10 pr-4 py-3 bg-[#fbf7da] border-2 border-[#6a2818] rounded-xl text-[#6a2818] placeholder-gray-500 focus:border-[#ffd74a] focus:outline-none transition-colors"
                 required
               />
             </div>
@@ -76,7 +76,7 @@ export function LoginForm() {
 
           {/* Campo Contraseña */}
           <div className="mb-6">
-            <label className="block text-[#f8df7e] text-sm font-semibold mb-2">
+            <label className="block text-[#ffd74a] text-sm font-semibold mb-2">
               Contraseña
             </label>
             <div className="relative">
@@ -86,13 +86,13 @@ export function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Ingresa tu contraseña"
-                className="w-full pl-10 pr-12 py-3 bg-[#1d1d1b] border-2 border-[#3d3d3b] rounded-xl text-white placeholder-gray-500 focus:border-[#ffd402] focus:outline-none transition-colors"
+                className="w-full pl-10 pr-12 py-3 bg-[#fbf7da] border-2 border-[#6a2818] rounded-xl text-[#6a2818] placeholder-gray-500 focus:border-[#ffd74a] focus:outline-none transition-colors"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#ffd402] transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#ffd74a] transition-colors"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -103,8 +103,8 @@ export function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 bg-gradient-to-r from-[#ffd402] to-[#baa115] text-[#1d1d1b] font-bold text-lg rounded-xl 
-              hover:from-[#ffe44a] hover:to-[#d4c01a] transition-all shadow-lg shadow-yellow-500/30
+            className="w-full py-4 bg-gradient-to-r from-[#ffd74a] to-[#e6c000] text-[#6a2818] font-bold text-lg rounded-xl 
+              hover:from-[#ffe84d] hover:to-[#f0d000] transition-all shadow-lg shadow-yellow-500/30
               disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
           >
             {loading ? (
@@ -122,7 +122,7 @@ export function LoginForm() {
         </form>
 
         {/* Footer */}
-        <p className="text-center text-[#f8df7e]/50 text-sm mt-6">
+        <p className="text-center text-[#6a2818]/70 text-sm mt-6 font-semibold">
           © 2024 Bingo Carabobo - Todos los derechos reservados
         </p>
       </div>

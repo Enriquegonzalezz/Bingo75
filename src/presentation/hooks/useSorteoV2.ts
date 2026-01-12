@@ -178,9 +178,11 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     let aciertos = 0;
     for (let i = 0; i < 5; i++) {
       for (let j = 0; j < 5; j++) {
+        // Saltar la casilla del centro (FREE) - no cuenta como acierto para "Menos Aciertos"
+        if (i === 2 && j === 2) continue;
+        
         const numero = carton.matriz[i][j];
-        // El centro (FREE) siempre cuenta como acierto
-        if ((i === 2 && j === 2) || (numero !== 0 && numerosSet.has(numero))) {
+        if (numero !== 0 && numerosSet.has(numero)) {
           aciertos++;
         }
       }

@@ -6,7 +6,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 // CREDENCIALES - Cambiar aquí si es necesario
 // ============================================
 const USUARIO = 'admin';
-const CLAVE = 'bingo2024';
+const CLAVE = 'bingo2026';
 // ============================================
 
 interface AuthContextType {

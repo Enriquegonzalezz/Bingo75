@@ -16,8 +16,8 @@ export function AuthGuard({ children }: AuthGuardProps) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0a2e14] via-[#124723] to-[#0a2e14] flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-12 h-12 text-[#ffd402] animate-spin mx-auto mb-4" />
-          <p className="text-[#f8df7e]">Cargando...</p>
+          <RefreshCw className="w-12 h-12 text-[#000] animate-spin mx-auto mb-4" />
+          <p className="text-[#000]">Cargando...</p>
         </div>
       </div>
     );

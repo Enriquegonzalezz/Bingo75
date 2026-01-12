@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
+
 import { Search, X, Menu, RotateCcw, LogOut, Flag, SkipForward, Trophy } from 'lucide-react';
 import { Modalidad } from '@/shared/constants/modalidades';
 import { Ganador, CartonConAciertos } from '@/presentation/hooks/useSorteoV2';
@@ -40,7 +40,7 @@ interface TableroFullscreenV2Props {
 // --- Componentes UI ---
 function PatronGigante({ modalidad }: { modalidad: Modalidad }) {
   return (
-    <div className="h-full aspect-square flex flex-col items-center justify-center bg-[#052e16] border-2 border-[#ffd402] rounded-2xl p-3 shadow-xl relative overflow-hidden">
+    <div className="h-full aspect-square flex flex-col items-center justify-center bg-[#6a2818] border-2 border-[#ffd74a] rounded-2xl p-3 shadow-xl relative overflow-hidden">
       <div className="grid grid-cols-5 gap-2 w-full h-full">
         {modalidad.patron.map((fila, i) =>
           fila.map((activo, j) => (
@@ -50,15 +50,15 @@ function PatronGigante({ modalidad }: { modalidad: Modalidad }) {
                 i === 2 && j === 2
                   ? 'bg-white/50 animate-pulse'
                   : activo
-                    ? 'bg-[#ffd402] shadow-[0_0_15px_#ffd402]'
-                    : 'bg-[#1b4d2e]/40'
+                    ? 'bg-[#ffd74a] shadow-[0_0_15px_#ffd74a]'
+                    : 'bg-[#fbf7da]/40'
               }`}
             />
           ))
         )}
       </div>
       <div className="absolute bottom-2 inset-x-0 text-center pointer-events-none">
-        <span className="text-[#ffd402] text-[10px] font-black uppercase tracking-widest bg-black/60 px-2 py-0.5 rounded-full">
+        <span className="text-[#ffd74a] text-[10px] font-black uppercase tracking-widest bg-black/60 px-2 py-0.5 rounded-full">
           {modalidad.nombre}
         </span>
       </div>
@@ -84,7 +84,7 @@ const BingoBall = ({
         ? esUltimo
           ? 'bg-[#ef1400] text-white ring-4 ring-[#ffb74d] scale-110 z-10 shadow-lg'
           : 'bg-[#ff0000] text-white scale-100'
-        : 'bg-[#f3f4f6] text-[#1d1d1b] hover:bg-[#ffd402] hover:scale-105'
+        : 'bg-[#fbf7da] text-[#6a2818] hover:bg-[#ffd74a] hover:scale-105'
     }`}
   >
     {numero}
@@ -182,7 +182,7 @@ export function TableroFullscreenV2({
   }, [pavosos.length]);
 
   return (
-    <div className="fixed inset-0 bg-[#052e16] font-sans flex flex-col overflow-hidden select-none z-50">
+    <div className="fixed inset-0 bg-[#fbf7da] font-sans flex flex-col overflow-hidden select-none z-50">
       <CelebrationEffect tipo={celebracion.tipo} activo={celebracion.activo} />
 
       {/* ===== TABLERO (70% Height) ===== */}
@@ -199,7 +199,7 @@ export function TableroFullscreenV2({
                 value={busquedaCarton}
                 onChange={(e) => handleBuscarCarton(e.target.value)}
                 placeholder="Nº Cartón..."
-                className="w-24 outline-none text-lg font-bold text-[#0f391b] bg-transparent"
+                className="w-24 outline-none text-lg font-bold text-[#6a2818] bg-transparent"
                 autoFocus
               />
               <button onClick={cerrarBuscador}>
@@ -218,7 +218,7 @@ export function TableroFullscreenV2({
               },
               {
                 l: 'N',
-                c: 'bg-[#ffd402]',
+                c: 'bg-[#ffd74a]',
                 n: [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45],
               },
               {
@@ -258,10 +258,10 @@ export function TableroFullscreenV2({
 
         {/* Panel Lateral Búsqueda */}
         {cartonBuscado && (
-          <div className="w-1/4 bg-[#1a4a2d] border-4 border-[#ffd402] rounded-[2.5rem] p-4 flex flex-col shadow-2xl animate-in slide-in-from-right-10">
+          <div className="w-1/4 bg-[#6a2818] border-4 border-[#ffd74a] rounded-[2.5rem] p-4 flex flex-col shadow-2xl animate-in slide-in-from-right-10">
             <div className="flex justify-between items-center mb-2 px-2">
               <div>
-                <p className="text-[#ffd402] text-xs font-bold uppercase">Cartón</p>
+                <p className="text-[#ffd74a] text-xs font-bold uppercase">Cartón</p>
                 <p className="text-white text-3xl font-black">
                   #{cartonBuscado.carton.numero_carton}
                 </p>
@@ -276,7 +276,7 @@ export function TableroFullscreenV2({
                 {['B', 'I', 'N', 'G', 'O'].map((l, i) => (
                   <div
                     key={i}
-                    className="bg-[#0f391b] text-[#ffd402] font-black text-center rounded py-0.5 text-sm"
+                    className="bg-[#6a2818] text-[#ffd74a] font-black text-center rounded py-0.5 text-sm"
                   >
                     {l}
                   </div>
@@ -290,7 +290,7 @@ export function TableroFullscreenV2({
                     return (
                       <div
                         key={`${i}-${j}`}
-                        className={`flex items-center justify-center rounded font-bold text-base md:text-lg border ${esCentro ? 'bg-[#ffd402] border-[#ffd402]' : marcado ? 'bg-[#ef4444] text-white border-[#ef4444]' : 'bg-white border-gray-200'}`}
+                        className={`flex items-center justify-center rounded font-bold text-base md:text-lg border ${esCentro ? 'bg-[#ffd74a] border-[#ffd74a]' : marcado ? 'bg-[#ef4444] text-white border-[#ef4444]' : 'bg-white border-gray-200'}`}
                       >
                         {esCentro ? '★' : n}
                       </div>
@@ -318,22 +318,22 @@ export function TableroFullscreenV2({
           ))}
            <div className="flex flex-col items-center gap-3">
             <div className="text-center">
-              <p className="text-white/70 text-sm font-bold uppercase tracking-widest">
+              <p className="text-[#6a2818] text-sm font-bold uppercase tracking-widest">
                 Cantadas
               </p>
-              <p className="text-white font-black text-7xl lg:text-8xl leading-none flex items-baseline justify-end">
+              <p className="text-[#6a2818] font-black text-7xl lg:text-8xl leading-none flex items-baseline justify-end">
                 {totalSorteados}
-                <span className="text-4xl text-white ml-1">/75</span>
+                <span className="text-4xl text-[#6a2818] ml-1">/75</span>
               </p>
             </div>
 
             {/* PREMIO GIGANTE */}
             {premioRonda > 0 && (
-              <div className="bg-[#ffd402] border-4 border-[#ffd402] px-6 py-2 rounded-2xl shadow-[0_0_20px_rgba(255,212,2,0.4)] animate-in fade-in flex flex-col items-center">
-                <p className="text-[#052e16] text-sm font-black uppercase tracking-[0.2em] mb-[-5px]">
+              <div className="bg-[#ffd74a] border-4 border-[#ffd74a] px-6 py-2 rounded-2xl shadow-[0_0_20px_rgba(255,215,74,0.4)] animate-in fade-in flex flex-col items-center">
+                <p className="text-[#6a2818] text-sm font-black uppercase tracking-[0.2em] mb-[-5px]">
                   Premio 
                 </p>
-                <p className={`text-[#052e16] font-black tracking-tighter shadow-black drop-shadow-md ${
+                <p className={`text-[#6a2818] font-black tracking-tighter shadow-black drop-shadow-md ${
                   moneda === 'VES' && premioRonda > 1000 
                     ? 'text-3xl xl:text-4xl' 
                     : 'text-5xl xl:text-6xl'
@@ -352,10 +352,10 @@ export function TableroFullscreenV2({
             <Image src="/logo.png" alt="Logo Bingo" fill className="object-contain" priority />
           </div>*/}
           <div className="flex flex-col items-center mb-8">
-            <p className="text-[#ffd402] text-sm font-bold uppercase tracking-[0.4em] mb-[20px]">
+            <p className="text-[#ffd74a] text-sm font-bold uppercase tracking-[0.4em] mb-[20px]">
               Soporte
             </p>
-            <p className="text-white font-black text-5xl lg:text-[54px] h-[30px] tracking-wider">
+            <p className="text-[#6a2818] font-black text-5xl lg:text-[54px] h-[30px] tracking-wider">
               {numeroSoporte || '0000'}
             </p>
           </div>
@@ -363,7 +363,7 @@ export function TableroFullscreenV2({
           <div className="relative">
             <button
               onClick={() => setMenuAbierto(!menuAbierto)}
-              className="flex items-center gap-2 px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white/80 rounded-full transition-colors border border-white/10"
+              className="flex items-center gap-2 px-4 py-1.5 bg-white/10 hover:bg-white/20 text-[#6a2818] rounded-full transition-colors border border-[#6a2818]"
             >
               <Menu className="w-4 h-4" />
               <span className="text-xs font-bold uppercase tracking-wider">Menú</span>
@@ -440,13 +440,13 @@ export function TableroFullscreenV2({
         {/* COL 3: Stats + Premio (GIGANTE) */}
         <div className="flex-1 flex items-center justify-center ">
          
-          <div className="h-[90%] aspect-5/4 bg-[#1d1d1b] border-4 border-[#ffd402] rounded-xl flex flex-col shadow-2xl relative overflow-hidden">
-            <div className="bg-[#ffd402] h-8 w-full flex items-center justify-center shrink-0">
-              <span className="text-[#1d1d1b] font-black text-sm lg:text-base uppercase tracking-[0.3em]">
+          <div className="h-[90%] aspect-5/4 bg-[#6a2818] border-4 border-[#ffd74a] rounded-xl flex flex-col shadow-2xl relative overflow-hidden">
+            <div className="bg-[#ffd74a] h-8 w-full flex items-center justify-center shrink-0">
+              <span className="text-[#6a2818] font-black text-sm lg:text-base uppercase tracking-[0.3em]">
                 Última
               </span>
             </div>
-            <div className="flex-1 flex items-center justify-center bg-[#052e16] relative">
+            <div className="flex-1 flex items-center justify-center bg-[#6a2818] relative">
               {/* Grid de últimos 4 números */}
               <div className="grid grid-cols-2 grid-rows-3 w-full h-full">
                 {/* Div 1: Último número (más grande) - ocupa 3 filas */}

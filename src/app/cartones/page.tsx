@@ -70,13 +70,13 @@ export default function CartonesPage() {
   }, [paginaActual, totalPaginas]);
 
   return (
-    <div className="min-h-screen bg-[#124723] py-8">
+    <div className="min-h-screen bg-[#fbf7da] py-8">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-4xl font-black text-[#ffd402]">Cartones</h1>
-            <p className="text-[#f8df7e] mt-2">
+            <h1 className="text-4xl font-black text-[#6a2818]">Cartones</h1>
+            <p className="text-[#6a2818] mt-2 font-semibold">
               {cartones.length.toLocaleString()} cartones disponibles
             </p>
           </div>
@@ -85,7 +85,7 @@ export default function CartonesPage() {
             size="lg" 
             onClick={recargar} 
             disabled={loading}
-            className="bg-[#ffd402] text-[#1d1d1b] hover:bg-[#ffe44a]"
+            className="bg-[#ffd74a] text-[#6a2818] hover:bg-[#ffe84d]"
           >
             <RefreshCw className={`w-5 h-5 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Recargar
@@ -93,24 +93,24 @@ export default function CartonesPage() {
         </div>
 
         {/* Búsqueda y Info de Paginación */}
-        <div className="bg-[#1d1d1b] rounded-xl shadow-lg p-6 mb-8 border border-[#ffd402]/30">
+        <div className="bg-[#6a2818] rounded-xl shadow-lg p-6 mb-8 border border-[#ffd74a]/30">
           <div className="flex flex-col md:flex-row gap-4 items-center">
             <div className="relative flex-1 w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#f8df7e] w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#ffd74a] w-5 h-5" />
               <Input
                 type="text"
                 value={busqueda}
                 onChange={(e) => handleBusqueda(e.target.value)}
                 placeholder="Buscar por serial o número de cartón..."
-                className="pl-10 bg-[#1d1d1b] border-[#3d3d3b] text-white placeholder-gray-500 focus:border-[#ffd402]"
+                className="pl-10 bg-[#fbf7da] border-[#6a2818] text-[#6a2818] placeholder-gray-500 focus:border-[#ffd74a]"
               />
             </div>
-            <div className="text-[#f8df7e] text-sm whitespace-nowrap">
-              Mostrando <span className="font-bold text-[#ffd402]">{indiceInicio + 1}</span> - <span className="font-bold text-[#ffd402]">{Math.min(indiceFin, cartonesFiltrados.length)}</span> de <span className="font-bold text-[#ffd402]">{cartonesFiltrados.length.toLocaleString()}</span>
+            <div className="text-[#ffd74a] text-sm whitespace-nowrap">
+              Mostrando <span className="font-bold text-[#6a2818]">{indiceInicio + 1}</span> - <span className="font-bold text-[#6a2818]">{Math.min(indiceFin, cartonesFiltrados.length)}</span> de <span className="font-bold text-[#6a2818]">{cartonesFiltrados.length.toLocaleString()}</span>
             </div>
           </div>
           {busqueda && (
-            <p className="text-sm text-[#68b258] mt-2">
+            <p className="text-sm text-[#ffd74a] mt-2 font-semibold">
               {cartonesFiltrados.length.toLocaleString()} resultado(s) encontrado(s)
             </p>
           )}
@@ -119,27 +119,27 @@ export default function CartonesPage() {
         {/* Grid de cartones */}
         {loading ? (
           <div className="text-center py-16">
-            <RefreshCw className="w-12 h-12 mx-auto mb-4 text-[#ffd402] animate-spin" />
-            <p className="text-[#f8df7e]">Cargando cartones...</p>
+            <RefreshCw className="w-12 h-12 mx-auto mb-4 text-[#ffd74a] animate-spin" />
+            <p className="text-[#6a2818] font-semibold">Cargando cartones...</p>
           </div>
         ) : cartones.length === 0 ? (
-          <div className="text-center py-16 bg-[#1d1d1b] rounded-xl shadow-lg border border-[#ffd402]/30">
-            <RefreshCw className="w-16 h-16 mx-auto mb-4 text-[#ffd402]/50" />
-            <h3 className="text-xl font-bold text-[#ffd402] mb-2">
+          <div className="text-center py-16 bg-[#6a2818] rounded-xl shadow-lg border border-[#ffd74a]/30">
+            <RefreshCw className="w-16 h-16 mx-auto mb-4 text-[#ffd74a]/50" />
+            <h3 className="text-xl font-bold text-[#ffd74a] mb-2">
               Error al cargar cartones
             </h3>
-            <p className="text-[#f8df7e] mb-6">
+            <p className="text-white mb-6">
               No se pudieron cargar los cartones desde el JSON
             </p>
-            <Button onClick={recargar} className="bg-[#ffd402] text-[#1d1d1b] hover:bg-[#ffe44a]">
+            <Button onClick={recargar} className="bg-[#ffd74a] text-[#6a2818] hover:bg-[#ffe84d]">
               <RefreshCw className="w-4 h-4 mr-2" />
               Reintentar
             </Button>
           </div>
         ) : cartonesFiltrados.length === 0 ? (
-          <div className="text-center py-16 bg-[#1d1d1b] rounded-xl shadow-lg border border-[#ffd402]/30">
-            <Search className="w-16 h-16 mx-auto mb-4 text-[#ffd402]/50" />
-            <p className="text-[#f8df7e]">
+          <div className="text-center py-16 bg-[#6a2818] rounded-xl shadow-lg border border-[#ffd74a]/30">
+            <Search className="w-16 h-16 mx-auto mb-4 text-[#ffd74a]/50" />
+            <p className="text-white">
               No se encontraron cartones con &quot;{busqueda}&quot;
             </p>
           </div>
@@ -150,11 +150,11 @@ export default function CartonesPage() {
               {cartonesPaginados.map((carton) => (
                 <div
                   key={carton.id}
-                  className="bg-[#1d1d1b] rounded-xl shadow-lg p-4 hover:shadow-xl transition-all hover:scale-[1.02] border border-[#ffd402]/20 hover:border-[#ffd402]/50"
+                  className="bg-white rounded-xl shadow-lg p-4 hover:shadow-xl transition-all hover:scale-[1.02] border border-[#6a2818]/20 hover:border-[#ffd74a]/50"
                 >
                   <div className="mb-3 text-center">
-                    <p className="text-xs text-[#f8df7e]/70">Cartón</p>
-                    <p className="text-xl font-bold text-[#ffd402]">#{carton.numero_carton}</p>
+                    <p className="text-xs text-[#6a2818]/70">Cartón</p>
+                    <p className="text-xl font-bold text-[#6a2818]">#{carton.numero_carton}</p>
                     <p className="text-xs text-gray-500 truncate">{carton.serial}</p>
                   </div>
                   <CartonGrid carton={carton} size="small" />
@@ -164,12 +164,12 @@ export default function CartonesPage() {
 
             {/* Paginación */}
             {totalPaginas > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 bg-[#1d1d1b] rounded-xl p-4 border border-[#ffd402]/30">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 bg-[#6a2818] rounded-xl p-4 border border-[#ffd74a]/30">
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => irAPagina(1)}
                     disabled={paginaActual === 1}
-                    className="p-2 rounded-lg bg-[#2d2d2b] text-[#ffd402] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#ffd402] hover:text-[#1d1d1b] transition-colors"
+                    className="p-2 rounded-lg bg-[#fbf7da] text-[#6a2818] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#ffd74a] hover:text-[#6a2818] transition-colors"
                     title="Primera página"
                   >
                     <ChevronsLeft className="w-5 h-5" />
@@ -178,7 +178,7 @@ export default function CartonesPage() {
                   <button
                     onClick={() => irAPagina(paginaActual - 1)}
                     disabled={paginaActual === 1}
-                    className="p-2 rounded-lg bg-[#2d2d2b] text-[#ffd402] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#ffd402] hover:text-[#1d1d1b] transition-colors"
+                    className="p-2 rounded-lg bg-[#fbf7da] text-[#6a2818] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#ffd74a] hover:text-[#6a2818] transition-colors"
                     title="Página anterior"
                   >
                     <ChevronLeft className="w-5 h-5" />
@@ -189,12 +189,12 @@ export default function CartonesPage() {
                       <>
                         <button
                           onClick={() => irAPagina(1)}
-                          className="w-10 h-10 rounded-lg bg-[#2d2d2b] text-[#f8df7e] hover:bg-[#ffd402] hover:text-[#1d1d1b] transition-colors font-bold"
+                          className="w-10 h-10 rounded-lg bg-[#fbf7da] text-[#6a2818] hover:bg-[#ffd74a] hover:text-[#6a2818] transition-colors font-bold"
                         >
                           1
                         </button>
                         {paginasVisibles[0] > 2 && (
-                          <span className="text-[#f8df7e] px-2">...</span>
+                          <span className="text-[#ffd74a] px-2">...</span>
                         )}
                       </>
                     )}
@@ -205,8 +205,8 @@ export default function CartonesPage() {
                         onClick={() => irAPagina(pagina)}
                         className={`w-10 h-10 rounded-lg font-bold transition-colors ${
                           pagina === paginaActual
-                            ? 'bg-[#ffd402] text-[#1d1d1b] shadow-lg'
-                            : 'bg-[#2d2d2b] text-[#f8df7e] hover:bg-[#ffd402] hover:text-[#1d1d1b]'
+                            ? 'bg-[#ffd74a] text-[#6a2818] shadow-lg'
+                            : 'bg-[#fbf7da] text-[#6a2818] hover:bg-[#ffd74a] hover:text-[#6a2818]'
                         }`}
                       >
                         {pagina}
@@ -216,11 +216,11 @@ export default function CartonesPage() {
                     {paginasVisibles[paginasVisibles.length - 1] < totalPaginas && (
                       <>
                         {paginasVisibles[paginasVisibles.length - 1] < totalPaginas - 1 && (
-                          <span className="text-[#f8df7e] px-2">...</span>
+                          <span className="text-[#ffd74a] px-2">...</span>
                         )}
                         <button
                           onClick={() => irAPagina(totalPaginas)}
-                          className="w-10 h-10 rounded-lg bg-[#2d2d2b] text-[#f8df7e] hover:bg-[#ffd402] hover:text-[#1d1d1b] transition-colors font-bold"
+                          className="w-10 h-10 rounded-lg bg-[#fbf7da] text-[#6a2818] hover:bg-[#ffd74a] hover:text-[#6a2818] transition-colors font-bold"
                         >
                           {totalPaginas}
                         </button>
@@ -231,7 +231,7 @@ export default function CartonesPage() {
                   <button
                     onClick={() => irAPagina(paginaActual + 1)}
                     disabled={paginaActual === totalPaginas}
-                    className="p-2 rounded-lg bg-[#2d2d2b] text-[#ffd402] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#ffd402] hover:text-[#1d1d1b] transition-colors"
+                    className="p-2 rounded-lg bg-[#fbf7da] text-[#6a2818] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#ffd74a] hover:text-[#6a2818] transition-colors"
                     title="Página siguiente"
                   >
                     <ChevronRight className="w-5 h-5" />
@@ -240,15 +240,15 @@ export default function CartonesPage() {
                   <button
                     onClick={() => irAPagina(totalPaginas)}
                     disabled={paginaActual === totalPaginas}
-                    className="p-2 rounded-lg bg-[#2d2d2b] text-[#ffd402] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#ffd402] hover:text-[#1d1d1b] transition-colors"
+                    className="p-2 rounded-lg bg-[#fbf7da] text-[#6a2818] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#ffd74a] hover:text-[#6a2818] transition-colors"
                     title="Última página"
                   >
                     <ChevronsRight className="w-5 h-5" />
                   </button>
                 </div>
 
-                <div className="text-[#f8df7e] text-sm">
-                  Página <span className="font-bold text-[#ffd402]">{paginaActual}</span> de <span className="font-bold text-[#ffd402]">{totalPaginas}</span>
+                <div className="text-[#ffd74a] text-sm">
+                  Página <span className="font-bold text-white">{paginaActual}</span> de <span className="font-bold text-white">{totalPaginas}</span>
                 </div>
               </div>
             )}

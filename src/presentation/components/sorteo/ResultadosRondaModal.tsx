@@ -101,17 +101,17 @@ export function ResultadosRondaModal({
 
   return (
     <>
-      <div className="fixed inset-0 bg-[#124723] z-[60] flex flex-col animate-in fade-in duration-300">
+      <div className="fixed inset-0 bg-[#fbf7da] z-[60] flex flex-col animate-in fade-in duration-300">
         {/* HEADER */}
-        <div className="bg-[#ffd402] py-4 px-6 md:px-12 shrink-0 shadow-xl z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="bg-[#ffd74a] py-4 px-6 md:px-12 shrink-0 shadow-xl z-10 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Trophy className="w-10 h-10 md:w-12 md:h-12 text-[#1d1d1b]" />
+            <Trophy className="w-10 h-10 md:w-12 md:h-12 text-[#6a2818]" />
             <div>
-              <h2 className="text-[#1d1d1b] text-3xl md:text-5xl font-black uppercase tracking-tighter leading-none">
+              <h2 className="text-[#6a2818] text-3xl md:text-5xl font-black uppercase tracking-tighter leading-none">
                 Resultados
               </h2>
               {premioRonda > 0 && rondaFiltro === rondaActual && (
-                <p className="text-[#1d1d1b] font-bold text-lg">
+                <p className="text-[#6a2818] font-bold text-lg">
                   Premio: ${premioRonda.toLocaleString()}
                 </p>
               )}
@@ -122,14 +122,14 @@ export function ResultadosRondaModal({
             {hayMasRondas && rondaFiltro === rondaActual && (
               <button
                 onClick={onSiguienteRonda}
-                className="px-6 py-3 bg-[#1d1d1b] text-white font-bold text-lg rounded-xl flex items-center gap-2 hover:bg-[#333] transition-colors shadow-lg"
+                className="px-6 py-3 bg-[#6a2818] text-white font-bold text-lg rounded-xl flex items-center gap-2 hover:bg-[#8a3828] transition-colors shadow-lg"
               >
                 Siguiente <SkipForward className="w-5 h-5" />
               </button>
             )}
             <button
               onClick={onClose}
-              className="p-3 bg-white/20 hover:bg-red-600 text-[#1d1d1b] hover:text-white rounded-xl transition-colors"
+              className="p-3 bg-white/20 hover:bg-red-600 text-[#6a2818] hover:text-white rounded-xl transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
@@ -137,7 +137,7 @@ export function ResultadosRondaModal({
         </div>
 
         {/* BARRA DE FILTRO */}
-        <div className="bg-[#1d1d1b] p-2 flex justify-center border-b border-[#ffd402]/30">
+        <div className="bg-[#6a2818] p-2 flex justify-center border-b border-[#ffd74a]/30">
           <div className="flex gap-2 overflow-x-auto max-w-4xl custom-scrollbar pb-1">
             {Array.from({ length: totalRondas }).map((_, i) => {
               const r = i + 1;
@@ -150,10 +150,10 @@ export function ResultadosRondaModal({
                   className={cn(
                     'px-6 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap',
                     rondaFiltro === r
-                      ? 'bg-[#ffd402] text-[#1d1d1b]'
+                      ? 'bg-[#ffd74a] text-[#6a2818]'
                       : disabled
                         ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-                        : 'bg-[#124723] text-white hover:bg-[#1a5c2f]'
+                        : 'bg-[#6a2818] text-white hover:bg-[#8a3828]'
                   )}
                 >
                   RONDA {r}
@@ -164,11 +164,11 @@ export function ResultadosRondaModal({
         </div>
 
         {/* CONTENIDO */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-b from-[#124723] to-[#0a2e16]">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-b from-[#fbf7da] to-[#f5efc8]">
           <div className="max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
             {/* GANADORES */}
             <div className="space-y-4">
-              <div className="bg-[#1d1d1b] p-4 rounded-xl border-l-4 border-[#ffd402] shadow-lg flex justify-between items-center sticky top-0 z-10">
+              <div className="bg-[#6a2818] p-4 rounded-xl border-l-4 border-[#ffd74a] shadow-lg flex justify-between items-center sticky top-0 z-10">
                 <h3 className="text-white font-black text-xl uppercase">
                   🏆 Ganadores ({datosMostrados.ganadores.length})
                 </h3>
@@ -183,7 +183,7 @@ export function ResultadosRondaModal({
                     <button
                       key={i}
                       onClick={() => abrirGanador(g)}
-                      className="w-full bg-[#ffd402] hover:bg-[#ffe04d] text-[#1d1d1b] p-4 rounded-xl shadow-md transition-transform hover:scale-[1.02] text-left group"
+                      className="w-full bg-[#ffd74a] hover:bg-[#ffe84d] text-[#6a2818] p-4 rounded-xl shadow-md transition-transform hover:scale-[1.02] text-left group"
                     >
                       <div className="flex justify-between items-start">
                         <div>
@@ -202,7 +202,7 @@ export function ResultadosRondaModal({
 
             {/* PAVOSOS */}
             <div className="space-y-4">
-              <div className="bg-[#1d1d1b] p-4 rounded-xl border-l-4 border-orange-500 shadow-lg flex justify-between items-center sticky top-0 z-10">
+              <div className="bg-[#6a2818] p-4 rounded-xl border-l-4 border-orange-500 shadow-lg flex justify-between items-center sticky top-0 z-10">
                 <h3 className="text-white font-black text-xl uppercase">
                   😅 Pavosos ({datosMostrados.pavosos.length})
                 </h3>
@@ -244,7 +244,7 @@ export function ResultadosRondaModal({
 
             {/* MENOS ACIERTOS */}
             <div className="space-y-4">
-              <div className="bg-[#1d1d1b] p-4 rounded-xl border-l-4 border-red-500 shadow-lg flex justify-between items-center sticky top-0 z-10">
+              <div className="bg-[#6a2818] p-4 rounded-xl border-l-4 border-red-500 shadow-lg flex justify-between items-center sticky top-0 z-10">
                 <h3 className="text-white font-black text-xl uppercase">❌ Menos Aciertos</h3>
               </div>
               <div className="space-y-3">
@@ -257,13 +257,13 @@ export function ResultadosRondaModal({
                     <button
                       key={i}
                       onClick={() => abrirMenosAciertos(item)}
-                      className="w-full bg-[#1d1d1b] hover:bg-[#2d2d2b] p-4 rounded-xl border border-white/10 shadow-lg flex items-center gap-4 transition-transform hover:scale-[1.02] text-left group"
+                      className="w-full bg-[#6a2818] hover:bg-[#8a3828] p-4 rounded-xl border border-white/10 shadow-lg flex items-center gap-4 transition-transform hover:scale-[1.02] text-left group"
                     >
                       <div className="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center shrink-0 group-hover:bg-red-600 transition-colors">
                         <Frown className="w-6 h-6 text-red-500 group-hover:text-white" />
                       </div>
                       <div>
-                        <p className="text-white font-bold text-lg group-hover:text-[#ffd402]">
+                        <p className="text-white font-bold text-lg group-hover:text-[#ffd74a]">
                           Cartón #{item.numero_carton}
                         </p>
                         <p className="text-gray-400 text-sm">{item.aciertos} aciertos</p>

@@ -18,19 +18,11 @@ export function Header() {
   const { logout } = useAuth();
 
   return (
-    <header className="bg-[#124723] border-b-2 border-[#ffd402] sticky top-0 z-30 shadow-lg">
+    <header className="bg-[#fbf7da] border-b-2 border-[#6a2818] sticky top-0 z-30 shadow-lg">
       <div className="container mx-auto px-4 max-w-7xl">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <Image
-              src="/logo.png"
-              alt="Bingo Carabobo"
-              width={120}
-              height={48}
-              className="h-12 w-auto rounded-lg shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300"
-            />
-          </Link>
+         
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-2">
@@ -45,8 +37,8 @@ export function Header() {
                   className={cn(
                     'flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-all duration-300',
                     isActive
-                      ? 'bg-[#ffd402] text-[#1d1d1b] shadow-lg scale-105'
-                      : 'text-[#f8df7e] hover:bg-[#ffd402]/20 hover:text-[#ffd402] hover:scale-105'
+                      ? 'bg-[#6a2818] text-[white] shadow-lg scale-105'
+                      : 'text-[white] bg-[#6a2818]/20 hover:text-[#6a2818] hover:scale-105'
                   )}
                 >
                   <Icon className="w-5 h-5" />
@@ -58,7 +50,7 @@ export function Header() {
             {/* Botón Logout */}
             <button
               onClick={logout}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all duration-300 ml-2"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-red-400 hover:bg-red-500 hover:text-red-300 transition-all duration-300 ml-2"
               title="Cerrar sesión"
             >
               <LogOut className="w-5 h-5" />
