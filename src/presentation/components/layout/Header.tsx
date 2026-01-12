@@ -21,7 +21,8 @@ export function Header() {
     <header className="bg-[#fbf7da] border-b-2 border-[#6a2818] sticky top-0 z-30 shadow-lg">
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="flex items-center justify-center h-16">
-          {/* Logo */}
+          {/* Logo 
+          prueba de produccion*/}
          
 
           {/* Navigation */}
