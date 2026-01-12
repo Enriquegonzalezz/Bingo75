@@ -128,6 +128,7 @@ export function TableroFullscreenV2({
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [mostrarBuscador, setMostrarBuscador] = useState(false);
   const [mostrarResultados, setMostrarResultados] = useState(false);
+  const [numeroARetirar, setNumeroARetirar] = useState<number | null>(null);
 
   // Refs para controlar cambios en la cantidad de ganadores/pavosos
   const prevGanadoresRef = useRef<number>(0);
@@ -147,6 +148,27 @@ export function TableroFullscreenV2({
     setBusquedaCarton('');
     setCartonBuscado(null);
     setMostrarBuscador(false);
+  };
+
+  const handleClickNumero = (numero: number) => {
+    // Si el número ya está sorteado, mostrar modal de confirmación
+    if (numerosSorteados.includes(numero)) {
+      setNumeroARetirar(numero);
+    } else {
+      // Si no está sorteado, agregarlo directamente
+      onClickNumero(numero);
+    }
+  };
+
+  const confirmarRetiro = () => {
+    if (numeroARetirar !== null) {
+      onClickNumero(numeroARetirar);
+      setNumeroARetirar(null);
+    }
+  };
+
+  const cancelarRetiro = () => {
+    setNumeroARetirar(null);
   };
 
   // Separar listas
@@ -247,7 +269,7 @@ export function TableroFullscreenV2({
                       numero={num}
                       sorteado={numerosSorteados.includes(num)}
                       esUltimo={num === ultimoNumero}
-                      onClick={() => onClickNumero(num)}
+                      onClick={() => handleClickNumero(num)}
                     />
                   ))}
                 </div>
@@ -338,7 +360,7 @@ export function TableroFullscreenV2({
                     ? 'text-3xl xl:text-4xl' 
                     : 'text-5xl xl:text-6xl'
                 }`}>
-                  {moneda === 'USD' ? '$' : 'Bs.'}{premioRonda.toLocaleString()}
+                  {moneda === 'USD' ? '$' : 'Bs. '}{premioRonda.toLocaleString()}
                 </p>
               </div>
             )}
@@ -511,6 +533,42 @@ export function TableroFullscreenV2({
         onClose={() => setMostrarResultados(false)}
         onSiguienteRonda={handleSiguienteRonda}
       />
+
+      {/* Modal de confirmación para retirar número */}
+      {numeroARetirar !== null && (
+        <>
+          <div className="fixed inset-0 bg-black/60 z-[100] animate-in fade-in" onClick={cancelarRetiro} />
+          <div className="fixed inset-0 z-[101] flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 animate-in zoom-in-95">
+              <div className="text-center">
+                <div className="mx-auto w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-4xl font-black text-red-600">{numeroARetirar}</span>
+                </div>
+                <h3 className="text-2xl font-black text-gray-900 mb-2">
+                  ¿Retirar número?
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  ¿Estás seguro que quieres retirar el número <span className="font-bold text-red-600">{numeroARetirar}</span>?
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={cancelarRetiro}
+                    className="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={confirmarRetiro}
+                    className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-colors"
+                  >
+                    Retirar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

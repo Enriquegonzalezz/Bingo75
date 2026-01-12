@@ -23,7 +23,7 @@ export function LoginForm() {
     const success = login(username, password);
     
     if (success) {
-      toast.success('¡Bienvenido a Bingo Carabobo!');
+      toast.success('¡Bienvenido a Bingoelgocho!');
     } else {
       toast.error('Credenciales incorrectas');
     }
