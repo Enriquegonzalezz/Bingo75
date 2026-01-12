@@ -57,6 +57,7 @@ export default function TableroPage() {
 
   const {
     numerosSorteados,
+    historialClicks,
     ultimoNumero,
     ganadores,
     cartones,
@@ -173,6 +174,7 @@ export default function TableroPage() {
     return (
       <TableroFullscreenV2
         numerosSorteados={numerosSorteados}
+        historialClicks={historialClicks}
         ultimoNumero={ultimoNumero}
         totalSorteados={totalSorteados}
         ganadores={ganadores}
@@ -190,6 +192,7 @@ export default function TableroPage() {
         rondaFinalizada={rondaFinalizada}
         numeroSoporte={configuracionJuego.numeroSoporte}
         premioRonda={configuracionJuego.rondas.find((r) => r.numero === rondaActual)?.premio}
+        moneda={configuracionJuego.rondas.find((r) => r.numero === rondaActual)?.moneda || 'USD'}
         buscarCarton={buscarCarton}
         historialRondas={historialRondas}
       />

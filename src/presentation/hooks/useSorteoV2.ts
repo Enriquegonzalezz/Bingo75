@@ -40,6 +40,7 @@ export interface HistorialRonda {
 
 export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
   const [numerosSorteados, setNumerosSorteados] = useState<Set<number>>(new Set());
+  const [historialClicks, setHistorialClicks] = useState<number[]>([]);
   const [ultimoNumeroClickeado, setUltimoNumeroClickeado] = useState<number | null>(null);
   const [ganadores, setGanadores] = useState<Ganador[]>([]);
   const [cartones, setCartones] = useState<Carton[]>([]);
@@ -139,13 +140,27 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
 
       setCartones(todosCartones);
       
-      // Filtrar por rango si hay configuración
+      // Filtrar cartones según configuración
       if (configuracion) {
-        const { desde, hasta } = configuracion.rangoCartones;
-        const filtrados = todosCartones.filter(
-          c => c.numero_carton >= desde && c.numero_carton <= hasta
-        );
-        setCartonesEnJuego(filtrados);
+        // Verificar si la ronda actual tiene cartones individuales definidos
+        const rondaConfig = configuracion.rondas.find(r => r.numero === rondaActual);
+        
+        if (rondaConfig?.cartonesIndividuales && rondaConfig.cartonesIndividuales.length > 0) {
+          // Usar cartones individuales de la ronda
+          const filtrados = todosCartones.filter(
+            c => rondaConfig.cartonesIndividuales!.includes(c.numero_carton)
+          );
+          setCartonesEnJuego(filtrados);
+          console.log(`🎯 Ronda ${rondaActual}: Usando ${filtrados.length} cartones específicos`);
+        } else {
+          // Usar rango general
+          const { desde, hasta } = configuracion.rangoCartones;
+          const filtrados = todosCartones.filter(
+            c => c.numero_carton >= desde && c.numero_carton <= hasta
+          );
+          setCartonesEnJuego(filtrados);
+          console.log(`📊 Ronda ${rondaActual}: Usando rango ${desde}-${hasta} (${filtrados.length} cartones)`);
+        }
        
       } else {
         setCartonesEnJuego(todosCartones);
@@ -156,7 +171,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     } finally {
       setLoading(false);
     }
-  }, [configuracion]);
+  }, [configuracion, rondaActual]);
 
   // Calcular aciertos de un cartón
   const calcularAciertos = (carton: Carton, numerosSet: Set<number>): number => {
@@ -259,21 +274,19 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
           : 'Sin figura';
         return {
           carton,
-          patron: nombreFigura, // Guardar el nombre de la figura que se estaba jugando
+          patron: nombreFigura,
           patronId: 'pavoso',
-          patronMatriz: patronFigura, // Guardar la matriz del patrón
+          patronMatriz: patronFigura,
           numero_carton: carton.numero_carton,
           timestamp: new Date(),
           tipo: 'pavoso',
-          // Congelar los números sorteados al momento de ser pavoso
-          // para que el cartón no se actualice después
           numerosSorteadosAlGanar: Array.from(numerosSet),
         };
       }
 
       return null;
     },
-    [pavosoValidator, pavosoActivo, modalidadesActivas]
+    [pavosoActivo, pavosoValidator, modalidadesActivas]
   );
 
   // Quitar un número sorteado (para corregir errores)
@@ -286,6 +299,13 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
       const nuevosNumeros = new Set(numerosSorteados);
       nuevosNumeros.delete(numero);
       setNumerosSorteados(nuevosNumeros);
+
+      // Actualizar historial de clicks removiendo este número
+      const nuevoHistorial = historialClicks.filter(n => n !== numero);
+      setHistorialClicks(nuevoHistorial);
+
+      // Actualizar último número clickeado al último del historial
+      setUltimoNumeroClickeado(nuevoHistorial.length > 0 ? nuevoHistorial[nuevoHistorial.length - 1] : null);
 
       // Recalcular ganadores: quitar los que ya no cumplen el patrón
       // IMPORTANTE: Los pavosos NUNCA se quitan una vez detectados (están congelados)
@@ -307,7 +327,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
       });
 
     },
-    [numerosSorteados, validadores, pavosoValidator]
+    [numerosSorteados, historialClicks, validadores]
   );
 
   // Sortear número (CLICK MANUAL) - Funciona como toggle
@@ -327,6 +347,9 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
       const nuevosNumeros = new Set(numerosSorteados);
       nuevosNumeros.add(numero);
       setNumerosSorteados(nuevosNumeros);
+      
+      // Agregar al historial de clicks
+      setHistorialClicks(prev => [...prev, numero]);
       setUltimoNumeroClickeado(numero);
 
       const nuevosGanadores: Ganador[] = [];
@@ -365,16 +388,34 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
           
           console.log(mensaje);
         });
+
+        // Calcular automáticamente los menos aciertos SOLO cuando hay ganadores de BINGO (NO pavosos)
+        const hayGanadoresBingo = nuevosGanadores.some(g => g.tipo === 'normal');
+        if (menosAciertosActivo && hayGanadoresBingo) {
+          const todosGanadores = [...ganadoresActuales, ...nuevosGanadores];
+          const cartonesConAciertosCalc: CartonConAciertos[] = cartonesEnJuego
+            .filter(c => !todosGanadores.some(g => g.numero_carton === c.numero_carton))
+            .map(carton => ({
+              carton,
+              numero_carton: carton.numero_carton,
+              aciertos: calcularAciertos(carton, nuevosNumeros)
+            }))
+            .sort((a, b) => a.aciertos - b.aciertos)
+            .slice(0, 5);
+          
+          setCartonesConMenosAciertos(cartonesConAciertosCalc);
+          console.log(`📊 Menos aciertos calculados: ${cartonesConAciertosCalc.length} cartones`);
+        }
       }
 
-     
     },
-    [numerosSorteados, cartonesEnJuego, validarCarton, validarPavoso, ganadores, quitarNumero]
+    [numerosSorteados, cartonesEnJuego, validarCarton, validarPavoso, ganadores, quitarNumero, menosAciertosActivo]
   );
 
   // Reiniciar sorteo completo
   const reiniciar = useCallback(() => {
     setNumerosSorteados(new Set());
+    setHistorialClicks([]);
     setUltimoNumeroClickeado(null);
     setGanadores([]);
     setCartonesConMenosAciertos([]);
@@ -412,12 +453,12 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
       
       setCartonesConMenosAciertos(cartonesConAciertosCalc);
     }
-    
+
     console.log(`🏁 Ronda ${rondaActual} finalizada`);
   }, [rondaActual, ganadores, numerosSorteados, cartonesConMenosAciertos, menosAciertosActivo, cartonesEnJuego]);
 
   // Pasar a la siguiente ronda
-  const siguienteRonda = useCallback(() => {
+  const siguienteRonda = useCallback(async () => {
     if (rondaActual >= totalRondas) {
       console.log('🎮 ¡Juego terminado! Todas las rondas completadas.');
       return;
@@ -425,12 +466,15 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     
     // Limpiar estado para nueva ronda
     setNumerosSorteados(new Set());
+    setHistorialClicks([]);
     setUltimoNumeroClickeado(null);
     setGanadores([]);
     setCartonesConMenosAciertos([]);
     setRondaFinalizada(false);
     setRondaActual(prev => prev + 1);
     
+    // Recargar cartones para la nueva ronda (se ejecutará después del cambio de rondaActual)
+    // El useEffect de cargarCartones se encargará de esto
   }, [rondaActual, totalRondas]);
 
   // Obtener letra del número
@@ -467,6 +511,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
 
   return {
     numerosSorteados: Array.from(numerosSorteados).sort((a, b) => a - b),
+    historialClicks,
     ultimoNumero: ultimoNumeroClickeado,
     ganadores,
     cartones,

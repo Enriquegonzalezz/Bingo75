@@ -13,9 +13,11 @@ export interface ConfiguracionRonda {
   pavosoActivo: boolean;
   menosAciertosActivo: boolean;
   modalidades: string[]; // IDs de modalidades para esta ronda
-  premio: number; // Premio en dólares para esta ronda
+  premio: number; // Premio para esta ronda
+  moneda?: 'USD' | 'VES'; // Moneda específica para esta ronda
   patronPersonalizado?: boolean[][]; // Patrón personalizado para esta ronda
   nombrePatronPersonalizado?: string; // Nombre del patrón personalizado
+  cartonesIndividuales?: number[]; // Cartones específicos para esta ronda (opcional)
 }
 
 // Configuración del juego
@@ -100,10 +102,11 @@ export function ConfiguracionModal({
   const [avisoAutomatico, setAvisoAutomatico] = useState(true);
   const [numeroRondas, setNumeroRondas] = useState(1);
   const [rondas, setRondas] = useState<ConfiguracionRonda[]>([
-    { numero: 1, pavosoActivo: true, menosAciertosActivo: true, modalidades: [], premio: 0 }
+    { numero: 1, pavosoActivo: true, menosAciertosActivo: true, modalidades: [], premio: 0, moneda: 'USD' }
   ]);
-  const [numeroSoporte, setNumeroSoporte] = useState('');
+  const [numeroSoporte, setNumeroSoporte] = useState('0412987553');
   const [rondaSeleccionada, setRondaSeleccionada] = useState(1); // Ronda actualmente seleccionada para editar
+  const [inputCartonesIndividuales, setInputCartonesIndividuales] = useState(''); // Input temporal para cartones individuales
 
   // Patrón vacío por defecto
   const patronVacio: boolean[][] = [
@@ -222,27 +225,25 @@ export function ConfiguracionModal({
   const celdasActivasPersonalizado = patronPersonalizado.flat().filter(Boolean).length;
 
   // Manejar cambio de número de rondas
-  const handleNumeroRondasChange = (value: number) => {
-    const num = Math.max(1, Math.min(value, 20));
-    setNumeroRondas(num);
-    
+  const handleNumeroRondasChange = (n: number) => {
+    setNumeroRondas(n);
     const nuevasRondas: ConfiguracionRonda[] = [];
-    for (let i = 1; i <= num; i++) {
+    for (let i = 1; i <= n; i++) {
       const rondaExistente = rondas.find(r => r.numero === i);
-      nuevasRondas.push(rondaExistente || {
-        numero: i,
-        pavosoActivo: true,
-        menosAciertosActivo: true,
-        modalidades: [],
-        premio: 0,
-      });
+      if (rondaExistente) {
+        nuevasRondas.push(rondaExistente);
+      } else {
+        nuevasRondas.push({
+          numero: i,
+          pavosoActivo: true,
+          menosAciertosActivo: true,
+          modalidades: [],
+          premio: 0,
+          moneda: 'USD',
+        });
+      }
     }
     setRondas(nuevasRondas);
-    
-    // Si la ronda seleccionada ya no existe, seleccionar la última
-    if (rondaSeleccionada > num) {
-      setRondaSeleccionada(num);
-    }
   };
 
   // Toggle pavoso para una ronda
@@ -264,6 +265,44 @@ export function ConfiguracionModal({
     setRondas(prev => prev.map(r => 
       r.numero === numeroRonda ? { ...r, premio } : r
     ));
+  };
+
+  // Actualizar moneda de una ronda
+  const actualizarMonedaRonda = (numeroRonda: number, moneda: 'USD' | 'VES') => {
+    setRondas(prev => prev.map(r => 
+      r.numero === numeroRonda ? { ...r, moneda } : r
+    ));
+  };
+
+  // Actualizar cartones individuales de una ronda
+  const actualizarCartonesIndividuales = (numeroRonda: number, cartones: number[]) => {
+    setRondas(prev => prev.map(r => 
+      r.numero === numeroRonda ? { ...r, cartonesIndividuales: cartones } : r
+    ));
+  };
+
+  // Agregar cartones individuales desde el input
+  const agregarCartonesIndividuales = () => {
+    const numeros = inputCartonesIndividuales
+      .split(/[,\s]+/) // Separar por comas o espacios
+      .map(n => parseInt(n.trim()))
+      .filter(n => !isNaN(n) && n >= 1 && n <= totalCartones); // Validar números
+    
+    if (numeros.length > 0) {
+      const cartonesActuales = rondaActual?.cartonesIndividuales || [];
+      const nuevosCartones = [...new Set([...cartonesActuales, ...numeros])].sort((a, b) => a - b);
+      actualizarCartonesIndividuales(rondaSeleccionada, nuevosCartones);
+      setInputCartonesIndividuales('');
+    }
+  };
+
+  // Eliminar un cartón individual
+  const eliminarCartonIndividual = (numeroRonda: number, carton: number) => {
+    setRondas(prev => prev.map(r => {
+      if (r.numero !== numeroRonda) return r;
+      const nuevosCartones = (r.cartonesIndividuales || []).filter(c => c !== carton);
+      return { ...r, cartonesIndividuales: nuevosCartones.length > 0 ? nuevosCartones : undefined };
+    }));
   };
 
   // Copiar modalidades de otra ronda
@@ -375,18 +414,43 @@ export function ConfiguracionModal({
             <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#ffd402]/30 flex-wrap">
               <span className="text-[#f8df7e] text-sm">Ronda {rondaSeleccionada}:</span>
               
+              {/* Moneda de la ronda */}
+              <div className="flex items-center gap-2 bg-[#1d1d1b] rounded-lg px-3 py-1">
+                <span className="text-[#ffd402] font-bold text-xs">💵 Moneda:</span>
+                <button
+                  onClick={() => actualizarMonedaRonda(rondaSeleccionada, 'USD')}
+                  className={`px-3 py-1 rounded font-bold text-xs transition-all ${
+                    rondaActual?.moneda === 'USD' 
+                      ? 'bg-[#ffd402] text-[#1d1d1b]' 
+                      : 'bg-[#124723] text-[#f8df7e] hover:bg-[#1d5c2e]'
+                  }`}
+                >
+                  $ USD
+                </button>
+                <button
+                  onClick={() => actualizarMonedaRonda(rondaSeleccionada, 'VES')}
+                  className={`px-3 py-1 rounded font-bold text-xs transition-all ${
+                    rondaActual?.moneda === 'VES' 
+                      ? 'bg-[#ffd402] text-[#1d1d1b]' 
+                      : 'bg-[#124723] text-[#f8df7e] hover:bg-[#1d5c2e]'
+                  }`}
+                >
+                  Bs. VES
+                </button>
+              </div>
+
               {/* Premio de la ronda */}
               <div className="flex items-center gap-2 bg-[#ffd402] rounded-lg px-3 py-1">
                 <span className="text-[#1d1d1b] font-bold text-sm">💰 Premio:</span>
-                <span className="text-[#1d1d1b] font-bold">$</span>
+                <span className="text-[#1d1d1b] font-bold">{rondaActual?.moneda === 'USD' ? '$' : 'Bs.'}</span>
                 <input
                   type="number"
                   value={rondaActual?.premio || 0}
                   onChange={(e) => actualizarPremioRonda(rondaSeleccionada, parseFloat(e.target.value) || 0)}
                   min={0}
-                  step={0.01}
+                  step={rondaActual?.moneda === 'USD' ? 0.01 : 1}
                   className="w-24 px-2 py-1 rounded text-center font-bold text-[#1d1d1b] border-2 border-[#baa115]"
-                  placeholder="0.00"
+                  placeholder={rondaActual?.moneda === 'USD' ? '0.00' : '0'}
                 />
               </div>
 
@@ -413,6 +477,63 @@ export function ConfiguracionModal({
                 >
                   📋 Copiar de Ronda {rondaSeleccionada - 1}
                 </button>
+              )}
+            </div>
+
+            {/* Sección de Cartones Individuales */}
+            <div className="bg-[#1d1d1b] rounded-lg p-4 mt-4">
+              <h4 className="text-[#ffd402] font-bold mb-2 text-sm">🎯 Cartones Específicos (Opcional)</h4>
+              <p className="text-[#f8df7e] text-xs mb-3">
+                Si deseas que solo ciertos cartones participen en esta ronda, agrégalos aquí. Si no agregas ninguno, se usará el rango general.
+              </p>
+              
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={inputCartonesIndividuales}
+                  onChange={(e) => setInputCartonesIndividuales(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && agregarCartonesIndividuales()}
+                  placeholder="Ej: 20, 35, 40, 85, 100"
+                  className="flex-1 px-3 py-2 rounded-lg border-2 border-[#ffd402] text-[white] font-semibold text-sm"
+                />
+                <button
+                  onClick={agregarCartonesIndividuales}
+                  className="px-4 py-2 bg-[#ffd402] text-[#1d1d1b] font-bold rounded-lg hover:bg-[#e6c000] transition-colors text-sm"
+                >
+                  Agregar
+                </button>
+              </div>
+
+              {rondaActual?.cartonesIndividuales && rondaActual.cartonesIndividuales.length > 0 && (
+                <div className="bg-[#124723] rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[#ffd402] text-xs font-bold">
+                      {rondaActual.cartonesIndividuales.length} cartón(es) seleccionado(s)
+                    </span>
+                    <button
+                      onClick={() => actualizarCartonesIndividuales(rondaSeleccionada, [])}
+                      className="text-red-400 hover:text-red-300 text-xs font-bold"
+                    >
+                      Limpiar todos
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {rondaActual.cartonesIndividuales.map((carton) => (
+                      <div
+                        key={carton}
+                        className="bg-[#ffd402] text-[#1d1d1b] px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2"
+                      >
+                        #{carton}
+                        <button
+                          onClick={() => eliminarCartonIndividual(rondaSeleccionada, carton)}
+                          className="hover:text-red-600 font-black"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -567,6 +688,13 @@ export function ConfiguracionModal({
               <h3 className="font-bold text-[#124723] mb-4">Configuración de partida:</h3>
               
               <div className="space-y-4">
+                {/* Nota sobre moneda por ronda */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-sm text-blue-800">
+                    � <strong>Nota:</strong> La moneda se configura individualmente para cada ronda en la sección superior.
+                  </p>
+                </div>
+
                 <div className="flex items-center gap-4">
                   <label className="text-sm font-semibold text-gray-700 w-24">Nº Soporte:</label>
                   <input

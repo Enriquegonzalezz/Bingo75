@@ -12,6 +12,7 @@ import { Carton } from '@/domain/entities/Carton';
 
 interface TableroFullscreenV2Props {
   numerosSorteados: number[];
+  historialClicks: number[];
   ultimoNumero: number | null;
   totalSorteados: number;
   ganadores: Ganador[];
@@ -29,6 +30,7 @@ interface TableroFullscreenV2Props {
   rondaFinalizada: boolean;
   numeroSoporte?: string;
   premioRonda?: number;
+  moneda?: 'USD' | 'VES';
   historialRondas: Record<number, any>;
   buscarCarton: (
     numero: number
@@ -44,7 +46,7 @@ function PatronGigante({ modalidad }: { modalidad: Modalidad }) {
           fila.map((activo, j) => (
             <div
               key={`${i}-${j}`}
-              className={`rounded-full w-full h-full shadow-sm transition-all duration-300 ${
+              className={`rounded-[2px] w-full h-full shadow-sm transition-all duration-300 ${
                 i === 2 && j === 2
                   ? 'bg-white/50 animate-pulse'
                   : activo
@@ -77,11 +79,11 @@ const BingoBall = ({
 }) => (
   <button
     onClick={onClick}
-    className={`relative w-full aspect-square rounded-full flex items-center justify-center text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black transition-all duration-200 ${
+    className={`relative w-full aspect-square rounded-[2px] flex items-center justify-center text-2xl md:text-3xl lg:text-3xl xl:text-5xl font-black transition-all duration-200 ${
       sorteado
         ? esUltimo
-          ? 'bg-[#ff8a80] text-white ring-4 ring-[#ffb74d] scale-110 z-10 shadow-lg'
-          : 'bg-[#1d1d1b] text-white scale-100'
+          ? 'bg-[#ef1400] text-white ring-4 ring-[#ffb74d] scale-110 z-10 shadow-lg'
+          : 'bg-[#ff0000] text-white scale-100'
         : 'bg-[#f3f4f6] text-[#1d1d1b] hover:bg-[#ffd402] hover:scale-105'
     }`}
   >
@@ -91,6 +93,7 @@ const BingoBall = ({
 
 export function TableroFullscreenV2({
   numerosSorteados,
+  historialClicks,
   ultimoNumero,
   totalSorteados,
   ganadores,
@@ -107,6 +110,7 @@ export function TableroFullscreenV2({
   rondaFinalizada,
   numeroSoporte = '',
   premioRonda = 0,
+  moneda = 'USD',
   buscarCarton,
   historialRondas,
 }: TableroFullscreenV2Props) {
@@ -182,7 +186,7 @@ export function TableroFullscreenV2({
       <CelebrationEffect tipo={celebracion.tipo} activo={celebracion.activo} />
 
       {/* ===== TABLERO (70% Height) ===== */}
-      <div className="h-[70%] w-full flex px-4 pt-4 pb-2 md:px-8 lg:px-12 lg:pt-6 gap-6">
+      <div className="h-[70%] w-full flex px-2 pt-2 pb-2 md:px-4 lg:px-6 lg:pt-2 gap-6">
         {/* Panel Tablero */}
         <div
           className={`relative flex flex-col bg-white rounded-[2.5rem] shadow-2xl transition-all duration-500 overflow-hidden ${cartonBuscado ? 'w-3/4' : 'w-full'}`}
@@ -306,24 +310,52 @@ export function TableroFullscreenV2({
       </div>
 
       {/* ===== FOOTER (30% Height) ===== */}
-      <div className="h-[30%] w-full px-6 lg:px-12 pb-6 pt-2 flex items-stretch justify-between gap-0">
+      <div className="h-[30%] w-full px-6 lg:px-6 pb-6 pt-2 flex items-stretch justify-between gap-0">
         {/* COL 1: Figura */}
-        <div className="flex-1 flex justify-center items-center py-2 border-r-2 border-white/10 pr-8">
+        <div className="flex-1 flex justify-center items-center py-2 border-r-2 border-white/10 pr-2 gap-2">
           {modalidadesActivas.map((mod) => (
             <PatronGigante key={mod.id} modalidad={mod} />
           ))}
+           <div className="flex flex-col items-center gap-3">
+            <div className="text-center">
+              <p className="text-white/70 text-sm font-bold uppercase tracking-widest">
+                Cantadas
+              </p>
+              <p className="text-white font-black text-7xl lg:text-8xl leading-none flex items-baseline justify-end">
+                {totalSorteados}
+                <span className="text-4xl text-white ml-1">/75</span>
+              </p>
+            </div>
+
+            {/* PREMIO GIGANTE */}
+            {premioRonda > 0 && (
+              <div className="bg-[#ffd402] border-4 border-[#ffd402] px-6 py-2 rounded-2xl shadow-[0_0_20px_rgba(255,212,2,0.4)] animate-in fade-in flex flex-col items-center">
+                <p className="text-[#052e16] text-sm font-black uppercase tracking-[0.2em] mb-[-5px]">
+                  Premio 
+                </p>
+                <p className={`text-[#052e16] font-black tracking-tighter shadow-black drop-shadow-md ${
+                  moneda === 'VES' && premioRonda > 1000 
+                    ? 'text-3xl xl:text-4xl' 
+                    : 'text-5xl xl:text-6xl'
+                }`}>
+                  {moneda === 'USD' ? '$' : 'Bs.'}{premioRonda.toLocaleString()}
+                </p>
+              </div>
+            )}
+          </div>
+
         </div>
 
         {/* COL 2: Centro (Logo/Soporte/Menu) */}
-        <div className="flex-1 flex flex-col items-center justify-center px-8 border-r-2 border-white/10 relative">
-          <div className="relative h-28 w-80 lg:h-36 lg:w-96 mb-1">
+        <div className="flex-1 flex flex-col items-center justify-center px-2  border-r-2 border-white/10 relative">
+          {/*<div className="relative h-28 w-80 lg:h-36 lg:w-96 mb-1">
             <Image src="/logo.png" alt="Logo Bingo" fill className="object-contain" priority />
-          </div>
-          <div className="flex flex-col items-center mb-2">
-            <p className="text-[#ffd402] text-sm font-bold uppercase tracking-[0.4em] mb-[-5px]">
+          </div>*/}
+          <div className="flex flex-col items-center mb-8">
+            <p className="text-[#ffd402] text-sm font-bold uppercase tracking-[0.4em] mb-[20px]">
               Soporte
             </p>
-            <p className="text-white font-black text-4xl lg:text-5xl tracking-wider">
+            <p className="text-white font-black text-5xl lg:text-[54px] h-[30px] tracking-wider">
               {numeroSoporte || '0000'}
             </p>
           </div>
@@ -406,43 +438,53 @@ export function TableroFullscreenV2({
         </div>
 
         {/* COL 3: Stats + Premio (GIGANTE) */}
-        <div className="flex-1 flex items-center justify-end gap-10 pl-8">
-          <div className="flex flex-col items-end gap-3">
-            <div className="text-right">
-              <p className="text-white/70 text-sm font-bold uppercase tracking-widest mb-1">
-                Cantadas
-              </p>
-              <p className="text-white font-black text-7xl lg:text-8xl leading-none flex items-baseline justify-end">
-                {totalSorteados}
-                <span className="text-4xl text-white/40 ml-1">/75</span>
-              </p>
-            </div>
-
-            {/* PREMIO GIGANTE */}
-            {premioRonda > 0 && (
-              <div className="bg-[#1d1d1b] border-4 border-[#ffd402] px-6 py-2 rounded-2xl shadow-[0_0_20px_rgba(255,212,2,0.4)] animate-in fade-in flex flex-col items-end">
-                <p className="text-[#ffd402] text-sm font-black uppercase tracking-[0.2em] mb-[-5px]">
-                  Premio Ronda
-                </p>
-                <p className="text-white font-black text-5xl xl:text-6xl tracking-tighter shadow-black drop-shadow-md">
-                  ${premioRonda.toLocaleString()}
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div className="h-[90%] aspect-[5/4] bg-[#1d1d1b] border-4 border-[#ffd402] rounded-xl flex flex-col shadow-2xl relative overflow-hidden">
-            <div className="bg-[#ffd402] h-10 w-full flex items-center justify-center shrink-0">
+        <div className="flex-1 flex items-center justify-center ">
+         
+          <div className="h-[90%] aspect-5/4 bg-[#1d1d1b] border-4 border-[#ffd402] rounded-xl flex flex-col shadow-2xl relative overflow-hidden">
+            <div className="bg-[#ffd402] h-8 w-full flex items-center justify-center shrink-0">
               <span className="text-[#1d1d1b] font-black text-sm lg:text-base uppercase tracking-[0.3em]">
                 Última
               </span>
             </div>
-            <div className="flex-1 flex items-center justify-center bg-[#1d1d1b]">
-              <span
-                className={`font-black text-8xl lg:text-[10rem] text-white transition-transform duration-200 ${ultimoNumero ? 'scale-100' : 'scale-0'}`}
-              >
-                {ultimoNumero || '-'}
-              </span>
+            <div className="flex-1 flex items-center justify-center bg-[#052e16] relative">
+              {/* Grid de últimos 4 números */}
+              <div className="grid grid-cols-2 grid-rows-3 w-full h-full">
+                {/* Div 1: Último número (más grande) - ocupa 3 filas */}
+                <div className="row-span-3 flex items-center justify-center">
+                  <span
+                    className={`font-black text-7xl lg:text-8xl text-white transition-transform duration-200 ${ultimoNumero ? 'scale-100' : 'scale-0'}`}
+                  >
+                    {ultimoNumero || '-'}
+                  </span>
+                </div>
+                
+                {/* Div 2: 2do número más reciente */}
+                <div className="flex items-center justify-center">
+                  {historialClicks.length >= 2 && (
+                    <span className="font-black text-3xl lg:text-4xl text-white/80">
+                      {historialClicks[historialClicks.length - 2]}
+                    </span>
+                  )}
+                </div>
+                
+                {/* Div 3: 3er número más reciente */}
+                <div className="col-start-2 flex items-center justify-center">
+                  {historialClicks.length >= 3 && (
+                    <span className="font-black text-3xl lg:text-4xl text-white/80">
+                      {historialClicks[historialClicks.length - 3]}
+                    </span>
+                  )}
+                </div>
+                
+                {/* Div 4: 4to número más reciente */}
+                <div className="col-start-2 row-start-3 flex items-center justify-center">
+                  {historialClicks.length >= 4 && (
+                    <span className="font-black text-3xl lg:text-4xl text-white/80">
+                      {historialClicks[historialClicks.length - 4]}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
