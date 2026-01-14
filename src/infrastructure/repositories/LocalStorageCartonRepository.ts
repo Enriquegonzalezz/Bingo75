@@ -1,27 +1,45 @@
 import { ICartonRepository } from '@/domain/interfaces/ICartonRepository';
 import { Carton } from '@/domain/entities/Carton';
-import cartonesData from '@/shared/constants/cartones.json';
 
 export class LocalStorageCartonRepository implements ICartonRepository {
   private cartones: Carton[] | null = null;
+  private paqueteActual: string = 'paquete-original';
 
-  // Cargar cartones desde JSON (siempre)
-  private loadCartones(): Carton[] {
+  setPaquete(paqueteId: string): void {
+    if (this.paqueteActual !== paqueteId) {
+      this.paqueteActual = paqueteId;
+      this.cartones = null;
+      console.log(`📦 Paquete cambiado a: ${paqueteId}`);
+    }
+  }
+
+  getPaqueteActual(): string {
+    return this.paqueteActual;
+  }
+
+  private async loadCartones(): Promise<Carton[]> {
     if (this.cartones !== null) {
       return this.cartones;
     }
 
     try {
-      console.log('🔄 Cargando 1000 cartones desde JSON...');
+      console.log(`🔄 Cargando paquete: ${this.paqueteActual}...`);
       
-      this.cartones = cartonesData.cartones.map((data: any) => 
+      const paqueteData = await import(
+        `@/shared/constants/paquetes-cartones/${this.paqueteActual}.json`
+      );
+      
+      const cartonesArray = paqueteData.cartones.map((data: any) => 
         Carton.fromJSON(data)
       );
       
-      console.log(`✅ ${this.cartones.length} cartones cargados exitosamente`);
-      return this.cartones;
+      this.cartones = cartonesArray;
+      
+      const nombrePaquete = paqueteData.nombre || this.paqueteActual;
+      console.log(`✅ ${cartonesArray.length} cartones cargados del ${nombrePaquete}`);
+      return cartonesArray;
     } catch (error) {
-      console.error('❌ Error al cargar cartones:', error);
+      console.error('❌ Error al cargar paquete:', error);
       return [];
     }
   }

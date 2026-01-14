@@ -131,6 +131,12 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     setLoading(true);
     try {
       const repository = getCartonRepository();
+      
+      // Establecer el paquete seleccionado antes de cargar
+      if (configuracion?.paqueteId) {
+        repository.setPaquete(configuracion.paqueteId);
+      }
+      
       const todosCartones = await repository.getAll();
 
       if (todosCartones.length === 0) {

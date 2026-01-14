@@ -31,6 +31,7 @@ export interface ConfiguracionJuego {
   numeroRondas: number;
   rondas: ConfiguracionRonda[];
   numeroSoporte: string;
+  paqueteId: string;
 }
 
 interface ConfiguracionModalProps {
@@ -104,9 +105,25 @@ export function ConfiguracionModal({
   const [rondas, setRondas] = useState<ConfiguracionRonda[]>([
     { numero: 1, pavosoActivo: true, menosAciertosActivo: true, modalidades: [], premio: 0, moneda: 'USD' }
   ]);
-  const [numeroSoporte, setNumeroSoporte] = useState('0412987553');
+  const [numeroSoporte, setNumeroSoporte] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedNumero = localStorage.getItem('bingo75_numero_soporte');
+      return savedNumero || '0400-0000000';
+    }
+    return '0400-0000000';
+  });
+  const [paqueteSeleccionado, setPaqueteSeleccionado] = useState('paquete-original');
   const [rondaSeleccionada, setRondaSeleccionada] = useState(1); // Ronda actualmente seleccionada para editar
   const [inputCartonesIndividuales, setInputCartonesIndividuales] = useState(''); // Input temporal para cartones individuales
+
+  // Paquetes disponibles
+  const paquetesDisponibles = [
+    { id: 'paquete-original', nombre: 'Paquete Original', cartones: '10,002' },
+    { id: 'paquete-alpha', nombre: 'Paquete Alpha', cartones: '10,000' },
+    { id: 'paquete-beta', nombre: 'Paquete Beta', cartones: '10,000' },
+    { id: 'paquete-gamma', nombre: 'Paquete Gamma', cartones: '10,000' },
+    { id: 'paquete-delta', nombre: 'Paquete Delta', cartones: '10,000' },
+  ];
 
   // Patrón vacío por defecto
   const patronVacio: boolean[][] = [
@@ -134,6 +151,13 @@ export function ConfiguracionModal({
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, handleKeyDown]);
+
+  // Guardar número de soporte en localStorage cuando cambie
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bingo75_numero_soporte', numeroSoporte);
+    }
+  }, [numeroSoporte]);
 
   if (!isOpen) return null;
 
@@ -179,6 +203,7 @@ export function ConfiguracionModal({
       numeroRondas,
       rondas,
       numeroSoporte,
+      paqueteId: paqueteSeleccionado,
     });
   };
 
@@ -688,10 +713,31 @@ export function ConfiguracionModal({
               <h3 className="font-bold text-[#124723] mb-4">Configuración de partida:</h3>
               
               <div className="space-y-4">
+                {/* Selector de Paquete de Cartones */}
+                <div className="bg-gradient-to-r from-[#6a2818] to-[#8b3a24] rounded-lg p-4">
+                  <label className="block text-sm font-bold text-[#ffd402] mb-2">
+                    📦 Paquete de Cartones
+                  </label>
+                  <select
+                    value={paqueteSeleccionado}
+                    onChange={(e) => setPaqueteSeleccionado(e.target.value)}
+                    className="w-full px-3 py-2 border-2 border-[#ffd402] rounded-lg focus:ring-2 focus:ring-[#ffd402] focus:border-transparent font-bold text-[#1d1d1b] bg-[#fbf7da]"
+                  >
+                    {paquetesDisponibles.map((paquete) => (
+                      <option key={paquete.id} value={paquete.id}>
+                        {paquete.nombre} ({paquete.cartones} cartones)
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-[#fbf7da] mt-2">
+                    💡 Cada paquete contiene cartones únicos y diferentes
+                  </p>
+                </div>
+
                 {/* Nota sobre moneda por ronda */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-sm text-blue-800">
-                    � <strong>Nota:</strong> La moneda se configura individualmente para cada ronda en la sección superior.
+                    💡 <strong>Nota:</strong> La moneda se configura individualmente para cada ronda en la sección superior.
                   </p>
                 </div>
 
