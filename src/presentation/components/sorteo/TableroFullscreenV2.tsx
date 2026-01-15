@@ -84,7 +84,7 @@ const BingoBall = ({
         ? esUltimo
           ? 'bg-[#ef1400] text-white ring-4 ring-[#ffb74d] scale-110 z-10 shadow-lg'
           : 'bg-[#ff0000] text-white scale-100'
-        : 'bg-[#fbf7da] text-[#6a2818] hover:bg-[#ffd74a] hover:scale-105'
+        : 'bg-transparent text-[#000] hover:bg-[#ffd74a] hover:scale-105'
     }`}
   >
     {numero}
@@ -208,7 +208,7 @@ export function TableroFullscreenV2({
       <CelebrationEffect tipo={celebracion.tipo} activo={celebracion.activo} />
 
       {/* ===== TABLERO (70% Height) ===== */}
-      <div className="h-[70%] w-full flex px-2 pt-2 pb-2 md:px-4 lg:px-6 lg:pt-2 gap-6">
+      <div className="h-[65%] w-full flex px-2 pt-2 pb-2 md:px-4 lg:px-6 lg:pt-2 gap-6">
         {/* Panel Tablero */}
         <div
           className={`relative flex flex-col bg-white rounded-[2.5rem] shadow-2xl transition-all duration-500 overflow-hidden ${cartonBuscado ? 'w-3/4' : 'w-full'}`}
@@ -232,25 +232,25 @@ export function TableroFullscreenV2({
 
           <div className="flex-1 flex flex-col justify-between p-4 lg:px-8 lg:py-6 h-full">
             {[
-              { l: 'B', c: 'bg-[#e91e63]', n: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] },
+              { l: 'B', c: 'bg-blue-500', n: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] },
               {
                 l: 'I',
-                c: 'bg-[#9c27b0]',
+                c: 'bg-red-500',
                 n: [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
               },
               {
                 l: 'N',
-                c: 'bg-[#ffd74a]',
+                c: 'bg-gray-500',
                 n: [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45],
               },
               {
                 l: 'G',
-                c: 'bg-[#4caf50]',
+                c: 'bg-green-500',
                 n: [46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60],
               },
               {
                 l: 'O',
-                c: 'bg-[#ff9800]',
+                c: 'bg-[#ffd74a]',
                 n: [61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
               },
             ].map((fila) => (
@@ -332,9 +332,9 @@ export function TableroFullscreenV2({
       </div>
 
       {/* ===== FOOTER (30% Height) ===== */}
-      <div className="h-[30%] w-full px-6 lg:px-6 pb-6 pt-2 flex items-stretch justify-between gap-0">
+      <div className="h-[35%] w-full px-6 lg:px-6 pb-6 pt-2 flex items-stretch justify-between gap-0">
         {/* COL 1: Figura */}
-        <div className="flex-1 flex justify-center items-center py-2 border-r-2 border-white/10 pr-2 gap-2">
+        <div className="flex justify-center items-center py-2 border-r-2 border-white/10 pr-2 gap-2">
           {modalidadesActivas.map((mod) => (
             <PatronGigante key={mod.id} modalidad={mod} />
           ))}
@@ -343,9 +343,9 @@ export function TableroFullscreenV2({
               <p className="text-[#6a2818] text-sm font-bold uppercase tracking-widest">
                 Cantadas
               </p>
-              <p className="text-[#6a2818] font-black text-7xl lg:text-8xl leading-none flex items-baseline justify-end">
+              <p className="text-[#000] font-black text-7xl lg:text-8xl leading-none flex items-baseline justify-end">
                 {totalSorteados}
-                <span className="text-4xl text-[#6a2818] ml-1">/75</span>
+                <span className="text-4xl text-[#000] ml-1">/75</span>
               </p>
             </div>
 
@@ -355,7 +355,7 @@ export function TableroFullscreenV2({
                 <p className="text-[#6a2818] text-sm font-black uppercase tracking-[0.2em] mb-[-5px]">
                   Premio 
                 </p>
-                <p className={`text-[#6a2818] font-black tracking-tighter shadow-black drop-shadow-md ${
+                <p className={`text-[#124723] font-black tracking-tighter shadow-black drop-shadow-md ${
                   moneda === 'VES' && premioRonda > 1000 
                     ? 'text-3xl xl:text-4xl' 
                     : 'text-5xl xl:text-6xl'
@@ -373,11 +373,11 @@ export function TableroFullscreenV2({
           {/*<div className="relative h-28 w-80 lg:h-36 lg:w-96 mb-1">
             <Image src="/logo.png" alt="Logo Bingo" fill className="object-contain" priority />
           </div>*/}
-          <div className="flex flex-col items-center mb-8">
-            <p className="text-[#ffd402] text-4xl font-bold uppercase tracking-[0.4em] mb-[20px]">
+          <div className="flex flex-col items-center">
+            <p className="text-[#000] text-3xl font-bold uppercase tracking-[0.4em] ">
               Soporte
             </p>
-            <p className="text-[#6a2818] font-black text-5xl lg:text-[54px] h-[30px] tracking-wider">
+            <p className="text-[#6a2818] font-black text-7xl  tracking-wider">
               {numeroSoporte || '0000'}
             </p>
           </div>
@@ -385,7 +385,7 @@ export function TableroFullscreenV2({
           <div className="relative">
             <button
               onClick={() => setMenuAbierto(!menuAbierto)}
-              className="flex items-center gap-2 px-4 py-1.5 bg-white/10 hover:bg-white/20 text-[#6a2818] rounded-full transition-colors border border-[#6a2818]"
+              className="flex items-center gap-2 px-4 py-1.5 bg-[#000] text-[#fff] rounded-full transition-colors border border-[#6a2818] gap-2"
             >
               <Menu className="w-4 h-4" />
               <span className="text-xs font-bold uppercase tracking-wider">Menú</span>
@@ -460,7 +460,7 @@ export function TableroFullscreenV2({
         </div>
 
         {/* COL 3: Stats + Premio (GIGANTE) */}
-        <div className="flex-1 flex items-center justify-center ">
+        <div className="flex items-center justify-end ">
          
           <div className="h-[90%] aspect-5/4 bg-[#6a2818] border-4 border-[#ffd74a] rounded-xl flex flex-col shadow-2xl relative overflow-hidden">
             <div className="bg-[#ffd74a] h-8 w-full flex items-center justify-center shrink-0">
@@ -468,7 +468,7 @@ export function TableroFullscreenV2({
                 Última
               </span>
             </div>
-            <div className="flex-1 flex items-center justify-center bg-[#6a2818] relative">
+            <div className="flex-1 flex items-center justify-end bg-[#6a2818] relative">
               {/* Grid de últimos 4 números con animación slot machine */}
               <div className="grid grid-cols-2 grid-rows-3 w-full h-full">
                 {/* Div 1: Último número (más grande) - ocupa 3 filas */}
