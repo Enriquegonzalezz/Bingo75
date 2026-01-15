@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { X, Play, HelpCircle } from 'lucide-react';
+import { X, Play } from 'lucide-react';
 import { Modalidad, CategoriaModalidad } from '@/shared/constants/modalidades';
 
 // Re-exportar tipos para uso externo
@@ -337,16 +337,6 @@ export function ConfiguracionModal({
       const nuevosCartones = (r.cartonesIndividuales || []).filter(c => c !== carton);
       return { ...r, cartonesIndividuales: nuevosCartones.length > 0 ? nuevosCartones : undefined };
     }));
-  };
-
-  // Copiar modalidades de otra ronda
-  const copiarModalidadesDeRonda = (desdeRonda: number) => {
-    const rondaOrigen = rondas.find(r => r.numero === desdeRonda);
-    if (!rondaOrigen) return;
-    
-    setRondas(prev => prev.map(r => 
-      r.numero === rondaSeleccionada ? { ...r, modalidades: [...rondaOrigen.modalidades] } : r
-    ));
   };
 
   const handleRangoDesdeChange = (value: string) => {
