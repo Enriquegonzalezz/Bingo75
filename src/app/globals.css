@@ -37,7 +37,7 @@
 
   body {
     @apply text-gray-900;
-    background-color: var(--bingo-green-dark);
+    background-color: #fbf7da;
   }
 }
 
@@ -112,4 +112,17 @@
 
 .slot-machine-enter-large {
   animation: slideInFromTopLarge 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Remover flechas de inputs number */
+/* Chrome, Safari, Edge, Opera */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
 }

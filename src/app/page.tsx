@@ -57,7 +57,7 @@ export default function Home() {
                 alt="Gocho"
                 width={350}
                 height={120}
-                className="rounded-xl shadow-2xl"
+                className=""
               />
             </div>
           </div>

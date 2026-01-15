@@ -47,7 +47,7 @@ export function LoginForm() {
             alt="Bingo Carabobo"
             width={280}
             height={100}
-            className="mx-auto mb-4 rounded-xl shadow-lg shadow-yellow-500/30"
+            className="mx-auto mb-4 rounded-xl"
           />
           <p className="text-[#6a2818] mt-2 font-bold">Sistema de Sorteo Profesional</p>
         </div>

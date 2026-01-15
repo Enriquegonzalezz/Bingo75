@@ -58,7 +58,7 @@ function PatronModalidad({
       className={`
         flex flex-col items-center p-2 rounded-lg transition-all
         ${seleccionado 
-          ? 'bg-[#68b258] border-2 border-[#ffd402] shadow-lg scale-105' 
+          ? 'bg-[#fbf7da] border-2 border-[#ffd402] shadow-lg scale-105 text-black' 
           : 'bg-[#6a2818] border-2 border-[#baa115] hover:border-[#ffd402] hover:scale-102'
         }
       `}
@@ -83,7 +83,7 @@ function PatronModalidad({
         )}
       </div>
       {/* Nombre */}
-      <span className={`text-xs font-semibold text-center ${seleccionado ? 'text-white' : 'text-[#f8df7e]'}`}>
+      <span className={`text-xs font-semibold text-center ${seleccionado ? 'text-black' : 'text-white'}`}>
         {modalidad.nombre}
       </span>
     </button>
@@ -115,6 +115,7 @@ export function ConfiguracionModal({
   const [paqueteSeleccionado, setPaqueteSeleccionado] = useState('paquete-original');
   const [rondaSeleccionada, setRondaSeleccionada] = useState(1); // Ronda actualmente seleccionada para editar
   const [inputCartonesIndividuales, setInputCartonesIndividuales] = useState(''); // Input temporal para cartones individuales
+  const [usarCartonesEspecificos, setUsarCartonesEspecificos] = useState(false); // Controla si se usan cartones específicos para la ronda actual
 
   // Paquetes disponibles
   const paquetesDisponibles = [
@@ -158,6 +159,14 @@ export function ConfiguracionModal({
       localStorage.setItem('bingo75_numero_soporte', numeroSoporte);
     }
   }, [numeroSoporte]);
+
+  // Sincronizar checkbox con cartones específicos de la ronda seleccionada
+  useEffect(() => {
+    const ronda = rondas.find(r => r.numero === rondaSeleccionada);
+    setUsarCartonesEspecificos(
+      ronda?.cartonesIndividuales !== undefined && ronda.cartonesIndividuales.length > 0
+    );
+  }, [rondaSeleccionada, rondas]);
 
   if (!isOpen) return null;
 
@@ -363,12 +372,12 @@ export function ConfiguracionModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-[#fbf7da] px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-[#6a2818]">Opciones de la nueva partida</h2>
+        <div className="bg-[#6a2818] px-6 py-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-[#fff]">Opciones de la nueva partida</h2>
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onClose(); }}
-            className="text-[#6a2818] hover:text-red-600 transition-colors z-50"
+            className="text-[#fff] hover:text-red-600 transition-colors z-50"
           >
             <X className="w-6 h-6" />
           </button>
@@ -379,12 +388,12 @@ export function ConfiguracionModal({
           <div className="bg-[#fbf7da] rounded-xl p-4 mb-6">
             {/* Número de rondas - MÁS VISIBLE */}
             <div className="bg-[#6a2818] rounded-lg p-3 mb-4 flex items-center justify-center gap-4">
-              <span className="text-[white] font-black text-lg">🎲 NÚMERO DE RONDAS:</span>
+              <span className="text-[white] font-black text-lg">NÚMERO DE RONDAS:</span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleNumeroRondasChange(numeroRondas - 1)}
                   disabled={numeroRondas <= 1}
-                  className="w-10 h-10 bg-[#fbf7da] text-[#6a2818] font-black text-xl rounded-lg hover:bg-[#1d5c2e] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-10 h-10 bg-[#ffdb4f] text-[#000] font-black text-xl rounded-lg  disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   -
                 </button>
@@ -399,7 +408,7 @@ export function ConfiguracionModal({
                 <button
                   onClick={() => handleNumeroRondasChange(numeroRondas + 1)}
                   disabled={numeroRondas >= 20}
-                  className="w-10 h-10 bg-[#fbf7da] text-[#6a2818] font-black text-xl rounded-lg hover:bg-[#1d5c2e] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-10 h-10 bg-[#ffdb4f] text-[#000] font-black text-xl rounded-lg  disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   +
                 </button>
@@ -407,7 +416,7 @@ export function ConfiguracionModal({
             </div>
 
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[#6a2818] font-bold">🎯 Selecciona la Ronda para configurar:</h3>
+              <h3 className="text-[#000] font-bold">Selecciona la Ronda para configurar:</h3>
             </div>
             
             <div className="flex flex-wrap gap-2">
@@ -437,17 +446,17 @@ export function ConfiguracionModal({
 
             {/* Opciones de la ronda seleccionada */}
             <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#ffd402]/30 flex-wrap">
-              <span className="text-[#6a2818] text-sm">Ronda {rondaSeleccionada}:</span>
+              <span className="text-[#000] font-bold">Ronda {rondaSeleccionada}:</span>
               
               {/* Moneda de la ronda */}
-              <div className="flex items-center gap-2 bg-[#6a2818] rounded-lg px-3 py-1">
-                <span className="text-[#fbf7da] font-bold text-xs">Moneda:</span>
+              <div className="flex items-center gap-2 bg-[#6a2818] rounded-lg px-3 py-1 h-10">
+                <span className="text-[#fbf7da] font-bold text-sm">Moneda:</span>
                 <button
                   onClick={() => actualizarMonedaRonda(rondaSeleccionada, 'USD')}
                   className={`px-3 py-1 rounded font-bold text-xs transition-all ${
                     rondaActual?.moneda === 'USD' 
-                      ? 'bg-[#fbf7da] text-[#1d1d1b]' 
-                      : 'bg-[#124723] text-[#fbf7da] hover:bg-[#1d5c2e]'
+                      ? 'bg-[#ffdb4f] text-[#1d1d1b]' 
+                      : 'bg-[#fbf7da] text-[#1d1d1b]'
                   }`}
                 >
                   $ USD
@@ -456,8 +465,8 @@ export function ConfiguracionModal({
                   onClick={() => actualizarMonedaRonda(rondaSeleccionada, 'VES')}
                   className={`px-3 py-1 rounded font-bold text-xs transition-all ${
                     rondaActual?.moneda === 'VES' 
-                      ? 'bg-[#fbf7da] text-[#1d1d1b]' 
-                      : 'bg-[#124723] text-[#fbf7da] hover:bg-[#1d5c2e]'
+                      ? 'bg-[#ffdb4f] text-[#1d1d1b]' 
+                      : 'bg-[#fbf7da] text-[#1d1d1b]'
                   }`}
                 >
                   Bs. VES
@@ -465,7 +474,7 @@ export function ConfiguracionModal({
               </div>
 
               {/* Premio de la ronda */}
-              <div className="flex items-center gap-2 bg-[#6a2818] rounded-lg px-3 py-1">
+              <div className="flex items-center gap-2 bg-[#6a2818] rounded-lg px-3 py-1 h-10">
                 <span className="text-[#fbf7da] font-bold text-sm">💰 Premio:</span>
                 <span className="text-[#fbf7da] font-bold">{rondaActual?.moneda === 'USD' ? '$' : 'Bs.'}</span>
                 <input
@@ -474,7 +483,7 @@ export function ConfiguracionModal({
                   onChange={(e) => actualizarPremioRonda(rondaSeleccionada, parseFloat(e.target.value) || 0)}
                   min={0}
                   step={rondaActual?.moneda === 'USD' ? 0.01 : 1}
-                  className="w-24 px-2 py-1 rounded text-center font-bold text-[#fbf7da] border-2 border-[#baa115]"
+                  className="w-24 px-2 py-1 text-center font-bold bg-[#fff] rounded-[4px] text-[#000] "
                   placeholder={rondaActual?.moneda === 'USD' ? '0.00' : '0'}
                 />
               </div>
@@ -482,7 +491,7 @@ export function ConfiguracionModal({
               <button
                 onClick={() => togglePavosoRonda(rondaSeleccionada)}
                 className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                  rondaActual?.pavosoActivo ? 'bg-[#6a2818] text-white' : 'bg-gray-600 text-gray-300'
+                  rondaActual?.pavosoActivo ? 'bg-[#000] text-white' : 'bg-gray-600 text-gray-300'
                 }`}
               >
                  Pavoso {rondaActual?.pavosoActivo ? '✓' : '✗'}
@@ -490,86 +499,29 @@ export function ConfiguracionModal({
               <button
                 onClick={() => toggleMenosAciertosRonda(rondaSeleccionada)}
                 className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                  rondaActual?.menosAciertosActivo ? 'bg-[#6a2818] text-white' : 'bg-gray-600 text-gray-300'
+                  rondaActual?.menosAciertosActivo ? 'bg-[#000] text-white' : 'bg-gray-600 text-gray-300'
                 }`}
               >
                 Menos Aciertos {rondaActual?.menosAciertosActivo ? '✓' : '✗'}
               </button>
-              {rondaSeleccionada > 1 && (
+              {/* {rondaSeleccionada > 1 && (
                 <button
                   onClick={() => copiarModalidadesDeRonda(rondaSeleccionada - 1)}
                   className="text-xs text-[#ffd402] hover:underline"
                 >
                   📋 Copiar de Ronda {rondaSeleccionada - 1}
                 </button>
-              )}
-            </div>
-
-            {/* Sección de Cartones Individuales */}
-            <div className="bg-[#1d1d1b] rounded-lg p-4 mt-4">
-              <h4 className="text-[#fbf7da] font-bold mb-2 text-sm">🎯 ¿Cartones Específicos para esta ronda?</h4>
-              <p className="text-[#fbf7da] text-xs mb-3">
-                Si deseas que solo ciertos cartones participen en esta ronda, agrégalos aquí. Si no agregas ninguno, se usará el rango general.
-              </p>
-              
-              <div className="flex gap-2 mb-3">
-                <input
-                  type="text"
-                  value={inputCartonesIndividuales}
-                  onChange={(e) => setInputCartonesIndividuales(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && agregarCartonesIndividuales()}
-                  placeholder="Ej: 20, 35, 40, 85, 100"
-                  className="flex-1 px-3 py-2 rounded-lg border-2 border-[#fbf7da] text-[white] font-semibold text-sm"
-                />
-                <button
-                  onClick={agregarCartonesIndividuales}
-                  className="px-4 py-2 bg-[#6a2818] text-[#fbf7da] font-bold rounded-lg hover:bg-[#e6c000] transition-colors text-sm"
-                >
-                  Agregar
-                </button>
-              </div>
-
-              {rondaActual?.cartonesIndividuales && rondaActual.cartonesIndividuales.length > 0 && (
-                <div className="bg-[#fbf7da] rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[#6a2818] text-xs font-bold">
-                      {rondaActual.cartonesIndividuales.length} cartón(es) seleccionado(s)
-                    </span>
-                    <button
-                      onClick={() => actualizarCartonesIndividuales(rondaSeleccionada, [])}
-                      className="text-red-400 hover:text-red-300 text-xs font-bold"
-                    >
-                      Limpiar todos
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {rondaActual.cartonesIndividuales.map((carton) => (
-                      <div
-                        key={carton}
-                        className="bg-[#6a2818] text-[#fbf7da] px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2"
-                      >
-                        #{carton}
-                        <button
-                          onClick={() => eliminarCartonIndividual(rondaSeleccionada, carton)}
-                          className="hover:text-red-600 font-black"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              )} */}
             </div>
           </div>
 
           {/* Tabs de categorías */}
-          <div className="flex items-center gap-2 mb-4">
-            <div className="flex items-center gap-1 mr-4">
+          <div className="flex items-center justify-start gap-2 mb-4">
+            {/* <div className="flex items-center gap-1 mr-4">
               <span className="text-2xl font-black text-[#6a2818]">1</span>
               <span className="text-2xl font-black text-[#baa115]">2</span>
               <span className="text-2xl font-black text-[#68b258]">3</span>
-            </div>
+            </div> */}
             
             <div className="flex flex-wrap gap-2">
               {categorias.map((cat) => (
@@ -589,9 +541,9 @@ export function ConfiguracionModal({
               ))}
             </div>
 
-            <button className="ml-auto p-2 bg-white rounded border-2 border-[#124723] hover:bg-[#124723] hover:text-white transition-colors">
+            {/* <button className="ml-auto p-2 bg-white rounded border-2 border-[#124723] hover:bg-[#124723] hover:text-white transition-colors">
               <HelpCircle className="w-5 h-5" />
-            </button>
+            </button> */}
           </div>
 
           {/* Grid de modalidades o Editor Personalizado */}
@@ -735,11 +687,7 @@ export function ConfiguracionModal({
                 </div>
 
                 {/* Nota sobre moneda por ronda */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-sm text-blue-800">
-                    💡 <strong>Nota:</strong> La moneda se configura individualmente para cada ronda en la sección superior.
-                  </p>
-                </div>
+               
 
                 <div className="flex items-center gap-4">
                   <label className="text-sm font-semibold text-gray-700 w-24">Nº Soporte:</label>
@@ -776,6 +724,87 @@ export function ConfiguracionModal({
                     />
                   </div>
                 </div>
+
+                
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="cartonesEspecificos"
+                    checked={usarCartonesEspecificos}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setUsarCartonesEspecificos(checked);
+                      // Si se desmarca, limpiar los cartones específicos de esta ronda
+                      if (!checked) {
+                        actualizarCartonesIndividuales(rondaSeleccionada, []);
+                      }
+                    }}
+                    className="w-4 h-4"
+                  />
+                  <label htmlFor="cartonesEspecificos" className="text-sm text-gray-700">
+                    ¿Cartones específicos para esta ronda?
+                  </label>
+                </div>
+
+                {/* Sección de Cartones Específicos - Solo visible si el checkbox está activo */}
+                {usarCartonesEspecificos && (
+                  <div className="bg-[#fbf7da] rounded-lg p-4 mt-2">
+                    <h4 className="text-[#000] font-bold mb-2 text-sm">Cartones Específicos para Ronda {rondaSeleccionada}</h4>
+                    <p className="text-[#000] text-xs mb-3">
+                     Si deseas que solo participen ciertos cartones en esta ronda, agrega sus números aquí, si no se agrega ninguno utilizará el rango general.
+                    </p>
+                    
+                    <div className="flex gap-2 mb-3">
+                      <input
+                        type="text"
+                        value={inputCartonesIndividuales}
+                        onChange={(e) => setInputCartonesIndividuales(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && agregarCartonesIndividuales()}
+                        placeholder="Ej: 20, 35, 40, 85, 100"
+                        className="flex-1 px-3 py-2 rounded-lg border-2 border-[#fbf7da] text-[#000] font-semibold text-sm bg-[#fff]"
+                      />
+                      <button
+                        onClick={agregarCartonesIndividuales}
+                        className="px-4 py-2 bg-[#6a2818] text-[#fff] font-bold rounded-lg hover:bg-[#e6c000] transition-colors text-sm"
+                      >
+                        Agregar
+                      </button>
+                    </div>
+
+                    {rondaActual?.cartonesIndividuales && rondaActual.cartonesIndividuales.length > 0 && (
+                      <div className="bg-[#fbf7da] rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[#6a2818] text-xs font-bold">
+                            {rondaActual.cartonesIndividuales.length} cartón(es) seleccionado(s)
+                          </span>
+                          <button
+                            onClick={() => actualizarCartonesIndividuales(rondaSeleccionada, [])}
+                            className="text-red-400 hover:text-red-300 text-xs font-bold"
+                          >
+                            Limpiar todos
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {rondaActual.cartonesIndividuales.map((carton) => (
+                            <div
+                              key={carton}
+                              className="bg-[#6a2818] text-[#fbf7da] px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2"
+                            >
+                              #{carton}
+                              <button
+                                onClick={() => eliminarCartonIndividual(rondaSeleccionada, carton)}
+                                className="hover:text-red-600 font-black"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="flex items-center gap-2">
                   <input
@@ -837,9 +866,9 @@ export function ConfiguracionModal({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onClose(); }}
-              className="px-6 py-3 bg-[#ffcccc] text-[#990000] font-bold rounded-lg hover:bg-[#ff9999] transition-colors"
+              className="px-6 py-3 bg-[#000] text-[#fff] font-bold rounded-lg  transition-colors"
             >
-              Salir (Esc)
+              Cerrar
             </button>
             <button
               onClick={handleConfirmar}
