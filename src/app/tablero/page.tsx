@@ -421,7 +421,7 @@ export default function TableroPage() {
                 </div>
               </div>
 
-              <div className="bg-[#0f2e1b] rounded-b-2xl p-3 shadow-inner h-[calc(100vh-450px)] overflow-y-auto custom-scrollbar border border-white/5 space-y-3">
+              <div className="bg-[#6a2818] rounded-b-2xl p-3 shadow-inner h-[calc(100vh-450px)] overflow-y-auto custom-scrollbar border border-white/5 space-y-3">
                 {datosVisualizados.ganadores.length === 0 &&
                 datosVisualizados.pavosos.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-white/30 space-y-4 p-8 text-center">
@@ -434,31 +434,31 @@ export default function TableroPage() {
                       <button
                         key={`g-${idx}`}
                         onClick={() => handleAbrirModal('ganador', ganador)}
-                        className="w-full text-left p-4 rounded-xl border-l-8 border-[#2e5c26] bg-[#68b258] shadow-md relative overflow-hidden group transition-all hover:translate-x-1"
+                        className="w-full text-left p-4 rounded-xl border-l-8 border-[#ffd74a] bg-[#ffd74a] shadow-md relative overflow-hidden group transition-all hover:translate-x-1"
                       >
                         <div className="flex justify-between items-start relative z-10">
                           <div>
-                            <p className="text-xs font-bold uppercase mb-1 text-[#124723]">
+                            <p className="text-xs font-bold uppercase mb-1 text-[#6a2818]">
                               🏆 ¡Bingo!
                             </p>
-                            <p className="text-3xl font-black leading-none text-white">
+                            <p className="text-3xl font-black leading-none text-[#6a2818]">
                               #{ganador.numero_carton}
                             </p>
-                            <p className="text-xs mt-1 font-mono text-white/80">
+                            <p className="text-xs mt-1 font-mono text-[#6a2818]/80">
                               Serial: {ganador.carton.serial}
                             </p>
-                            <p className="text-sm font-bold mt-2 text-[#124723] uppercase">
+                            <p className="text-sm font-bold mt-2 text-[#6a2818] uppercase">
                               {ganador.patron}
                             </p>
                           </div>
-                          <span className="text-xs font-bold px-2 py-1 rounded bg-black/20 text-white">
+                          <span className="text-xs font-bold px-2 py-1 rounded bg-[#6a2818]/20 text-[#6a2818]">
                             {new Date(ganador.timestamp).toLocaleTimeString([], {
                               hour: '2-digit',
                               minute: '2-digit',
                             })}
                           </span>
                         </div>
-                        <Trophy className="absolute -right-4 -bottom-4 w-24 h-24 text-white opacity-10 rotate-12" />
+                        <Trophy className="absolute -right-4 -bottom-4 w-24 h-24 text-[#6a2818] opacity-10 rotate-12" />
                       </button>
                     ))}
                     {datosVisualizados.pavosos.map((ganador, idx) => (

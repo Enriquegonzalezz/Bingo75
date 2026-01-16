@@ -5,12 +5,20 @@ import { useCartones } from '@/presentation/hooks/useCartones';
 import { CartonGrid } from '@/presentation/components/cartones/CartonGrid';
 import { Button } from '@/presentation/components/ui/Button';
 import { Input } from '@/presentation/components/ui/Input';
-import { Search, RefreshCw, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Search, RefreshCw, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Package } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 100;
 
+const PAQUETES = [
+  { id: 'paquete-original', nombre: 'Paquete Original' },
+  { id: 'paquete-alpha', nombre: 'Paquete Alpha' },
+  { id: 'paquete-beta', nombre: 'Paquete Beta' },
+  { id: 'paquete-gamma', nombre: 'Paquete Gamma' },
+  { id: 'paquete-delta', nombre: 'Paquete Delta' },
+];
+
 export default function CartonesPage() {
-  const { cartones, loading, recargar } = useCartones();
+  const { cartones, loading, paqueteActual, cambiarPaquete, recargar } = useCartones();
   const [busqueda, setBusqueda] = useState('');
   const [paginaActual, setPaginaActual] = useState(1);
 
@@ -38,6 +46,13 @@ export default function CartonesPage() {
   const handleBusqueda = (valor: string) => {
     setBusqueda(valor);
     setPaginaActual(1);
+  };
+
+  // Cambiar paquete y resetear página
+  const handleCambioPaquete = (paqueteId: string) => {
+    cambiarPaquete(paqueteId);
+    setPaginaActual(1);
+    setBusqueda('');
   };
 
   // Navegación de páginas
@@ -90,6 +105,33 @@ export default function CartonesPage() {
             <RefreshCw className={`w-5 h-5 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Recargar
           </Button>
+        </div>
+
+        {/* Selector de Paquetes */}
+        <div className="bg-[#6a2818] rounded-xl shadow-lg p-6 mb-6 border border-[#ffd74a]/30">
+          <div className="flex items-center gap-3 mb-4">
+            <Package className="w-6 h-6 text-[#ffd74a]" />
+            <h3 className="text-lg font-bold text-[#ffd74a]">Seleccionar Grupo de Cartones</h3>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            {PAQUETES.map((paquete) => (
+              <button
+                key={paquete.id}
+                onClick={() => handleCambioPaquete(paquete.id)}
+                disabled={loading}
+                className={`
+                  px-4 py-3 rounded-lg font-bold transition-all
+                  ${paqueteActual === paquete.id
+                    ? 'bg-[#ffd74a] text-[#6a2818] scale-105 shadow-lg'
+                    : 'bg-[#fbf7da] text-[#6a2818] hover:bg-[#ffd74a]/80 hover:scale-102'
+                  }
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                `}
+              >
+                {paquete.nombre}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Búsqueda y Info de Paginación */}
