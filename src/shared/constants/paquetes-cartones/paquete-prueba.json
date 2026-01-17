@@ -1,0 +1,9 @@
+{
+  "version": "1.0",
+  "paquete_id": "paquete-prueba",
+  "nombre": "prueba",
+  "fecha_generacion": "2026-01-17T21:14:41.624Z",
+  "total_cartones": 0,
+  "descripcion": "Paquete prueba - 0 cartones únicos de Bingo",
+  "cartones": []
+}

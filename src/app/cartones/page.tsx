@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useCartones } from '@/presentation/hooks/useCartones';
 import { CartonGrid } from '@/presentation/components/cartones/CartonGrid';
 import { Button } from '@/presentation/components/ui/Button';
@@ -9,18 +9,36 @@ import { Search, RefreshCw, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRig
 
 const ITEMS_PER_PAGE = 100;
 
-const PAQUETES = [
-  { id: 'paquete-original', nombre: 'Paquete Original' },
-  { id: 'paquete-alpha', nombre: 'Paquete Alpha' },
-  { id: 'paquete-beta', nombre: 'Paquete Beta' },
-  { id: 'paquete-gamma', nombre: 'Paquete Gamma' },
-  { id: 'paquete-delta', nombre: 'Paquete Delta' },
-];
+interface PaqueteInfo {
+  id: string;
+  nombre: string;
+  total_cartones: number;
+}
 
 export default function CartonesPage() {
   const { cartones, loading, paqueteActual, cambiarPaquete, recargar } = useCartones();
   const [busqueda, setBusqueda] = useState('');
   const [paginaActual, setPaginaActual] = useState(1);
+  const [paquetes, setPaquetes] = useState<PaqueteInfo[]>([]);
+  const [loadingPaquetes, setLoadingPaquetes] = useState(true);
+
+  useEffect(() => {
+    const cargarPaquetes = async () => {
+      try {
+        setLoadingPaquetes(true);
+        const response = await fetch('/api/paquetes');
+        const data = await response.json();
+        if (response.ok) {
+          setPaquetes(data.paquetes || []);
+        }
+      } catch (error) {
+        console.error('Error al cargar paquetes:', error);
+      } finally {
+        setLoadingPaquetes(false);
+      }
+    };
+    cargarPaquetes();
+  }, []);
 
   // Filtrar cartones
   const cartonesFiltrados = useMemo(() => {
@@ -114,7 +132,16 @@ export default function CartonesPage() {
             <h3 className="text-lg font-bold text-[#ffd74a]">Seleccionar Grupo de Cartones</h3>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            {PAQUETES.map((paquete) => (
+            {loadingPaquetes ? (
+              <div className="col-span-full text-center py-4">
+                <RefreshCw className="w-6 h-6 mx-auto text-[#ffd74a] animate-spin" />
+              </div>
+            ) : paquetes.length === 0 ? (
+              <div className="col-span-full text-center py-4 text-[#ffd74a]">
+                No hay paquetes disponibles
+              </div>
+            ) : (
+              paquetes.map((paquete) => (
               <button
                 key={paquete.id}
                 onClick={() => handleCambioPaquete(paquete.id)}
@@ -130,7 +157,8 @@ export default function CartonesPage() {
               >
                 {paquete.nombre}
               </button>
-            ))}
+            ))
+            )}
           </div>
         </div>
 

@@ -116,15 +116,29 @@ export function ConfiguracionModal({
   const [rondaSeleccionada, setRondaSeleccionada] = useState(1); // Ronda actualmente seleccionada para editar
   const [inputCartonesIndividuales, setInputCartonesIndividuales] = useState(''); // Input temporal para cartones individuales
   const [usarCartonesEspecificos, setUsarCartonesEspecificos] = useState(false); // Controla si se usan cartones específicos para la ronda actual
+  const [paquetesDisponibles, setPaquetesDisponibles] = useState<Array<{ id: string; nombre: string; total_cartones: number }>>([]);
+  const [loadingPaquetes, setLoadingPaquetes] = useState(true);
 
-  // Paquetes disponibles
-  const paquetesDisponibles = [
-    { id: 'paquete-original', nombre: 'Paquete Original', cartones: '10,002' },
-    { id: 'paquete-alpha', nombre: 'Paquete Alpha', cartones: '10,000' },
-    { id: 'paquete-beta', nombre: 'Paquete Beta', cartones: '10,000' },
-    { id: 'paquete-gamma', nombre: 'Paquete Gamma', cartones: '10,000' },
-    { id: 'paquete-delta', nombre: 'Paquete Delta', cartones: '10,000' },
-  ];
+  // Cargar paquetes disponibles desde la API
+  useEffect(() => {
+    const cargarPaquetes = async () => {
+      try {
+        setLoadingPaquetes(true);
+        const response = await fetch('/api/paquetes');
+        const data = await response.json();
+        if (response.ok) {
+          setPaquetesDisponibles(data.paquetes || []);
+        }
+      } catch (error) {
+        console.error('Error al cargar paquetes:', error);
+      } finally {
+        setLoadingPaquetes(false);
+      }
+    };
+    if (isOpen) {
+      cargarPaquetes();
+    }
+  }, [isOpen]);
 
   // Patrón vacío por defecto
   const patronVacio: boolean[][] = [
@@ -665,11 +679,17 @@ export function ConfiguracionModal({
                     onChange={(e) => setPaqueteSeleccionado(e.target.value)}
                     className="w-full px-3 py-2 border-2 border-[#ffd402] rounded-lg focus:ring-2 focus:ring-[#ffd402] focus:border-transparent font-bold text-[#1d1d1b] bg-[#fbf7da]"
                   >
-                    {paquetesDisponibles.map((paquete) => (
-                      <option key={paquete.id} value={paquete.id}>
-                        {paquete.nombre} ({paquete.cartones} cartones)
-                      </option>
-                    ))}
+                    {loadingPaquetes ? (
+                      <option>Cargando paquetes...</option>
+                    ) : paquetesDisponibles.length === 0 ? (
+                      <option>No hay paquetes disponibles</option>
+                    ) : (
+                      paquetesDisponibles.map((paquete) => (
+                        <option key={paquete.id} value={paquete.id}>
+                          {paquete.nombre} ({paquete.total_cartones.toLocaleString()} cartones)
+                        </option>
+                      ))
+                    )}
                   </select>
                   <p className="text-xs text-[#fbf7da] mt-2">
                     💡 Cada paquete contiene cartones únicos y diferentes

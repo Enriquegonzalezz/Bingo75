@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { PlayCircle, Grid3x3 } from 'lucide-react';
+import { PlayCircle, Grid3x3, Upload } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 
@@ -63,7 +63,7 @@ export default function Home() {
           </div>
 
           {/* Stats - Derecha */}
-             <div ref={cardsRef} className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+             <div ref={cardsRef} className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           <Link href="/tablero">
             <div className="bg-[#6b2818] rounded-2xl shadow-xl p-10 hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer group border-2 border-[#fbf7da]">
               <div className="w-16 h-16 bg-[#ffd402] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
@@ -88,6 +88,20 @@ export default function Home() {
               </h2>
               <p className="text-[#fbf7da] text-lg">
                 Explora los 10,000 cartones disponibles con búsqueda instantánea y visualización detallada
+              </p>
+            </div>
+          </Link>
+
+          <Link href="/importar">
+            <div className="bg-[#6b2818] rounded-2xl shadow-xl p-10 hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer group border-2 border-[#fbf7da]">
+              <div className="w-16 h-16 bg-[#ffd402] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <Upload className="w-9 h-9 text-[#124723]" />
+              </div>
+              <h2 className="text-3xl font-black text-[#ffd402] mb-3">
+                Importar Excel
+              </h2>
+              <p className="text-[#fbf7da] text-lg">
+                Importa tus cartones desde archivos Excel y gestiona tus paquetes personalizados
               </p>
             </div>
           </Link>
