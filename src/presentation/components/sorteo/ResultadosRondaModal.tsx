@@ -90,12 +90,37 @@ export function ResultadosRondaModal({
   };
 
   const abrirMenosAciertos = (c: CartonConAciertos) => {
+    // Recalcular aciertos en tiempo real con los números actuales
+    const numerosSet = new Set(numerosSorteados);
+    console.log('Números sorteados actuales:', numerosSorteados);
+    console.log('Cartón matriz:', c.carton.matriz);
+    
+    let aciertosActualizados = 0;
+    const numerosAciertos: number[] = [];
+    
+    for (let i = 0; i < 5; i++) {
+      for (let j = 0; j < 5; j++) {
+        const numero = c.carton.matriz[i][j];
+        // El centro (FREE) NO cuenta como acierto
+        if (i !== 2 && j !== 2 && numero !== 0 && numerosSet.has(numero)) {
+          aciertosActualizados++;
+          numerosAciertos.push(numero);
+          console.log(`Acierto encontrado: ${numero} en posición [${i},${j}]`);
+        }
+      }
+    }
+    
+    console.log(`Total aciertos calculados: ${aciertosActualizados}`);
+    console.log('Números aciertos:', numerosAciertos);
+
     setModalData({
       tipo: 'menos_aciertos',
       numero_carton: c.numero_carton,
       serial: c.carton.serial,
       matriz: c.carton.matriz,
-      aciertos: c.aciertos,
+      aciertos: aciertosActualizados,
+      // Pasar los números marcados para que el modal los use para visualización
+      numerosMarcados: numerosAciertos,
     });
   };
 

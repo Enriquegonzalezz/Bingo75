@@ -164,8 +164,8 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     for (let i = 0; i < 5; i++) {
       for (let j = 0; j < 5; j++) {
         const numero = carton.matriz[i][j];
-        // El centro (FREE) siempre cuenta como acierto
-        if ((i === 2 && j === 2) || (numero !== 0 && numerosSet.has(numero))) {
+        // El centro (FREE) NO cuenta como acierto
+        if (i !== 2 && j !== 2 && numero !== 0 && numerosSet.has(numero)) {
           aciertos++;
         }
       }
@@ -185,10 +185,21 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
         numero_carton: carton.numero_carton,
         aciertos: calcularAciertos(carton, numerosSet)
       }))
-      .sort((a, b) => a.aciertos - b.aciertos)
-      .slice(0, 5);
+      .filter(c => c.aciertos > 0) // Solo cartones con más de 0 aciertos
+      .sort((a, b) => a.aciertos - b.aciertos);
     
-    setCartonesConMenosAciertos(cartonesConAciertosCalc);
+    // Encontrar el número más bajo de aciertos
+    if (cartonesConAciertosCalc.length > 0) {
+      const menorNumeroAciertos = cartonesConAciertosCalc[0].aciertos;
+      // Solo mostrar cartones con el número más bajo de aciertos
+      const cartonesFiltrados = cartonesConAciertosCalc
+        .filter(c => c.aciertos === menorNumeroAciertos)
+        .slice(0, 5);
+      
+      setCartonesConMenosAciertos(cartonesFiltrados);
+    } else {
+      setCartonesConMenosAciertos([]);
+    }
   }, [cartonesEnJuego, numerosSorteados, ganadores]);
 
   // Validar UN cartón contra TODOS los patrones activos
@@ -407,10 +418,21 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
           numero_carton: carton.numero_carton,
           aciertos: calcularAciertos(carton, numerosSet)
         }))
-        .sort((a, b) => a.aciertos - b.aciertos)
-        .slice(0, 5);
+        .filter(c => c.aciertos > 0) // Solo cartones con más de 0 aciertos
+        .sort((a, b) => a.aciertos - b.aciertos);
       
-      setCartonesConMenosAciertos(cartonesConAciertosCalc);
+      // Encontrar el número más bajo de aciertos
+      if (cartonesConAciertosCalc.length > 0) {
+        const menorNumeroAciertos = cartonesConAciertosCalc[0].aciertos;
+        // Solo mostrar cartones con el número más bajo de aciertos
+        const cartonesFiltrados = cartonesConAciertosCalc
+          .filter(c => c.aciertos === menorNumeroAciertos)
+          .slice(0, 5);
+        
+        setCartonesConMenosAciertos(cartonesFiltrados);
+      } else {
+        setCartonesConMenosAciertos([]);
+      }
     }
     
     console.log(`🏁 Ronda ${rondaActual} finalizada`);
@@ -448,19 +470,18 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     const carton = cartonesEnJuego.find(c => c.numero_carton === numeroCarton);
     if (!carton) return null;
     
-    // Calcular aciertos (números del cartón que han sido sorteados)
-    let aciertos = 0;
+    // Usar la misma lógica que calcularAciertos para consistencia
+    const aciertos = calcularAciertos(carton, numerosSorteados);
+    
+    // Calcular total de números válidos (excluyendo el centro y ceros)
     let totalNumeros = 0;
-    carton.matriz.forEach((fila, i) => {
-      fila.forEach((numero, j) => {
-        // El centro (FREE) no cuenta
-        if (i === 2 && j === 2) return;
-        totalNumeros++;
-        if (numerosSorteados.has(numero)) {
-          aciertos++;
+    for (let i = 0; i < 5; i++) {
+      for (let j = 0; j < 5; j++) {
+        if (i !== 2 && j !== 2 && carton.matriz[i][j] !== 0) {
+          totalNumeros++;
         }
-      });
-    });
+      }
+    }
     
     return { carton, aciertos, totalNumeros };
   }, [cartonesEnJuego, numerosSorteados]);
