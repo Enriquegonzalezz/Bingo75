@@ -40,7 +40,7 @@ interface TableroFullscreenV2Props {
 // --- Componentes UI ---
 function PatronGigante({ modalidad }: { modalidad: Modalidad }) {
   return (
-    <div className="h-full aspect-square flex flex-col items-center justify-center bg-[#6a2818] border-2 border-[#ffd74a] rounded-2xl p-3 shadow-xl relative overflow-hidden">
+    <div className="h-full aspect-square flex flex-col items-center justify-center bg-[#6a2818] border-2 border-[#ffd74a] rounded-2xl p-3 shadow-xl relative overflow-hidden mr-6">
       <div className="grid grid-cols-5 gap-2 w-full h-full">
         {modalidad.patron.map((fila, i) =>
           fila.map((activo, j) => (
@@ -377,7 +377,7 @@ export function TableroFullscreenV2({
             <p className="text-[#000] text-3xl font-bold uppercase tracking-[0.4em] ">
               Soporte
             </p>
-            <p className="text-[#6a2818] font-black text-[84px]  tracking-wider">
+            <p className="text-[#6a2818] font-black text-[6.5em]  tracking-wider">
               {numeroSoporte || '0000'}
             </p>
           </div>
