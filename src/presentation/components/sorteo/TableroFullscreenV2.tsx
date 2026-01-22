@@ -79,7 +79,7 @@ const BingoBall = ({
 }) => (
   <button
     onClick={onClick}
-    className={`relative w-full aspect-square rounded-[2px] flex items-center justify-center text-2xl md:text-3xl lg:text-3xl xl:text-5xl font-black transition-all duration-200 ${
+    className={`relative w-full aspect-square rounded-[2px] flex items-center justify-center text-2xl md:text-3xl lg:text-3xl xl:text-[3.3rem] font-black transition-all duration-200 ${
       sorteado
         ? esUltimo
           ? 'bg-[#ef1400] text-white ring-4 ring-[#ffb74d] scale-110 z-10 shadow-lg'
@@ -377,7 +377,7 @@ export function TableroFullscreenV2({
             <p className="text-[#000] text-3xl font-bold uppercase tracking-[0.4em] ">
               Soporte
             </p>
-            <p className="text-[#6a2818] font-black text-7xl  tracking-wider">
+            <p className="text-[#6a2818] font-black text-[84px]  tracking-wider">
               {numeroSoporte || '0000'}
             </p>
           </div>
@@ -476,7 +476,7 @@ export function TableroFullscreenV2({
                   {ultimoNumero && (
                     <span
                       key={ultimoNumero}
-                      className="font-black text-7xl lg:text-8xl text-white slot-machine-enter-large ml-4 leading-none"
+                      className="font-black text-7xl lg:text-9xl text-white slot-machine-enter-large ml-6 leading-none"
                     >
                       {ultimoNumero}
                     </span>
@@ -491,7 +491,7 @@ export function TableroFullscreenV2({
                   {historialClicks.length >= 2 && (
                     <span 
                       key={`pos2-${historialClicks[historialClicks.length - 2]}-${historialClicks.length}`}
-                      className="font-black text-3xl lg:text-4xl text-white/80 slot-machine-enter"
+                      className="font-black text-3xl lg:text-4xl xl:text-5xl text-white/80 slot-machine-enter"
                     >
                       {historialClicks[historialClicks.length - 2]}
                     </span>
@@ -503,7 +503,7 @@ export function TableroFullscreenV2({
                   {historialClicks.length >= 3 && (
                     <span 
                       key={`pos3-${historialClicks[historialClicks.length - 3]}-${historialClicks.length}`}
-                      className="font-black text-3xl lg:text-4xl text-white/80 slot-machine-enter"
+                      className="font-black text-3xl lg:text-4xl xl:text-5xl text-white/80 slot-machine-enter"
                     >
                       {historialClicks[historialClicks.length - 3]}
                     </span>
@@ -515,7 +515,7 @@ export function TableroFullscreenV2({
                   {historialClicks.length >= 4 && (
                     <span 
                       key={`pos4-${historialClicks[historialClicks.length - 4]}-${historialClicks.length}`}
-                      className="font-black text-3xl lg:text-4xl text-white/80 slot-machine-enter"
+                      className="font-black text-3xl lg:text-4xl xl:text-5xl text-white/80 slot-machine-enter"
                     >
                       {historialClicks[historialClicks.length - 4]}
                     </span>
