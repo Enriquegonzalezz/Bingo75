@@ -196,6 +196,19 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     return aciertos;
   };
 
+  // Filtrar cartones para mostrar solo los con el mínimo número de aciertos
+  const filtrarMenosAciertos = (cartonesConAciertos: CartonConAciertos[]): CartonConAciertos[] => {
+    if (cartonesConAciertos.length === 0) return [];
+    
+    // Encontrar el mínimo número de aciertos
+    const minAciertos = Math.min(...cartonesConAciertos.map(c => c.aciertos));
+    
+    // Retornar solo los cartones con ese mínimo, limitado a 5
+    return cartonesConAciertos
+      .filter(c => c.aciertos === minAciertos)
+      .slice(0, 5);
+  };
+
   // Calcular cartones con menos aciertos (para mostrar al final)
   const calcularCartonesConMenosAciertos = useCallback(() => {
     if (cartonesEnJuego.length === 0) return;
@@ -209,10 +222,9 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
         aciertos: calcularAciertos(carton, numerosSet)
       }))
       .filter(c => c.aciertos > 0) // Excluir cartones con 0 aciertos (pavosos)
-      .sort((a, b) => a.aciertos - b.aciertos)
-      .slice(0, 5);
+      .sort((a, b) => a.aciertos - b.aciertos);
     
-    setCartonesConMenosAciertos(cartonesConAciertosCalc);
+    setCartonesConMenosAciertos(filtrarMenosAciertos(cartonesConAciertosCalc));
   }, [cartonesEnJuego, numerosSorteados, ganadores]);
 
   // Validar UN cartón contra TODOS los patrones activos
@@ -410,11 +422,11 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
               aciertos: calcularAciertos(carton, nuevosNumeros)
             }))
             .filter(c => c.aciertos > 0) // Excluir cartones con 0 aciertos (pavosos)
-            .sort((a, b) => a.aciertos - b.aciertos)
-            .slice(0, 5);
+            .sort((a, b) => a.aciertos - b.aciertos);
           
-          setCartonesConMenosAciertos(cartonesConAciertosCalc);
-          console.log(`📊 Menos aciertos calculados: ${cartonesConAciertosCalc.length} cartones`);
+          const menosAciertosFiltered = filtrarMenosAciertos(cartonesConAciertosCalc);
+          setCartonesConMenosAciertos(menosAciertosFiltered);
+          console.log(`📊 Menos aciertos calculados: ${menosAciertosFiltered.length} cartones con ${menosAciertosFiltered[0]?.aciertos || 0} aciertos`);
         }
       }
 
@@ -459,10 +471,9 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
           aciertos: calcularAciertos(carton, numerosSet)
         }))
         .filter(c => c.aciertos > 0) // Excluir cartones con 0 aciertos (pavosos)
-        .sort((a, b) => a.aciertos - b.aciertos)
-        .slice(0, 5);
+        .sort((a, b) => a.aciertos - b.aciertos);
       
-      setCartonesConMenosAciertos(cartonesConAciertosCalc.filter(c => c.aciertos > 0));
+      setCartonesConMenosAciertos(filtrarMenosAciertos(cartonesConAciertosCalc));
     }
 
     console.log(`🏁 Ronda ${rondaActual} finalizada`);

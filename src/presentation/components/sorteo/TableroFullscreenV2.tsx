@@ -343,9 +343,9 @@ export function TableroFullscreenV2({
               <p className="text-[#6a2818] text-sm font-bold uppercase tracking-widest">
                 Cantadas
               </p>
-              <p className="text-[#000] font-black text-7xl lg:text-8xl leading-none flex items-baseline justify-end">
+              <p className="text-[#000] font-black text-7xl lg:text-[8rem] leading-none flex items-baseline justify-end">
                 {totalSorteados}
-                <span className="text-4xl text-[#000] ml-1">/75</span>
+                <span className="text-[55px] text-[#000] ml-1">/75</span>
               </p>
             </div>
 
@@ -491,7 +491,7 @@ export function TableroFullscreenV2({
                   {historialClicks.length >= 2 && (
                     <span 
                       key={`pos2-${historialClicks[historialClicks.length - 2]}-${historialClicks.length}`}
-                      className="font-black text-3xl lg:text-4xl xl:text-5xl text-white/80 slot-machine-enter"
+                      className="font-black text-3xl lg:text-4xl xl:text-6xl mt-4 text-white/80 slot-machine-enter"
                     >
                       {historialClicks[historialClicks.length - 2]}
                     </span>
@@ -503,7 +503,7 @@ export function TableroFullscreenV2({
                   {historialClicks.length >= 3 && (
                     <span 
                       key={`pos3-${historialClicks[historialClicks.length - 3]}-${historialClicks.length}`}
-                      className="font-black text-3xl lg:text-4xl xl:text-5xl text-white/80 slot-machine-enter"
+                      className="font-black text-3xl lg:text-4xl xl:text-6xl text-white/80 slot-machine-enter"
                     >
                       {historialClicks[historialClicks.length - 3]}
                     </span>
@@ -515,7 +515,7 @@ export function TableroFullscreenV2({
                   {historialClicks.length >= 4 && (
                     <span 
                       key={`pos4-${historialClicks[historialClicks.length - 4]}-${historialClicks.length}`}
-                      className="font-black text-3xl lg:text-4xl xl:text-5xl text-white/80 slot-machine-enter"
+                      className="font-black text-3xl lg:text-4xl xl:text-6xl mb-4 text-white/80 slot-machine-enter"
                     >
                       {historialClicks[historialClicks.length - 4]}
                     </span>
