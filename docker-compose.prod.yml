@@ -1,0 +1,74 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: bingo75-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-bingo75_root_pass}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-bingo75}
+      MYSQL_USER: ${MYSQL_USER:-bingo75_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-bingo75_pass}
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'mysqladmin',
+          'ping',
+          '-h',
+          'localhost',
+          '-u',
+          'root',
+          '-p${MYSQL_ROOT_PASSWORD:-bingo75_root_pass}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - bingo75-network
+
+  migration:
+    image: soyjhonathandev/bingo75:latest
+    container_name: bingo75-migration
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql://${MYSQL_USER:-bingo75_user}:${MYSQL_PASSWORD:-bingo75_pass}@mysql:3306/${MYSQL_DATABASE:-bingo75}
+    entrypoint: []
+    command: sh -c "node node_modules/prisma/build/index.js db push --skip-generate"
+    user: root
+    networks:
+      - bingo75-network
+    restart: 'no'
+
+  app:
+    image: soyjhonathandev/bingo75:latest
+    container_name: bingo75-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: mysql://${MYSQL_USER:-bingo75_user}:${MYSQL_PASSWORD:-bingo75_pass}@mysql:3306/${MYSQL_DATABASE:-bingo75}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-bingo75_secret_key_change_in_production}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+    ports:
+      - '3000:3000'
+    networks:
+      - bingo75-network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  bingo75-network:
+    driver: bridge
