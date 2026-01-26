@@ -1,8 +1,12 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { getCartonRepository } from '@/config/dependency-injection';
-import { PatronValidator, LineaHorizontalGenericValidator, LineaVerticalGenericValidator } from '@/domain/validators/PatronValidator';
+import {
+  PatronValidator,
+  LineaHorizontalGenericValidator,
+  LineaVerticalGenericValidator,
+} from '@/domain/validators/PatronValidator';
 import { PavosoValidator } from '@/domain/validators/PavosoValidator';
 import { Carton } from '@/domain/entities/Carton';
 import { toast } from 'sonner';
@@ -13,11 +17,11 @@ export interface Ganador {
   carton: Carton;
   patron: string;
   patronId: string;
-  patronMatriz: boolean[][]; // Matriz del patrón para mostrar visualmente
+  patronMatriz: boolean[][];
   numero_carton: number;
   timestamp: Date;
   tipo: 'normal' | 'pavoso';
-  numerosSorteadosAlGanar?: number[]; // Números sorteados al momento de ganar (para congelar estado de pavosos)
+  numerosSorteadosAlGanar?: number[];
 }
 
 export interface CartonConAciertos {
@@ -30,7 +34,6 @@ interface UseSorteoV2Props {
   configuracion: ConfiguracionJuego | null;
 }
 
-// Historial de una ronda
 export interface HistorialRonda {
   numero: number;
   ganadores: Ganador[];
@@ -47,7 +50,9 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
   const [cartonesEnJuego, setCartonesEnJuego] = useState<Carton[]>([]);
   const [loading, setLoading] = useState(false);
   const [cartonesConMenosAciertos, setCartonesConMenosAciertos] = useState<CartonConAciertos[]>([]);
-  
+  const [paqueteCargado, setPaqueteCargado] = useState<string | null>(null);
+  const [errorCarga, setErrorCarga] = useState<string | null>(null);
+
   // Estado de rondas
   const [rondaActual, setRondaActual] = useState(1);
   const [historialRondas, setHistorialRondas] = useState<HistorialRonda[]>([]);
@@ -55,8 +60,9 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
 
   // Obtener configuración de la ronda actual
   const configRondaActual = useMemo(() => {
-    if (!configuracion) return { pavosoActivo: true, menosAciertosActivo: true, modalidades: [] as string[] };
-    const ronda = configuracion.rondas.find(r => r.numero === rondaActual);
+    if (!configuracion)
+      return { pavosoActivo: true, menosAciertosActivo: true, modalidades: [] as string[] };
+    const ronda = configuracion.rondas.find((r) => r.numero === rondaActual);
     return ronda || { pavosoActivo: true, menosAciertosActivo: true, modalidades: [] as string[] };
   }, [configuracion, rondaActual]);
 
@@ -67,18 +73,15 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
   // Obtener modalidades activas desde la configuración de la RONDA ACTUAL
   const modalidadesActivas = useMemo((): Modalidad[] => {
     if (!configuracion) return [];
-    
-    // Usar las modalidades de la ronda actual
+
     const modalidadesRonda: string[] = configRondaActual.modalidades || [];
-    
+
     const modalidades = modalidadesRonda
-      .filter(id => id !== 'personalizado') // Excluir personalizado de la búsqueda normal
-      .map(id => getModalidadById(id))
+      .filter((id) => id !== 'personalizado')
+      .map((id) => getModalidadById(id))
       .filter((m): m is Modalidad => m !== undefined);
-    
-    // Si hay patrón personalizado en esta ronda, agregarlo como modalidad
-    // El patrón personalizado ahora está en la configuración de cada ronda
-    const rondaConfig = configuracion.rondas.find(r => r.numero === rondaActual);
+
+    const rondaConfig = configuracion.rondas.find((r) => r.numero === rondaActual);
     if (modalidadesRonda.includes('personalizado') && rondaConfig?.patronPersonalizado) {
       modalidades.push({
         id: 'personalizado',
@@ -87,14 +90,13 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
         patron: rondaConfig.patronPersonalizado,
       });
     }
-    
+
     return modalidades;
   }, [configuracion, configRondaActual, rondaActual]);
 
   // Crear validadores basados en las modalidades seleccionadas
   const validadores = useMemo(() => {
-    return modalidadesActivas.map(modalidad => {
-      // Casos especiales para horizontal y vertical (cualquier fila/columna)
+    return modalidadesActivas.map((modalidad) => {
       if (modalidad.id === 'horizontal') {
         return {
           id: modalidad.id,
@@ -103,7 +105,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
           validator: new LineaHorizontalGenericValidator(),
         };
       }
-      
+
       if (modalidad.id === 'vertical') {
         return {
           id: modalidad.id,
@@ -112,8 +114,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
           validator: new LineaVerticalGenericValidator(),
         };
       }
-      
-      // Validador genérico basado en patrón (incluye personalizado)
+
       return {
         id: modalidad.id,
         nombre: modalidad.nombre,
@@ -126,67 +127,125 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
   // Validador de Pavoso
   const pavosoValidator = useMemo(() => new PavosoValidator(), []);
 
-  // Cargar cartones desde JSON
+  // =========================================================================
+  // CARGAR CARTONES - CON VALIDACIÓN COMPLETA
+  // =========================================================================
   const cargarCartones = useCallback(async () => {
+    if (!configuracion) {
+      console.error('❌ No hay configuración disponible');
+      return;
+    }
+
     setLoading(true);
+    setErrorCarga(null);
+
+    const paqueteId = configuracion.paqueteId;
+    console.log(`🔄 Cargando paquete: ${paqueteId}`);
+
     try {
       const repository = getCartonRepository();
-      
-      // Establecer el paquete seleccionado antes de cargar
-      if (configuracion?.paqueteId) {
-        repository.setPaquete(configuracion.paqueteId);
-      }
-      
+
+      // Establecer el paquete seleccionado ANTES de cargar
+      repository.setPaquete(paqueteId);
+
       const todosCartones = await repository.getAll();
 
       if (todosCartones.length === 0) {
-        toast.error('Error: No se pudieron cargar los cartones desde el JSON');
+        const errorMsg = `No se pudieron cargar cartones del paquete "${paqueteId}"`;
+        setErrorCarga(errorMsg);
+        toast.error(errorMsg);
         return;
       }
 
+      console.log(`✅ ${todosCartones.length} cartones cargados del paquete "${paqueteId}"`);
       setCartones(todosCartones);
-      
-      // Filtrar cartones según configuración
-      if (configuracion) {
-        // Verificar si la ronda actual tiene cartones individuales definidos
-        const rondaConfig = configuracion.rondas.find(r => r.numero === rondaActual);
-        
-        if (rondaConfig?.cartonesIndividuales && rondaConfig.cartonesIndividuales.length > 0) {
-          // Usar cartones individuales de la ronda
-          const filtrados = todosCartones.filter(
-            c => rondaConfig.cartonesIndividuales!.includes(c.numero_carton)
-          );
-          setCartonesEnJuego(filtrados);
-          console.log(`🎯 Ronda ${rondaActual}: Usando ${filtrados.length} cartones específicos`);
-        } else {
-          // Usar rango general
-          const { desde, hasta } = configuracion.rangoCartones;
-          const filtrados = todosCartones.filter(
-            c => c.numero_carton >= desde && c.numero_carton <= hasta
-          );
-          setCartonesEnJuego(filtrados);
-          console.log(`📊 Ronda ${rondaActual}: Usando rango ${desde}-${hasta} (${filtrados.length} cartones)`);
-        }
-       
-      } else {
-        setCartonesEnJuego(todosCartones);
-      
-      }
+      setPaqueteCargado(paqueteId);
+
+      // Filtrar cartones según configuración de la ronda actual
+      filtrarCartonesParaRonda(todosCartones, configuracion, rondaActual);
     } catch (error) {
-      console.error(error);
+      const errorMsg = `Error al cargar paquete "${paqueteId}": ${error}`;
+      console.error('❌', errorMsg);
+      setErrorCarga(errorMsg);
+      toast.error('Error al cargar los cartones');
     } finally {
       setLoading(false);
     }
   }, [configuracion, rondaActual]);
+
+  // =========================================================================
+  // FILTRAR CARTONES PARA RONDA - CON VALIDACIONES
+  // =========================================================================
+  const filtrarCartonesParaRonda = useCallback(
+    (todosCartones: Carton[], config: ConfiguracionJuego, numeroRonda: number) => {
+      const rondaConfig = config.rondas.find((r) => r.numero === numeroRonda);
+
+      // Verificar si la ronda tiene cartones individuales
+      if (rondaConfig?.cartonesIndividuales && rondaConfig.cartonesIndividuales.length > 0) {
+        const filtrados = todosCartones.filter((c) =>
+          rondaConfig.cartonesIndividuales!.includes(c.numero_carton)
+        );
+
+        // Validar que se encontraron todos los cartones específicos
+        const encontrados = filtrados.map((c) => c.numero_carton);
+        const noEncontrados = rondaConfig.cartonesIndividuales.filter(
+          (n) => !encontrados.includes(n)
+        );
+
+        if (noEncontrados.length > 0) {
+          console.warn(`⚠️ Cartones específicos no encontrados: ${noEncontrados.join(', ')}`);
+          toast.warning(
+            `${noEncontrados.length} cartones específicos no se encontraron en el paquete`
+          );
+        }
+
+        setCartonesEnJuego(filtrados);
+        console.log(`🎯 Ronda ${numeroRonda}: ${filtrados.length} cartones específicos cargados`);
+        return;
+      }
+
+      // Usar rango general con VALIDACIÓN
+      const { desde, hasta } = config.rangoCartones;
+
+      // Validar que el rango no exceda los cartones disponibles
+      const maxCarton = Math.max(...todosCartones.map((c) => c.numero_carton));
+      const minCarton = Math.min(...todosCartones.map((c) => c.numero_carton));
+
+      const rangoDesdeValidado = Math.max(desde, minCarton);
+      const rangoHastaValidado = Math.min(hasta, maxCarton);
+
+      if (hasta > maxCarton) {
+        console.warn(`⚠️ Rango ajustado: ${hasta} → ${rangoHastaValidado} (máximo del paquete)`);
+        toast.warning(`Rango ajustado al máximo del paquete: ${maxCarton}`);
+      }
+
+      const filtrados = todosCartones.filter(
+        (c) => c.numero_carton >= rangoDesdeValidado && c.numero_carton <= rangoHastaValidado
+      );
+
+      setCartonesEnJuego(filtrados);
+      console.log(
+        `📊 Ronda ${numeroRonda}: Rango ${rangoDesdeValidado}-${rangoHastaValidado} = ${filtrados.length} cartones`
+      );
+    },
+    []
+  );
+
+  // =========================================================================
+  // EFECTO: Recargar cuando cambia la ronda
+  // =========================================================================
+  useEffect(() => {
+    if (cartones.length > 0 && configuracion) {
+      filtrarCartonesParaRonda(cartones, configuracion, rondaActual);
+    }
+  }, [rondaActual, cartones, configuracion, filtrarCartonesParaRonda]);
 
   // Calcular aciertos de un cartón
   const calcularAciertos = (carton: Carton, numerosSet: Set<number>): number => {
     let aciertos = 0;
     for (let i = 0; i < 5; i++) {
       for (let j = 0; j < 5; j++) {
-        // Saltar la casilla del centro (FREE) - no cuenta como acierto para "Menos Aciertos"
         if (i === 2 && j === 2) continue;
-        
         const numero = carton.matriz[i][j];
         if (numero !== 0 && numerosSet.has(numero)) {
           aciertos++;
@@ -196,38 +255,41 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     return aciertos;
   };
 
-  // Calcular cartones con menos aciertos (para mostrar al final)
+  // Filtrar cartones para mostrar solo los con el mínimo número de aciertos
+  const filtrarMenosAciertos = (cartonesConAciertos: CartonConAciertos[]): CartonConAciertos[] => {
+    if (cartonesConAciertos.length === 0) return [];
+    const minAciertos = Math.min(...cartonesConAciertos.map((c) => c.aciertos));
+    return cartonesConAciertos.filter((c) => c.aciertos === minAciertos).slice(0, 5);
+  };
+
+  // Calcular cartones con menos aciertos
   const calcularCartonesConMenosAciertos = useCallback(() => {
     if (cartonesEnJuego.length === 0) return;
-    
+
     const numerosSet = numerosSorteados;
     const cartonesConAciertosCalc: CartonConAciertos[] = cartonesEnJuego
-      .filter(c => !ganadores.some(g => g.numero_carton === c.numero_carton))
-      .map(carton => ({
+      .filter((c) => !ganadores.some((g) => g.numero_carton === c.numero_carton))
+      .map((carton) => ({
         carton,
         numero_carton: carton.numero_carton,
-        aciertos: calcularAciertos(carton, numerosSet)
+        aciertos: calcularAciertos(carton, numerosSet),
       }))
-      .filter(c => c.aciertos > 0) // Excluir cartones con 0 aciertos (pavosos)
-      .sort((a, b) => a.aciertos - b.aciertos)
-      .slice(0, 5);
-    
-    setCartonesConMenosAciertos(cartonesConAciertosCalc);
+      .filter((c) => c.aciertos > 0)
+      .sort((a, b) => a.aciertos - b.aciertos);
+
+    setCartonesConMenosAciertos(filtrarMenosAciertos(cartonesConAciertosCalc));
   }, [cartonesEnJuego, numerosSorteados, ganadores]);
 
   // Validar UN cartón contra TODOS los patrones activos
-  // Retorna TODOS los patrones ganados que aún no ha ganado este cartón
   const validarCarton = useCallback(
     (carton: Carton, numerosSet: Set<number>, ganadoresActuales: Ganador[]): Ganador[] => {
       const nuevosGanadores: Ganador[] = [];
 
-      // Validar cada patrón activo
       for (const { id, nombre, patron, validator } of validadores) {
-        // Verificar si este cartón ya ganó con este patrón específico
         const yaGanoEstePatron = ganadoresActuales.some(
           (g) => g.numero_carton === carton.numero_carton && g.patronId === id
         );
-        
+
         if (yaGanoEstePatron) continue;
 
         const esGanador = validator.validate(carton, numerosSet);
@@ -237,7 +299,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
             carton,
             patron: nombre,
             patronId: id,
-            patronMatriz: patron, // Guardar la matriz del patrón
+            patronMatriz: patron,
             numero_carton: carton.numero_carton,
             timestamp: new Date(),
             tipo: 'normal',
@@ -255,7 +317,6 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     (carton: Carton, numerosSet: Set<number>, ganadoresActuales: Ganador[]): Ganador | null => {
       if (!pavosoActivo) return null;
 
-      // Verificar si este cartón ya ganó como pavoso
       const yaEsPavoso = ganadoresActuales.some(
         (g) => g.numero_carton === carton.numero_carton && g.tipo === 'pavoso'
       );
@@ -266,21 +327,18 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
       const esPavoso = pavosoValidator.validate(carton, numerosSet);
 
       if (esPavoso) {
-        // Usar el patrón de la modalidad activa para mostrar la figura que se estaba jugando
-        // Si no hay modalidad activa, usar un patrón vacío
-        const patronFigura = modalidadesActivas.length > 0 
-          ? modalidadesActivas[0].patron 
-          : [
-              [false, false, false, false, false],
-              [false, false, false, false, false],
-              [false, false, false, false, false],
-              [false, false, false, false, false],
-              [false, false, false, false, false],
-            ];
-        // Guardar el nombre de la figura que se estaba jugando (para mostrar en el modal)
-        const nombreFigura = modalidadesActivas.length > 0 
-          ? modalidadesActivas[0].nombre 
-          : 'Sin figura';
+        const patronFigura =
+          modalidadesActivas.length > 0
+            ? modalidadesActivas[0].patron
+            : [
+                [false, false, false, false, false],
+                [false, false, false, false, false],
+                [false, false, false, false, false],
+                [false, false, false, false, false],
+                [false, false, false, false, false],
+              ];
+        const nombreFigura =
+          modalidadesActivas.length > 0 ? modalidadesActivas[0].nombre : 'Sin figura';
         return {
           carton,
           patron: nombreFigura,
@@ -298,7 +356,7 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     [pavosoActivo, pavosoValidator, modalidadesActivas]
   );
 
-  // Quitar un número sorteado (para corregir errores)
+  // Quitar un número sorteado
   const quitarNumero = useCallback(
     (numero: number) => {
       if (!numerosSorteados.has(numero)) {
@@ -309,23 +367,18 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
       nuevosNumeros.delete(numero);
       setNumerosSorteados(nuevosNumeros);
 
-      // Actualizar historial de clicks removiendo este número
-      const nuevoHistorial = historialClicks.filter(n => n !== numero);
+      const nuevoHistorial = historialClicks.filter((n) => n !== numero);
       setHistorialClicks(nuevoHistorial);
+      setUltimoNumeroClickeado(
+        nuevoHistorial.length > 0 ? nuevoHistorial[nuevoHistorial.length - 1] : null
+      );
 
-      // Actualizar último número clickeado al último del historial
-      setUltimoNumeroClickeado(nuevoHistorial.length > 0 ? nuevoHistorial[nuevoHistorial.length - 1] : null);
-
-      // Recalcular ganadores: quitar los que ya no cumplen el patrón
-      // IMPORTANTE: Los pavosos NUNCA se quitan una vez detectados (están congelados)
       setGanadores((prevGanadores) => {
         const ganadoresValidos = prevGanadores.filter((ganador) => {
-          // Los pavosos están congelados - nunca se quitan una vez detectados
           if (ganador.tipo === 'pavoso') {
             return true;
           }
-          
-          // Para cada ganador normal, verificar si aún cumple su patrón
+
           const validador = validadores.find((v) => v.id === ganador.patronId);
           if (!validador) {
             return false;
@@ -334,7 +387,6 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
         });
         return ganadoresValidos;
       });
-
     },
     [numerosSorteados, historialClicks, validadores]
   );
@@ -342,12 +394,17 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
   // Sortear número (CLICK MANUAL) - Funciona como toggle
   const sortearNumero = useCallback(
     (numero: number) => {
+      // Validación: Verificar que hay cartones cargados
+      if (cartonesEnJuego.length === 0) {
+        toast.error('No hay cartones cargados. Verifica la configuración.');
+        return;
+      }
+
       if (numero < 1 || numero > 75) {
         console.error('Número debe estar entre 1 y 75');
         return;
       }
 
-      // Si el número ya está sorteado, quitarlo (toggle)
       if (numerosSorteados.has(numero)) {
         quitarNumero(numero);
         return;
@@ -356,28 +413,29 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
       const nuevosNumeros = new Set(numerosSorteados);
       nuevosNumeros.add(numero);
       setNumerosSorteados(nuevosNumeros);
-      
-      // Agregar al historial de clicks
-      setHistorialClicks(prev => [...prev, numero]);
+
+      setHistorialClicks((prev) => [...prev, numero]);
       setUltimoNumeroClickeado(numero);
 
       const nuevosGanadores: Ganador[] = [];
       const BATCH_SIZE = 100;
-
-      // Obtener ganadores actuales para la validación
       const ganadoresActuales = [...ganadores];
 
       for (let i = 0; i < cartonesEnJuego.length; i += BATCH_SIZE) {
         const batch = cartonesEnJuego.slice(i, i + BATCH_SIZE);
 
         for (const carton of batch) {
-          // Validar patrones normales - puede retornar múltiples ganadores
-          const ganadoresCarton = validarCarton(carton, nuevosNumeros, [...ganadoresActuales, ...nuevosGanadores]);
+          const ganadoresCarton = validarCarton(carton, nuevosNumeros, [
+            ...ganadoresActuales,
+            ...nuevosGanadores,
+          ]);
           nuevosGanadores.push(...ganadoresCarton);
 
-          // Validar Pavoso (solo cuando hay exactamente 16 números)
           if (nuevosNumeros.size === 16) {
-            const pavoso = validarPavoso(carton, nuevosNumeros, [...ganadoresActuales, ...nuevosGanadores]);
+            const pavoso = validarPavoso(carton, nuevosNumeros, [
+              ...ganadoresActuales,
+              ...nuevosGanadores,
+            ]);
             if (pavoso) {
               nuevosGanadores.push(pavoso);
             }
@@ -388,38 +446,43 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
       if (nuevosGanadores.length > 0) {
         setGanadores((prev) => [...prev, ...nuevosGanadores]);
 
-        // Mostrar notificaciones para cada ganador
         nuevosGanadores.forEach((g) => {
           const emoji = g.tipo === 'pavoso' ? '😅' : '🎉';
-          const mensaje = g.tipo === 'pavoso' 
-            ? `${emoji} ¡PAVOSO! Cartón #${g.numero_carton} - Sin coincidencias`
-            : `${emoji} ¡GANADOR! Cartón #${g.numero_carton} - ${g.patron}`;
-          
+          const mensaje =
+            g.tipo === 'pavoso'
+              ? `${emoji} ¡PAVOSO! Cartón #${g.numero_carton} - Sin coincidencias`
+              : `${emoji} ¡GANADOR! Cartón #${g.numero_carton} - ${g.patron}`;
+
           console.log(mensaje);
         });
 
-        // Calcular automáticamente los menos aciertos SOLO cuando hay ganadores de BINGO (NO pavosos)
-        const hayGanadoresBingo = nuevosGanadores.some(g => g.tipo === 'normal');
+        const hayGanadoresBingo = nuevosGanadores.some((g) => g.tipo === 'normal');
         if (menosAciertosActivo && hayGanadoresBingo) {
           const todosGanadores = [...ganadoresActuales, ...nuevosGanadores];
           const cartonesConAciertosCalc: CartonConAciertos[] = cartonesEnJuego
-            .filter(c => !todosGanadores.some(g => g.numero_carton === c.numero_carton))
-            .map(carton => ({
+            .filter((c) => !todosGanadores.some((g) => g.numero_carton === c.numero_carton))
+            .map((carton) => ({
               carton,
               numero_carton: carton.numero_carton,
-              aciertos: calcularAciertos(carton, nuevosNumeros)
+              aciertos: calcularAciertos(carton, nuevosNumeros),
             }))
-            .filter(c => c.aciertos > 0) // Excluir cartones con 0 aciertos (pavosos)
-            .sort((a, b) => a.aciertos - b.aciertos)
-            .slice(0, 5);
-          
-          setCartonesConMenosAciertos(cartonesConAciertosCalc);
-          console.log(`📊 Menos aciertos calculados: ${cartonesConAciertosCalc.length} cartones`);
+            .filter((c) => c.aciertos > 0)
+            .sort((a, b) => a.aciertos - b.aciertos);
+
+          const menosAciertosFiltered = filtrarMenosAciertos(cartonesConAciertosCalc);
+          setCartonesConMenosAciertos(menosAciertosFiltered);
         }
       }
-
     },
-    [numerosSorteados, cartonesEnJuego, validarCarton, validarPavoso, ganadores, quitarNumero, menosAciertosActivo]
+    [
+      numerosSorteados,
+      cartonesEnJuego,
+      validarCarton,
+      validarPavoso,
+      ganadores,
+      quitarNumero,
+      menosAciertosActivo,
+    ]
   );
 
   // Reiniciar sorteo completo
@@ -432,41 +495,46 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     setRondaActual(1);
     setHistorialRondas([]);
     setRondaFinalizada(false);
-    console.log('Sorteo reiniciado');
+    setErrorCarga(null);
+    console.log('🔄 Sorteo reiniciado');
   }, []);
 
-  // Finalizar ronda actual (guardar en historial y calcular menos aciertos si aplica)
+  // Finalizar ronda actual
   const finalizarRonda = useCallback(() => {
-    // Guardar ronda en historial
     const rondaHistorial: HistorialRonda = {
       numero: rondaActual,
       ganadores: [...ganadores],
       numerosSorteados: Array.from(numerosSorteados),
       cartonesConMenosAciertos: [...cartonesConMenosAciertos],
     };
-    
-    setHistorialRondas(prev => [...prev, rondaHistorial]);
+
+    setHistorialRondas((prev) => [...prev, rondaHistorial]);
     setRondaFinalizada(true);
-    
-    // Calcular menos aciertos si está activo para esta ronda
+
     if (menosAciertosActivo) {
       const numerosSet = numerosSorteados;
       const cartonesConAciertosCalc: CartonConAciertos[] = cartonesEnJuego
-        .filter(c => !ganadores.some(g => g.numero_carton === c.numero_carton))
-        .map(carton => ({
+        .filter((c) => !ganadores.some((g) => g.numero_carton === c.numero_carton))
+        .map((carton) => ({
           carton,
           numero_carton: carton.numero_carton,
-          aciertos: calcularAciertos(carton, numerosSet)
+          aciertos: calcularAciertos(carton, numerosSet),
         }))
-        .filter(c => c.aciertos > 0) // Excluir cartones con 0 aciertos (pavosos)
-        .sort((a, b) => a.aciertos - b.aciertos)
-        .slice(0, 5);
-      
-      setCartonesConMenosAciertos(cartonesConAciertosCalc.filter(c => c.aciertos > 0));
+        .filter((c) => c.aciertos > 0)
+        .sort((a, b) => a.aciertos - b.aciertos);
+
+      setCartonesConMenosAciertos(filtrarMenosAciertos(cartonesConAciertosCalc));
     }
 
     console.log(`🏁 Ronda ${rondaActual} finalizada`);
-  }, [rondaActual, ganadores, numerosSorteados, cartonesConMenosAciertos, menosAciertosActivo, cartonesEnJuego]);
+  }, [
+    rondaActual,
+    ganadores,
+    numerosSorteados,
+    cartonesConMenosAciertos,
+    menosAciertosActivo,
+    cartonesEnJuego,
+  ]);
 
   // Pasar a la siguiente ronda
   const siguienteRonda = useCallback(async () => {
@@ -474,18 +542,14 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
       console.log('🎮 ¡Juego terminado! Todas las rondas completadas.');
       return;
     }
-    
-    // Limpiar estado para nueva ronda
+
     setNumerosSorteados(new Set());
     setHistorialClicks([]);
     setUltimoNumeroClickeado(null);
     setGanadores([]);
     setCartonesConMenosAciertos([]);
     setRondaFinalizada(false);
-    setRondaActual(prev => prev + 1);
-    
-    // Recargar cartones para la nueva ronda (se ejecutará después del cambio de rondaActual)
-    // El useEffect de cargarCartones se encargará de esto
+    setRondaActual((prev) => prev + 1);
   }, [rondaActual, totalRondas]);
 
   // Obtener letra del número
@@ -498,27 +562,64 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     return '';
   }, []);
 
-  // Buscar un cartón por número y calcular sus aciertos
-  const buscarCarton = useCallback((numeroCarton: number): { carton: Carton; aciertos: number; totalNumeros: number } | null => {
-    const carton = cartonesEnJuego.find(c => c.numero_carton === numeroCarton);
-    if (!carton) return null;
-    
-    // Calcular aciertos (números del cartón que han sido sorteados)
-    let aciertos = 0;
-    let totalNumeros = 0;
-    carton.matriz.forEach((fila, i) => {
-      fila.forEach((numero, j) => {
-        // El centro (FREE) no cuenta
-        if (i === 2 && j === 2) return;
-        totalNumeros++;
-        if (numerosSorteados.has(numero)) {
-          aciertos++;
-        }
+  // Buscar un cartón por número
+  const buscarCarton = useCallback(
+    (numeroCarton: number): { carton: Carton; aciertos: number; totalNumeros: number } | null => {
+      const carton = cartonesEnJuego.find((c) => c.numero_carton === numeroCarton);
+      if (!carton) return null;
+
+      let aciertos = 0;
+      let totalNumeros = 0;
+      carton.matriz.forEach((fila, i) => {
+        fila.forEach((numero, j) => {
+          if (i === 2 && j === 2) return;
+          totalNumeros++;
+          if (numerosSorteados.has(numero)) {
+            aciertos++;
+          }
+        });
       });
-    });
-    
-    return { carton, aciertos, totalNumeros };
-  }, [cartonesEnJuego, numerosSorteados]);
+
+      return { carton, aciertos, totalNumeros };
+    },
+    [cartonesEnJuego, numerosSorteados]
+  );
+
+  // =========================================================================
+  // VALIDAR CONFIGURACIÓN - Para uso antes de iniciar
+  // =========================================================================
+  const validarConfiguracion = useCallback((): { valido: boolean; errores: string[] } => {
+    const errores: string[] = [];
+
+    if (!configuracion) {
+      errores.push('No hay configuración disponible');
+      return { valido: false, errores };
+    }
+
+    if (cartonesEnJuego.length === 0) {
+      errores.push('No hay cartones cargados');
+    }
+
+    if (paqueteCargado !== configuracion.paqueteId) {
+      errores.push(
+        `Paquete no coincide: esperado "${configuracion.paqueteId}", cargado "${paqueteCargado}"`
+      );
+    }
+
+    const { desde, hasta } = configuracion.rangoCartones;
+    const cartonesEnRango = cartonesEnJuego.filter(
+      (c) => c.numero_carton >= desde && c.numero_carton <= hasta
+    );
+
+    if (cartonesEnRango.length === 0) {
+      errores.push(`No hay cartones en el rango ${desde}-${hasta}`);
+    }
+
+    return {
+      valido: errores.length === 0,
+      errores,
+    };
+  }, [configuracion, cartonesEnJuego, paqueteCargado]);
 
   return {
     numerosSorteados: Array.from(numerosSorteados).sort((a, b) => a - b),
@@ -546,6 +647,9 @@ export function useSorteoV2({ configuracion }: UseSorteoV2Props) {
     pavosoActivo,
     menosAciertosActivo,
     buscarCarton,
+    // Nuevos campos para validación
+    paqueteCargado,
+    errorCarga,
+    validarConfiguracion,
   };
 }
-  

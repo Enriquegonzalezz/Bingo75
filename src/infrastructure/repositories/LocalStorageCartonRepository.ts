@@ -4,11 +4,13 @@ import { Carton } from '@/domain/entities/Carton';
 export class LocalStorageCartonRepository implements ICartonRepository {
   private cartones: Carton[] | null = null;
   private paqueteActual: string = 'paquete-original';
+  private ultimaCarga: number = 0;
 
   setPaquete(paqueteId: string): void {
     if (this.paqueteActual !== paqueteId) {
       this.paqueteActual = paqueteId;
-      this.cartones = null;
+      this.cartones = null; // Forzar recarga
+      this.ultimaCarga = 0;
       console.log(`📦 Paquete cambiado a: ${paqueteId}`);
     }
   }
@@ -18,11 +20,20 @@ export class LocalStorageCartonRepository implements ICartonRepository {
   }
 
   private async loadCartones(): Promise<Carton[]> {
-    if (this.cartones !== null) {
+    // Si ya tenemos cartones cargados del mismo paquete, retornarlos
+    if (this.cartones !== null && this.cartones.length > 0) {
+      console.log(`📦 Usando cache: ${this.cartones.length} cartones de "${this.paqueteActual}"`);
       return this.cartones;
     }
 
     console.log(`🔄 Cargando paquete: ${this.paqueteActual}...`);
+
+    // =========================================================================
+    // CASO ESPECIAL: Paquete original (JSON local)
+    // =========================================================================
+    if (this.paqueteActual === 'paquete-original') {
+      return this.cargarDesdeJSONLocal();
+    }
 
     // =========================================================================
     // PRIMERO: Intentar cargar desde la API (base de datos)
@@ -37,47 +48,94 @@ export class LocalStorageCartonRepository implements ICartonRepository {
 
           if (data.cartones && Array.isArray(data.cartones) && data.cartones.length > 0) {
             const cartonesArray: Carton[] = [];
+            let errores = 0;
 
             for (const cartonData of data.cartones) {
               try {
                 const carton = Carton.fromJSON(cartonData);
                 cartonesArray.push(carton);
               } catch (error) {
-                console.warn(`⚠️ Error procesando cartón:`, error);
+                errores++;
+                if (errores <= 3) {
+                  console.warn(`⚠️ Error procesando cartón:`, error);
+                }
               }
+            }
+
+            if (errores > 0) {
+              console.warn(`⚠️ ${errores} cartones con errores de ${data.cartones.length} totales`);
             }
 
             if (cartonesArray.length > 0) {
               this.cartones = cartonesArray;
+              this.ultimaCarga = Date.now();
               console.log(`✅ ${cartonesArray.length} cartones cargados desde BASE DE DATOS`);
               return cartonesArray;
             }
           }
+        } else {
+          console.warn(`⚠️ API respondió con error: ${response.status}`);
         }
 
-        console.log(`⚠️ API no devolvió cartones válidos, intentando JSON local...`);
+        console.log(`⚠️ API no devolvió cartones válidos para "${this.paqueteActual}"`);
       } catch (apiError) {
-        console.log(`⚠️ Error en API, intentando JSON local:`, apiError);
+        console.error(`❌ Error al llamar API:`, apiError);
       }
     }
 
     // =========================================================================
-    // FALLBACK: Cargar desde JSON local
+    // FALLBACK: Intentar cargar desde JSON local (si existe)
     // =========================================================================
+    return this.cargarDesdeJSONLocal();
+  }
+
+  private async cargarDesdeJSONLocal(): Promise<Carton[]> {
     try {
-      console.log(`📁 Cargando desde JSON local: ${this.paqueteActual}`);
+      console.log(`📁 Intentando cargar JSON local: ${this.paqueteActual}`);
 
       const paqueteData = await import(
         `@/shared/constants/paquetes-cartones/${this.paqueteActual}.json`
       );
 
-      const cartonesArray = paqueteData.cartones.map((data: any) => Carton.fromJSON(data));
+      if (!paqueteData.cartones || !Array.isArray(paqueteData.cartones)) {
+        throw new Error('Formato de JSON inválido');
+      }
+
+      const cartonesArray: Carton[] = [];
+      let errores = 0;
+
+      for (const data of paqueteData.cartones) {
+        try {
+          const carton = Carton.fromJSON(data);
+          cartonesArray.push(carton);
+        } catch (error) {
+          errores++;
+          if (errores <= 3) {
+            console.warn(`⚠️ Error procesando cartón del JSON:`, error);
+          }
+        }
+      }
+
+      if (cartonesArray.length === 0) {
+        throw new Error('No se pudieron procesar cartones del JSON');
+      }
 
       this.cartones = cartonesArray;
-      console.log(`✅ ${cartonesArray.length} cartones cargados desde JSON local`);
+      this.ultimaCarga = Date.now();
+
+      const nombrePaquete = paqueteData.nombre || this.paqueteActual;
+      console.log(
+        `✅ ${cartonesArray.length} cartones cargados desde JSON local: ${nombrePaquete}`
+      );
+
+      if (errores > 0) {
+        console.warn(`⚠️ ${errores} cartones con errores`);
+      }
+
       return cartonesArray;
     } catch (jsonError) {
-      console.error('❌ Error al cargar desde JSON local:', jsonError);
+      console.error(`❌ Error al cargar JSON local "${this.paqueteActual}":`, jsonError);
+      this.cartones = [];
       return [];
     }
   }
@@ -116,6 +174,28 @@ export class LocalStorageCartonRepository implements ICartonRepository {
 
   async clear(): Promise<void> {
     this.cartones = null;
-    console.log('🔄 Cartones reiniciados');
+    this.ultimaCarga = 0;
+    console.log('🔄 Cache de cartones limpiado');
+  }
+
+  // Método para forzar recarga
+  async forceReload(): Promise<Carton[]> {
+    this.cartones = null;
+    this.ultimaCarga = 0;
+    return this.loadCartones();
+  }
+
+  // Método para verificar si el paquete está cargado
+  isLoaded(): boolean {
+    return this.cartones !== null && this.cartones.length > 0;
+  }
+
+  // Método para obtener estadísticas
+  getStats(): { paquete: string; total: number; ultimaCarga: Date | null } {
+    return {
+      paquete: this.paqueteActual,
+      total: this.cartones?.length || 0,
+      ultimaCarga: this.ultimaCarga > 0 ? new Date(this.ultimaCarga) : null,
+    };
   }
 }

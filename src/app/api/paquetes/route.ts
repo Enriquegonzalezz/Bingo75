@@ -1,43 +1,33 @@
 import { NextResponse } from 'next/server';
-import { obtenerTodosPaquetes } from '@/lib/db-operations';
+import { PrismaClient } from '@prisma/client';
 
-interface PaqueteInfo {
-  id: string;
-  nombre: string;
-  total_cartones: number;
-  fecha_generacion?: string;
-}
+const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    console.log('📋 Obteniendo todos los paquetes desde la base de datos...');
-
-    const paquetes: PaqueteInfo[] = await obtenerTodosPaquetes();
-
-    // Ordenar paquetes
-    paquetes.sort((a, b) => {
-      const orderMap: Record<string, number> = {
-        'paquete-original': 0,
-        'paquete-alpha': 1,
-        'paquete-beta': 2,
-        'paquete-gamma': 3,
-        'paquete-delta': 4,
-      };
-
-      const orderA = orderMap[a.id] ?? 999;
-      const orderB = orderMap[b.id] ?? 999;
-
-      if (orderA !== orderB) {
-        return orderA - orderB;
-      }
-
-      return a.nombre.localeCompare(b.nombre);
+    const paquetes = await prisma.paquete.findMany({
+      include: {
+        _count: {
+          select: { cartones: true },
+        },
+      },
+      orderBy: {
+        fecha_generacion: 'desc',
+      },
     });
 
-    console.log(`✅ Se encontraron ${paquetes.length} paquetes`);
-    return NextResponse.json({ paquetes });
+    const paquetesFormateados = paquetes.map((p) => ({
+      id: p.id, // Usar el ID real de la base de datos
+      nombre: p.nombre,
+      total_cartones: p._count.cartones,
+      fecha_generacion: p.fecha_generacion.toISOString(),
+    }));
+
+    return NextResponse.json({ paquetes: paquetesFormateados });
   } catch (error) {
-    console.error('Error al listar paquetes:', error);
-    return NextResponse.json({ error: 'Error al listar paquetes' }, { status: 500 });
+    console.error('Error al obtener paquetes:', error);
+    return NextResponse.json({ error: 'Error al obtener los paquetes' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }

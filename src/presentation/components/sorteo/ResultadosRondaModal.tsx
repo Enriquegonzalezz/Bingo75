@@ -187,10 +187,10 @@ export function ResultadosRondaModal({
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-black text-2xl group-hover:underline">
+                          <p className="font-black text-4xl group-hover:underline">
                             #{g.numero_carton}
                           </p>
-                          <p className="text-sm font-bold opacity-80 uppercase">{g.patron}</p>
+                          <p className="text-2xl font-bold opacity-80 uppercase">{g.patron}</p>
                         </div>
                         <Trophy className="w-6 h-6 opacity-50 group-hover:opacity-100" />
                       </div>
@@ -222,10 +222,10 @@ export function ResultadosRondaModal({
                       >
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-black text-2xl text-orange-500">
+                            <p className="font-black text-5xl text-white ">
                               #{g.numero_carton}
                             </p>
-                            <p className="text-sm font-bold text-white/60">0 Aciertos</p>
+                            <p className=" text-2xl font-bold text-white/60">0 Aciertos</p>
                           </div>
                           <span className="text-2xl group-hover:scale-125 transition-transform">
                             😅
@@ -263,10 +263,10 @@ export function ResultadosRondaModal({
                         <Frown className="w-6 h-6 text-red-500 group-hover:text-white" />
                       </div>
                       <div>
-                        <p className="text-white font-bold text-lg group-hover:text-[#ffd74a]">
+                        <p className="text-white font-bold text-4xl group-hover:text-[#ffd74a]">
                           Cartón #{item.numero_carton}
                         </p>
-                        <p className="text-gray-400 text-sm">{item.aciertos} aciertos</p>
+                        <p className="text-gray-400 text-2xl">{item.aciertos} aciertos</p>
                       </div>
                     </button>
                   ))
