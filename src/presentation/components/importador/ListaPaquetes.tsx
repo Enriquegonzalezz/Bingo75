@@ -22,7 +22,8 @@ export default function ListaPaquetes() {
   const cargarPaquetes = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/import-cartones');
+      // ✅ Cambiar de /api/import-cartones a /api/paquetes
+      const response = await fetch('/api/paquetes');
       const data = await response.json();
 
       if (!response.ok) {
@@ -72,9 +73,7 @@ export default function ListaPaquetes() {
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    {paquete.nombre}
-                  </h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{paquete.nombre}</h3>
                   <div className="space-y-1 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <FileSpreadsheet className="w-4 h-4" />

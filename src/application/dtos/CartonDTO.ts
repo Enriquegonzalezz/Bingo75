@@ -10,6 +10,4 @@ export interface CartonDTO {
     O: number[];
   };
   matriz: number[][];
-  fecha_creacion: string;
-  activo: boolean;
 }

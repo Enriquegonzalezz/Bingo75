@@ -1,102 +1,61 @@
 // ============================================================================
-// 🔴 JHONATHAN: ESTE ES EL SCHEMA DE PRISMA PARA LA BASE DE DATOS
-// ============================================================================
-// Este archivo define la estructura de las tablas en la base de datos
-// Después de configurar este archivo, ejecuta:
-// 1. npx prisma migrate dev --name init
-// 2. npx prisma generate
+// SCHEMA DE PRISMA PARA BINGO75 - MySQL
 // ============================================================================
 
-// Configuración del generador de Prisma
 generator client {
   provider = "prisma-client-js"
 }
 
-// 🔴 JHONATHAN: Configura tu base de datos aquí
-// Opciones: "postgresql", "mysql", "sqlite", "sqlserver", "mongodb"
 datasource db {
-  provider = "postgresql" // Cambia esto según tu base de datos
-  url      = env("DATABASE_URL") // Variable de entorno con la URL de conexión
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 // ============================================================================
 // TABLA: Paquete
-// Almacena la información general de cada paquete de cartones importado
 // ============================================================================
 model Paquete {
   id                String   @id @default(cuid())
-  paquete_id        String   @unique // Ej: "paquete-mi-paquete"
-  nombre            String   // Nombre del paquete
-  version           String   @default("1.0")
+  paquete_id        String   @unique @db.VarChar(255)
+  nombre            String   @db.VarChar(255)
+  version           String   @default("1.0") @db.VarChar(50)
   fecha_generacion  DateTime @default(now())
-  total_cartones    Int      // Total de cartones en el paquete
-  descripcion       String?  // Descripción opcional
-  serial            String   @default("BINGO") // Serial por defecto
-  
-  // Relación: Un paquete tiene muchos cartones
+  total_cartones    Int
+  descripcion       String?  @db.Text
+  serial            String   @default("BINGO") @db.VarChar(100)
+
   cartones          Carton[]
-  
+
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  
+
   @@index([paquete_id])
   @@index([fecha_generacion])
 }
 
 // ============================================================================
 // TABLA: Carton
-// Almacena cada cartón individual con sus números
 // ============================================================================
 model Carton {
   id             String   @id @default(cuid())
-  carton_id      String   @unique // Ej: "carton-1737154800000-12345-1"
-  numero_carton  Int      // Número secuencial del cartón en el paquete
-  serial         String   // Serial del cartón
-  
-  // Relación con el paquete
+  carton_id      String   @unique @db.VarChar(255)
+  numero_carton  Int
+  serial         String   @db.VarChar(100)
+
   paquete_id     String
   paquete        Paquete  @relation(fields: [paquete_id], references: [id], onDelete: Cascade)
-  
-  // Números organizados por columna BINGO
-  // Guardamos como JSON para facilitar el acceso
-  numeros_b      Json     // Array de 5 números para la columna B
-  numeros_i      Json     // Array de 5 números para la columna I
-  numeros_n      Json     // Array de 5 números para la columna N (con 0 en el centro)
-  numeros_g      Json     // Array de 5 números para la columna G
-  numeros_o      Json     // Array de 5 números para la columna O
-  
-  // Matriz completa 5x5
-  matriz         Json     // Array de arrays [[],[],[],[],[]]
-  
+
+  numeros_b      Json
+  numeros_i      Json
+  numeros_n      Json
+  numeros_g      Json
+  numeros_o      Json
+
+  matriz         Json
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-  
+
   @@index([paquete_id])
   @@index([numero_carton])
 }
-
-// ============================================================================
-// 🔴 JHONATHAN: VARIABLES DE ENTORNO NECESARIAS
-// ============================================================================
-// Crea un archivo .env.local en la raíz del proyecto con:
-//
-// # PostgreSQL
-// DATABASE_URL="postgresql://usuario:password@localhost:5432/bingo75?schema=public"
-//
-// # MySQL
-// DATABASE_URL="mysql://usuario:password@localhost:3306/bingo75"
-//
-// # SQLite (para desarrollo local)
-// DATABASE_URL="file:./dev.db"
-//
-// ============================================================================
-
-// ============================================================================
-// 🔴 JHONATHAN: COMANDOS ÚTILES DE PRISMA
-// ============================================================================
-// Crear migración:        npx prisma migrate dev --name nombre_migracion
-// Aplicar migraciones:    npx prisma migrate deploy
-// Generar cliente:        npx prisma generate
-// Abrir Prisma Studio:    npx prisma studio
-// Resetear base de datos: npx prisma migrate reset
-// ============================================================================

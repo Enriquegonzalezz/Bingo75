@@ -1,0 +1,17 @@
+FROM node:20-alpine
+WORKDIR /app
+
+RUN apk add --no-cache libc6-compat openssl
+
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+COPY prisma ./prisma
+
+ENV DATABASE_URL=mysql://bingo75_user:bingo75_pass@mysql:3306/bingo75
+RUN npx prisma generate
+
+COPY docker/migrate.sh /migrate.sh
+RUN chmod +x /migrate.sh
+
+CMD ["/migrate.sh"]

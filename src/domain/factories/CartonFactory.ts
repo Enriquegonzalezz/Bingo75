@@ -1,89 +1,89 @@
-import { Carton } from '../entities/Carton';
-import { CartonConfig } from '../value-objects/CartonConfig';
-import { NumerosBingo } from '../value-objects/NumerosBingo';
+import { Carton, CartonNumeros } from '../entities/Carton';
 import { BINGO_CONSTANTS } from '@/shared/constants/bingo.constants';
 
+interface CreateBatchConfig {
+  serial: string;
+  numero_carton?: number;
+  numero_inicio?: number;
+}
+
 export class CartonFactory {
-  private numerosGenerados: Set<string> = new Set();
-
-  public create(config: CartonConfig): Carton {
-    const numeros = this.generarNumerosUnicos();
-    const matriz = this.construirMatriz(numeros);
-
+  create(
+    id: string,
+    serial: string,
+    numeroCarton: number,
+    numeros: CartonNumeros,
+    matriz: number[][]
+  ): Carton {
     return new Carton({
-      id: this.generateId(),
-      serial: config.serial,
-      numero_carton: config.numero_carton,
+      id,
+      serial,
+      numero_carton: numeroCarton,
       numeros,
       matriz,
-      fecha_creacion: new Date(),
-      activo: true,
     });
   }
 
-  public createBatch(config: CartonConfig, cantidad: number): Carton[] {
-    if (cantidad < 1 || cantidad > 10000) {
-      throw new Error('La cantidad debe estar entre 1 y 10,000');
-    }
+  createRandom(id: string, serial: string, numeroCarton: number): Carton {
+    const numeros = this.generarNumerosAleatorios();
+    const matriz = this.crearMatriz(numeros);
 
+    return new Carton({
+      id,
+      serial,
+      numero_carton: numeroCarton,
+      numeros,
+      matriz,
+    });
+  }
+
+  createBatch(config: CreateBatchConfig, cantidad: number): Carton[] {
     const cartones: Carton[] = [];
-    const numeroInicio = config.numero_inicio || config.numero_carton;
+    const timestamp = Date.now();
+    const numeroInicio = config.numero_inicio || config.numero_carton || 1;
 
     for (let i = 0; i < cantidad; i++) {
-      let carton: Carton;
-      let intentos = 0;
-
-      do {
-        const cartonConfig: CartonConfig = {
-          ...config,
-          numero_carton: numeroInicio + i,
-        };
-
-        carton = this.create(cartonConfig);
-        intentos++;
-
-        if (intentos > 100) {
-          throw new Error(
-            `No se pudo generar cartón único después de 100 intentos (cartón #${numeroInicio + i})`
-          );
-        }
-      } while (this.numerosGenerados.has(carton.getNumerosComoCadena()));
-
-      this.numerosGenerados.add(carton.getNumerosComoCadena());
+      const numeroCarton = numeroInicio + i;
+      const id = `carton-${timestamp}-${numeroCarton}`;
+      const carton = this.createRandom(id, config.serial, numeroCarton);
       cartones.push(carton);
     }
 
     return cartones;
   }
 
-  private generarNumerosUnicos(): NumerosBingo {
+  private generarNumerosAleatorios(): CartonNumeros {
     return {
-      B: this.generarColumna(BINGO_CONSTANTS.RANGES.B.min, BINGO_CONSTANTS.RANGES.B.max),
-      I: this.generarColumna(BINGO_CONSTANTS.RANGES.I.min, BINGO_CONSTANTS.RANGES.I.max),
-      N: this.generarColumna(BINGO_CONSTANTS.RANGES.N.min, BINGO_CONSTANTS.RANGES.N.max, true),
-      G: this.generarColumna(BINGO_CONSTANTS.RANGES.G.min, BINGO_CONSTANTS.RANGES.G.max),
-      O: this.generarColumna(BINGO_CONSTANTS.RANGES.O.min, BINGO_CONSTANTS.RANGES.O.max),
+      B: this.generarColumna(BINGO_CONSTANTS.RANGES.B.min, BINGO_CONSTANTS.RANGES.B.max, 5),
+      I: this.generarColumna(BINGO_CONSTANTS.RANGES.I.min, BINGO_CONSTANTS.RANGES.I.max, 5),
+      N: this.generarColumna(BINGO_CONSTANTS.RANGES.N.min, BINGO_CONSTANTS.RANGES.N.max, 4, true),
+      G: this.generarColumna(BINGO_CONSTANTS.RANGES.G.min, BINGO_CONSTANTS.RANGES.G.max, 5),
+      O: this.generarColumna(BINGO_CONSTANTS.RANGES.O.min, BINGO_CONSTANTS.RANGES.O.max, 5),
     };
   }
 
-  private generarColumna(min: number, max: number, free = false): number[] {
-    const disponibles = Array.from({ length: max - min + 1 }, (_, i) => min + i);
+  private generarColumna(
+    min: number,
+    max: number,
+    cantidad: number,
+    conFree: boolean = false
+  ): number[] {
     const numeros: number[] = [];
+    const disponibles = Array.from({ length: max - min + 1 }, (_, i) => min + i);
 
-    for (let i = 0; i < 5; i++) {
-      if (free && i === 2) {
-        numeros.push(0); // FREE en el centro
-      } else {
-        const index = Math.floor(Math.random() * disponibles.length);
-        numeros.push(disponibles[index]);
-        disponibles.splice(index, 1);
-      }
+    for (let i = 0; i < cantidad; i++) {
+      const index = Math.floor(Math.random() * disponibles.length);
+      numeros.push(disponibles.splice(index, 1)[0]);
+    }
+
+    if (conFree) {
+      numeros.splice(2, 0, 0);
     }
 
     return numeros;
   }
 
-  private construirMatriz(numeros: NumerosBingo): number[][] {
+  private crearMatriz(numeros: CartonNumeros): number[][] {
     const matriz: number[][] = [];
 
     for (let fila = 0; fila < 5; fila++) {
@@ -97,13 +97,5 @@ export class CartonFactory {
     }
 
     return matriz;
-  }
-
-  private generateId(): string {
-    return `carton-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  public resetGenerados(): void {
-    this.numerosGenerados.clear();
   }
 }

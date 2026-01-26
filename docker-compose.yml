@@ -1,0 +1,75 @@
+# =============================================================================
+# Docker Compose para Bingo75
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Base de datos MySQL
+  # ---------------------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: bingo75-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: bingo75_root_pass
+      MYSQL_DATABASE: bingo75
+      MYSQL_USER: bingo75_user
+      MYSQL_PASSWORD: bingo75_pass
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-pbingo75_root_pass']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - bingo75-network
+
+  # ---------------------------------------------------------------------------
+  # Servicio de migración
+  # ---------------------------------------------------------------------------
+  migration:
+    build:
+      context: .
+      dockerfile: Dockerfile.migration
+    container_name: bingo75-migration
+    environment:
+      DATABASE_URL: mysql://bingo75_user:bingo75_pass@mysql:3306/bingo75
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - bingo75-network
+
+  # ---------------------------------------------------------------------------
+  # Aplicación Next.js
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bingo75-app
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: mysql://bingo75_user:bingo75_pass@mysql:3306/bingo75
+      NODE_ENV: production
+    depends_on:
+      mysql:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+    networks:
+      - bingo75-network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  bingo75-network:
+    driver: bridge
