@@ -57,6 +57,7 @@ export default function TableroPage() {
 
   const {
     numerosSorteados,
+    historialClicks,
     ultimoNumero,
     ganadores,
     cartones,
@@ -90,16 +91,21 @@ export default function TableroPage() {
     if (!configuracionJuego) return;
     // No actualizar el historial si no hay ganadores (evita sobrescribir al cambiar de ronda)
     if (ganadores.length === 0 && cartonesConMenosAciertos.length === 0) return;
-    
+
     setHistorialRondas((prev) => {
       // Deep clone de ganadores para preservar patronMatriz
       const ganadoresReales = ganadores
         .filter((g) => g.tipo !== 'pavoso')
-        .map(g => ({ ...g, patronMatriz: g.patronMatriz.map(row => [...row]) }));
+        .map((g) => ({ ...g, patronMatriz: g.patronMatriz.map((row) => [...row]) }));
       const pavosos = ganadores
         .filter((g) => g.tipo === 'pavoso')
-        .map(g => ({ ...g, patronMatriz: g.patronMatriz.map(row => [...row]) }));
-      const prevData = prev[rondaActual] || { ganadores: [], pavosos: [], menosAciertos: [], numerosSorteados: [] };
+        .map((g) => ({ ...g, patronMatriz: g.patronMatriz.map((row) => [...row]) }));
+      const prevData = prev[rondaActual] || {
+        ganadores: [],
+        pavosos: [],
+        menosAciertos: [],
+        numerosSorteados: [],
+      };
       if (
         prevData.ganadores.length === ganadoresReales.length &&
         prevData.pavosos.length === pavosos.length &&
@@ -119,7 +125,14 @@ export default function TableroPage() {
     });
     // Si la ronda avanza, actualizamos el filtro para seguir al juego
     if (!rondaFinalizada) setRondaFiltro(rondaActual);
-  }, [ganadores, cartonesConMenosAciertos, rondaActual, rondaFinalizada, configuracionJuego, numerosSorteados]);
+  }, [
+    ganadores,
+    cartonesConMenosAciertos,
+    rondaActual,
+    rondaFinalizada,
+    configuracionJuego,
+    numerosSorteados,
+  ]);
 
   useEffect(() => {
     if (totalSorteados === 1 && !isFullscreen) enterFullscreen();
@@ -173,6 +186,7 @@ export default function TableroPage() {
     return (
       <TableroFullscreenV2
         numerosSorteados={numerosSorteados}
+        historialClicks={historialClicks}
         ultimoNumero={ultimoNumero}
         totalSorteados={totalSorteados}
         ganadores={ganadores}
@@ -190,6 +204,7 @@ export default function TableroPage() {
         rondaFinalizada={rondaFinalizada}
         numeroSoporte={configuracionJuego.numeroSoporte}
         premioRonda={configuracionJuego.rondas.find((r) => r.numero === rondaActual)?.premio}
+        moneda={configuracionJuego.rondas.find((r) => r.numero === rondaActual)?.moneda || 'USD'}
         buscarCarton={buscarCarton}
         historialRondas={historialRondas}
       />
@@ -500,7 +515,7 @@ export default function TableroPage() {
       )}
       <ConfiguracionModal
         isOpen={mostrarConfiguracion}
-        onClose={() => configuracionJuego && setMostrarConfiguracion(false)}
+        onClose={() => setMostrarConfiguracion(false)}
         onConfirmar={handleConfigurarJuego}
         modalidades={TODAS_MODALIDADES}
         totalCartones={cartones.length}

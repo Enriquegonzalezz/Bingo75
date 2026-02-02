@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
+
 import { usePathname } from 'next/navigation';
 import { cn } from '@/shared/utils/cn';
 import { Home, PlayCircle, Grid3x3, LogOut } from 'lucide-react';
@@ -20,17 +20,9 @@ export function Header() {
   return (
     <header className="bg-[#124723] border-b-2 border-[#ffd402] sticky top-0 z-30 shadow-lg">
       <div className="container mx-auto px-4 max-w-7xl">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <Image
-              src="/logo.png"
-              alt="Bingo Carabobo"
-              width={120}
-              height={48}
-              className="h-12 w-auto rounded-lg shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300"
-            />
-          </Link>
+        <div className="flex items-center justify-center h-16">
+          {/* Logo
+          prueba de produccion*/}
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-2">

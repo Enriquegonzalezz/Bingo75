@@ -39,7 +39,8 @@ export function CartonGanadorModal({
   // Determinar el patrón a mostrar
   // Prioridad: 1) Patrón específico del ganador (patronMatriz), 2) Modalidad activa (fallback)
   // Para pavosos mostramos el patrón solo para estética, pero no lo usamos para marcar celdas
-  const patron = data.patronMatriz || (modalidadesActivas.length > 0 ? modalidadesActivas[0].patron : null);
+  const patron =
+    data.patronMatriz || (modalidadesActivas.length > 0 ? modalidadesActivas[0].patron : null);
 
   // Set de números sorteados para búsqueda rápida
   // Prioridad: 1) numerosMarcados (números de la ronda específica), 2) numerosSorteados (fallback)
@@ -193,7 +194,7 @@ export function CartonGanadorModal({
             </div>
 
             {/* Comparativa Visual Pequeña */}
-            <div className="bg-[#0a2e16] rounded-2xl p-4 border border-[#68b258] flex flex-col items-center">
+            <div className="bg-[#124723] rounded-2xl p-4 border border-[#68b258] flex flex-col items-center">
               <p className="text-white text-xs uppercase mb-2">
                 Figura Jugada: {data.patronNombre || modalidadesActivas[0]?.nombre}
               </p>

@@ -63,8 +63,15 @@ export function ResultadosRondaModal({
       menosAciertos: historico?.menosAciertos || [],
       numerosSorteadosRonda: historico?.numerosSorteados || [], // Números guardados de la ronda histórica
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rondaFiltro, rondaActual, ganadores, cartonesConMenosAciertos, historialRondas, JSON.stringify(numerosSorteados)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    rondaFiltro,
+    rondaActual,
+    ganadores,
+    cartonesConMenosAciertos,
+    historialRondas,
+    JSON.stringify(numerosSorteados),
+  ]);
 
   const hayMasRondas = rondaActual < totalRondas;
 
@@ -83,7 +90,8 @@ export function ResultadosRondaModal({
       timestamp: g.timestamp,
       // Para pavosos, pasar los números congelados al momento de ganar (16 bolas)
       // Para ganadores normales, pasar los números de la ronda en que ganaron
-      numerosMarcados: g.tipo === 'pavoso' ? g.numerosSorteadosAlGanar : datosMostrados.numerosSorteadosRonda,
+      numerosMarcados:
+        g.tipo === 'pavoso' ? g.numerosSorteadosAlGanar : datosMostrados.numerosSorteadosRonda,
       // Pasar el patrón específico con el que ganó (para mostrar la figura correcta de cada ronda)
       patronMatriz: g.patronMatriz,
     });
@@ -136,7 +144,7 @@ export function ResultadosRondaModal({
                 Resultados
               </h2>
               {premioRonda > 0 && rondaFiltro === rondaActual && (
-                <p className="text-[#1d1d1b] font-bold text-lg">
+                <p className="text-[#124723] font-bold text-lg">
                   Premio: ${premioRonda.toLocaleString()}
                 </p>
               )}
@@ -147,7 +155,7 @@ export function ResultadosRondaModal({
             {hayMasRondas && rondaFiltro === rondaActual && (
               <button
                 onClick={onSiguienteRonda}
-                className="px-6 py-3 bg-[#1d1d1b] text-white font-bold text-lg rounded-xl flex items-center gap-2 hover:bg-[#333] transition-colors shadow-lg"
+                className="px-6 py-3 bg-[#1d1d1b] text-white font-bold text-lg rounded-xl flex items-center gap-2 hover:bg-[#2d2d2b] transition-colors shadow-lg"
               >
                 Siguiente <SkipForward className="w-5 h-5" />
               </button>
@@ -189,7 +197,7 @@ export function ResultadosRondaModal({
         </div>
 
         {/* CONTENIDO */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-b from-[#124723] to-[#0a2e16]">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-b from-[#124723] to-[#0a2e14]">
           <div className="max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
             {/* GANADORES */}
             <div className="space-y-4">
@@ -208,14 +216,14 @@ export function ResultadosRondaModal({
                     <button
                       key={i}
                       onClick={() => abrirGanador(g)}
-                      className="w-full bg-[#ffd402] hover:bg-[#ffe04d] text-[#1d1d1b] p-4 rounded-xl shadow-md transition-transform hover:scale-[1.02] text-left group"
+                      className="w-full bg-[#68b258] hover:bg-[#7bc96a] text-white p-4 rounded-xl shadow-md transition-transform hover:scale-[1.02] text-left group"
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-black text-2xl group-hover:underline">
+                          <p className="font-black text-4xl group-hover:underline">
                             #{g.numero_carton}
                           </p>
-                          <p className="text-sm font-bold opacity-80 uppercase">{g.patron}</p>
+                          <p className="text-2xl font-bold opacity-80 uppercase">{g.patron}</p>
                         </div>
                         <Trophy className="w-6 h-6 opacity-50 group-hover:opacity-100" />
                       </div>
@@ -243,14 +251,12 @@ export function ResultadosRondaModal({
                       <button
                         key={i}
                         onClick={() => abrirGanador(g)}
-                        className="w-full bg-[#2a2a28] hover:bg-[#333] border border-orange-500/30 p-4 rounded-xl shadow-md transition-transform hover:scale-[1.02] text-left group"
+                        className="w-full bg-[#c2a208] hover:bg-[#d4b30a] border border-orange-500/30 p-4 rounded-xl shadow-md transition-transform hover:scale-[1.02] text-left group"
                       >
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-black text-2xl text-orange-500">
-                              #{g.numero_carton}
-                            </p>
-                            <p className="text-sm font-bold text-white/60">0 Aciertos</p>
+                            <p className="font-black text-5xl text-[#1d1d1b]">#{g.numero_carton}</p>
+                            <p className="text-2xl font-bold text-[#1d1d1b]/60">0 Aciertos</p>
                           </div>
                           <span className="text-2xl group-hover:scale-125 transition-transform">
                             😅
@@ -288,10 +294,10 @@ export function ResultadosRondaModal({
                         <Frown className="w-6 h-6 text-red-500 group-hover:text-white" />
                       </div>
                       <div>
-                        <p className="text-white font-bold text-lg group-hover:text-[#ffd402]">
+                        <p className="text-white font-bold text-4xl group-hover:text-[#ffd402]">
                           Cartón #{item.numero_carton}
                         </p>
-                        <p className="text-gray-400 text-sm">{item.aciertos} aciertos</p>
+                        <p className="text-gray-400 text-2xl">{item.aciertos} aciertos</p>
                       </div>
                     </button>
                   ))

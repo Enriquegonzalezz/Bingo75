@@ -9,16 +9,18 @@ import { toast } from 'sonner';
 export function useCartones() {
   const [cartones, setCartones] = useState<CartonDTO[]>([]);
   const [loading, setLoading] = useState(false);
+  const [paqueteActual, setPaqueteActual] = useState('paquete-original');
 
-  // Cargar cartones al montar
+  // Cargar cartones al montar o cuando cambia el paquete
   useEffect(() => {
     cargarCartones();
-  }, []);
+  }, [paqueteActual]);
 
   const cargarCartones = useCallback(async () => {
     setLoading(true);
     try {
       const repository = getCartonRepository();
+      repository.setPaquete(paqueteActual);
       const cartonesEntities = await repository.getAll();
       const cartonesDTO = CartonMapper.toDTOList(cartonesEntities);
       setCartones(cartonesDTO);
@@ -29,11 +31,17 @@ export function useCartones() {
     } finally {
       setLoading(false);
     }
+  }, [paqueteActual]);
+
+  const cambiarPaquete = useCallback((nuevoPaquete: string) => {
+    setPaqueteActual(nuevoPaquete);
   }, []);
 
   return {
     cartones,
     loading,
+    paqueteActual,
+    cambiarPaquete,
     recargar: cargarCartones,
   };
 }
