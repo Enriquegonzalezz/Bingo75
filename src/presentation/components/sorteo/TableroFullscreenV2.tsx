@@ -40,8 +40,8 @@ interface TableroFullscreenV2Props {
 // --- Componentes UI ---
 function PatronGigante({ modalidad }: { modalidad: Modalidad }) {
   return (
-    <div className="h-full aspect-square flex flex-col items-center justify-center bg-[#1d1d1b] border-2 border-[#ffd402] rounded-2xl p-3 shadow-xl relative overflow-hidden mr-6">
-      <div className="grid grid-cols-5 gap-2 w-full h-full">
+    <div className="h-full aspect-square flex flex-col items-center justify-center bg-[#1d1d1b] border-4 border-[#ffd402] rounded-2xl p-3 shadow-xl relative overflow-hidden">
+      <div className="grid grid-cols-5 gap-1 w-full h-full">
         {modalidad.patron.map((fila, i) =>
           fila.map((activo, j) => (
             <div
@@ -57,8 +57,8 @@ function PatronGigante({ modalidad }: { modalidad: Modalidad }) {
           ))
         )}
       </div>
-      <div className="absolute bottom-2 inset-x-0 text-center pointer-events-none">
-        <span className="text-[#ffd402] text-[10px] font-black uppercase tracking-widest bg-black/60 px-2 py-0.5 rounded-full">
+      <div className="absolute bottom-1 inset-x-0 text-center pointer-events-none">
+        <span className="text-[#ffd402] text-[9px] font-black uppercase tracking-widest bg-black/80 px-2 py-0.5 rounded-full">
           {modalidad.nombre}
         </span>
       </div>
@@ -332,52 +332,58 @@ export function TableroFullscreenV2({
       </div>
 
       {/* ===== FOOTER (30% Height) ===== */}
-      <div className="h-[35%] w-full px-6 lg:px-6 pb-6 pt-2 flex items-stretch justify-between gap-0">
-        {/* COL 1: Figura */}
-        <div className="flex justify-center items-center py-2 border-r-2 border-white/10 pr-2 gap-2` ">
-          {modalidadesActivas.map((mod) => (
-            <PatronGigante key={mod.id} modalidad={mod} />
-          ))}
-          <div className="flex flex-col items-center gap-3">
-            <div className="text-center">
-              <p className="text-white font-black text-7xl lg:text-[8rem] leading-none flex items-baseline justify-end max-w-[35%]">
-                {totalSorteados}
-                <span className="text-[55px] text-white/70 ml-1">/75</span>
-              </p>
-            </div>
-
-            {/* PREMIO GIGANTE */}
-            {premioRonda > 0 && (
-              <div className="bg-[#ffd402] border-4 border-[#ffd402] px-6 py-2 rounded-2xl shadow-[0_0_20px_rgba(255,212,2,0.4)] animate-in fade-in flex flex-col items-center">
-                <p className="text-[#1d1d1b] text-sm font-black uppercase tracking-[0.2em] mb-[-5px]">
-                  Premio
-                </p>
-                <p
-                  className={`text-[#124723] font-black tracking-tighter shadow-black drop-shadow-md ${
-                    moneda === 'VES' && premioRonda > 1000
-                      ? 'text-3xl xl:text-4xl'
-                      : 'text-5xl xl:text-6xl'
-                  }`}
-                >
-                  {moneda === 'USD' ? '$' : 'Bs. '}
-                  {premioRonda.toLocaleString()}
-                </p>
-              </div>
-            )}
+      <div className="h-[35%] w-full px-2 lg:px-6 pb-6 pt-2 flex items-stretch">
+        {/* COL 1: Patrón (h-full) */}
+        <div className="flex items-center justify-center py-2">
+          <div className="h-full flex items-center">
+            {modalidadesActivas.map((mod) => (
+              <PatronGigante key={mod.id} modalidad={mod} />
+            ))}
           </div>
         </div>
 
-        {/* COL 2: Centro (Logo/Soporte/Menu) */}
-        <div className="flex-1 flex flex-col items-center justify-center px-2  border-r-2 border-white/10 relative">
+        {/* COL 2: Contador + Premio - Ancho fijo para evitar movimiento */}
+        <div className="w-[200px] flex flex-col items-center justify-center gap-3 border-r-2 border-white/10 pr-4">
+          {/* Contador de bolas */}
+          <div className="text-center w-full">
+            <p className="text-white font-black text-7xl lg:text-7xl leading-none">
+              {totalSorteados}
+              <span className="text-4xl text-white/70 ml-1">/75</span>
+            </p>
+          </div>
+
+          {/* PREMIO */}
+          {premioRonda > 0 && (
+            <div className="bg-[#ffd402] border-4 border-[#ffd402] px-4 py-1 rounded-2xl shadow-[0_0_20px_rgba(255,212,2,0.4)] animate-in fade-in flex flex-col items-center">
+              <p className="text-[#1d1d1b] text-xs font-black uppercase tracking-[0.2em] mb-[-3px]">
+                Premio
+              </p>
+              <p
+                className={`text-[#124723] font-black tracking-tighter shadow-black drop-shadow-md ${
+                  moneda === 'VES' && premioRonda > 1000
+                    ? 'text-2xl xl:text-3xl'
+                    : 'text-4xl xl:text-5xl'
+                }`}
+              >
+                {moneda === 'USD' ? '$' : 'Bs. '}
+                {premioRonda.toLocaleString()}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* COL 3: Soporte (flex-1 para centrar) */}
+        <div className="flex-1 flex flex-col items-center justify-center px-2 border-r-2 border-white/10 relative">
           {/*<div className="relative h-28 w-80 lg:h-36 lg:w-96 mb-1">
             <Image src="/logo.png" alt="Logo Bingo" fill className="object-contain" priority />
           </div>*/}
           <div className="flex flex-col items-center">
             <p className="text-white text-3xl font-bold uppercase tracking-[0.4em] ">Soporte</p>
-            <p className="text-[#ffd402] font-black text-[4.2em]  tracking-wider">
+            <p className="text-[#ffd402] font-black text-[3.2em]  tracking-wider">
               {numeroSoporte || '0000'}
             </p>
           </div>
+          
 
           <div className="relative">
             <button
@@ -456,9 +462,9 @@ export function TableroFullscreenV2({
           </div>
         </div>
 
-        {/* COL 3: Stats + Premio (GIGANTE) */}
-        <div className="flex items-center justify-end ">
-          <div className="h-[90%] aspect-5/4 bg-[#1d1d1b] border-4 border-[#ffd402] rounded-xl flex flex-col shadow-2xl relative overflow-hidden">
+        {/* COL 4: Últimas bolas cantadas (20% ancho) */}
+        <div className="w-[20%] flex items-center justify-center pl-2">
+          <div className="h-[90%] w-full max-w-[280px] bg-[#1d1d1b] border-4 border-[#ffd402] rounded-xl flex flex-col shadow-2xl relative overflow-hidden">
             <div className="bg-[#ffd402] h-8 w-full flex items-center justify-center shrink-0">
               <span className="text-[#1d1d1b] font-black text-sm lg:text-base uppercase tracking-[0.3em]">
                 Última
@@ -472,13 +478,13 @@ export function TableroFullscreenV2({
                   {ultimoNumero && (
                     <span
                       key={ultimoNumero}
-                      className="font-black text-7xl lg:text-9xl text-white slot-machine-enter-large ml-6 leading-none"
+                      className="font-black text-5xl lg:text-7xl text-white slot-machine-enter-large leading-none"
                     >
                       {ultimoNumero}
                     </span>
                   )}
                   {!ultimoNumero && (
-                    <span className="font-black text-7xl lg:text-8xl text-white/30 ml-4">-</span>
+                    <span className="font-black text-5xl lg:text-6xl text-white/30">-</span>
                   )}
                 </div>
 
@@ -487,7 +493,7 @@ export function TableroFullscreenV2({
                   {historialClicks.length >= 2 && (
                     <span
                       key={`pos2-${historialClicks[historialClicks.length - 2]}-${historialClicks.length}`}
-                      className="font-black text-3xl lg:text-4xl xl:text-6xl mt-4 text-white/80 slot-machine-enter"
+                      className="font-black text-2xl lg:text-3xl xl:text-4xl mt-2 text-white/80 slot-machine-enter"
                     >
                       {historialClicks[historialClicks.length - 2]}
                     </span>
@@ -499,7 +505,7 @@ export function TableroFullscreenV2({
                   {historialClicks.length >= 3 && (
                     <span
                       key={`pos3-${historialClicks[historialClicks.length - 3]}-${historialClicks.length}`}
-                      className="font-black text-3xl lg:text-4xl xl:text-6xl text-white/80 slot-machine-enter"
+                      className="font-black text-2xl lg:text-3xl xl:text-4xl text-white/80 slot-machine-enter"
                     >
                       {historialClicks[historialClicks.length - 3]}
                     </span>
@@ -511,7 +517,7 @@ export function TableroFullscreenV2({
                   {historialClicks.length >= 4 && (
                     <span
                       key={`pos4-${historialClicks[historialClicks.length - 4]}-${historialClicks.length}`}
-                      className="font-black text-3xl lg:text-4xl xl:text-6xl mb-4 text-white/80 slot-machine-enter"
+                      className="font-black text-2xl lg:text-3xl xl:text-4xl mb-2 text-white/80 slot-machine-enter"
                     >
                       {historialClicks[historialClicks.length - 4]}
                     </span>
