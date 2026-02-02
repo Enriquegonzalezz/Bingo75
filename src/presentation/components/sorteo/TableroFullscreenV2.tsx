@@ -334,14 +334,13 @@ export function TableroFullscreenV2({
       {/* ===== FOOTER (30% Height) ===== */}
       <div className="h-[35%] w-full px-6 lg:px-6 pb-6 pt-2 flex items-stretch justify-between gap-0">
         {/* COL 1: Figura */}
-        <div className="flex justify-center items-center py-2 border-r-2 border-white/10 pr-2 gap-2">
+        <div className="flex justify-center items-center py-2 border-r-2 border-white/10 pr-2 gap-2` ">
           {modalidadesActivas.map((mod) => (
             <PatronGigante key={mod.id} modalidad={mod} />
           ))}
           <div className="flex flex-col items-center gap-3">
             <div className="text-center">
-              <p className="text-[#f8df7e] text-sm font-bold uppercase tracking-widest">Cantadas</p>
-              <p className="text-white font-black text-7xl lg:text-[8rem] leading-none flex items-baseline justify-end">
+              <p className="text-white font-black text-7xl lg:text-[8rem] leading-none flex items-baseline justify-end max-w-[35%]">
                 {totalSorteados}
                 <span className="text-[55px] text-white/70 ml-1">/75</span>
               </p>
@@ -375,7 +374,7 @@ export function TableroFullscreenV2({
           </div>*/}
           <div className="flex flex-col items-center">
             <p className="text-white text-3xl font-bold uppercase tracking-[0.4em] ">Soporte</p>
-            <p className="text-[#ffd402] font-black text-[6.5em]  tracking-wider">
+            <p className="text-[#ffd402] font-black text-[4.2em]  tracking-wider">
               {numeroSoporte || '0000'}
             </p>
           </div>
