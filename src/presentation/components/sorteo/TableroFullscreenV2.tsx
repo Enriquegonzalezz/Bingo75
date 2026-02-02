@@ -40,7 +40,7 @@ interface TableroFullscreenV2Props {
 // --- Componentes UI ---
 function PatronGigante({ modalidad }: { modalidad: Modalidad }) {
   return (
-    <div className="h-full aspect-square flex flex-col items-center justify-center bg-[#6a2818] border-2 border-[#ffd74a] rounded-2xl p-3 shadow-xl relative overflow-hidden mr-6">
+    <div className="h-full aspect-square flex flex-col items-center justify-center bg-[#1d1d1b] border-2 border-[#ffd402] rounded-2xl p-3 shadow-xl relative overflow-hidden mr-6">
       <div className="grid grid-cols-5 gap-2 w-full h-full">
         {modalidad.patron.map((fila, i) =>
           fila.map((activo, j) => (
@@ -50,15 +50,15 @@ function PatronGigante({ modalidad }: { modalidad: Modalidad }) {
                 i === 2 && j === 2
                   ? 'bg-white/50 animate-pulse'
                   : activo
-                    ? 'bg-[#ffd74a] shadow-[0_0_15px_#ffd74a]'
-                    : 'bg-[#fbf7da]/40'
+                    ? 'bg-[#ffd402] shadow-[0_0_15px_#ffd402]'
+                    : 'bg-[#124723]/40'
               }`}
             />
           ))
         )}
       </div>
       <div className="absolute bottom-2 inset-x-0 text-center pointer-events-none">
-        <span className="text-[#ffd74a] text-[10px] font-black uppercase tracking-widest bg-black/60 px-2 py-0.5 rounded-full">
+        <span className="text-[#ffd402] text-[10px] font-black uppercase tracking-widest bg-black/60 px-2 py-0.5 rounded-full">
           {modalidad.nombre}
         </span>
       </div>
@@ -84,7 +84,7 @@ const BingoBall = ({
         ? esUltimo
           ? 'bg-[#ef1400] text-white ring-4 ring-[#ffb74d] scale-110 z-10 shadow-lg'
           : 'bg-[#ff0000] text-white scale-100'
-        : 'bg-transparent text-[#000] hover:bg-[#ffd74a] hover:scale-105'
+        : 'bg-transparent text-[#1d1d1b] hover:bg-[#ffd402] hover:scale-105'
     }`}
   >
     {numero}
@@ -204,7 +204,7 @@ export function TableroFullscreenV2({
   }, [pavosos.length]);
 
   return (
-    <div className="fixed inset-0 bg-[#fbf7da] font-sans flex flex-col overflow-hidden select-none z-50">
+    <div className="fixed inset-0 bg-[#124723] font-sans flex flex-col overflow-hidden select-none z-50">
       <CelebrationEffect tipo={celebracion.tipo} activo={celebracion.activo} />
 
       {/* ===== TABLERO (70% Height) ===== */}
@@ -221,7 +221,7 @@ export function TableroFullscreenV2({
                 value={busquedaCarton}
                 onChange={(e) => handleBuscarCarton(e.target.value)}
                 placeholder="Nº Cartón..."
-                className="w-24 outline-none text-lg font-bold text-[#6a2818] bg-transparent"
+                className="w-24 outline-none text-lg font-bold text-[#124723] bg-transparent"
                 autoFocus
               />
               <button onClick={cerrarBuscador}>
@@ -250,7 +250,7 @@ export function TableroFullscreenV2({
               },
               {
                 l: 'O',
-                c: 'bg-[#ffd74a]',
+                c: 'bg-[#ffd402]',
                 n: [61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75],
               },
             ].map((fila) => (
@@ -280,10 +280,10 @@ export function TableroFullscreenV2({
 
         {/* Panel Lateral Búsqueda */}
         {cartonBuscado && (
-          <div className="w-1/4 bg-[#6a2818] border-4 border-[#ffd74a] rounded-[2.5rem] p-4 flex flex-col shadow-2xl animate-in slide-in-from-right-10">
+          <div className="w-1/4 bg-[#1d1d1b] border-4 border-[#ffd402] rounded-[2.5rem] p-4 flex flex-col shadow-2xl animate-in slide-in-from-right-10">
             <div className="flex justify-between items-center mb-2 px-2">
               <div>
-                <p className="text-[#ffd74a] text-xs font-bold uppercase">Cartón</p>
+                <p className="text-[#ffd402] text-xs font-bold uppercase">Cartón</p>
                 <p className="text-white text-3xl font-black">
                   #{cartonBuscado.carton.numero_carton}
                 </p>
@@ -298,7 +298,7 @@ export function TableroFullscreenV2({
                 {['B', 'I', 'N', 'G', 'O'].map((l, i) => (
                   <div
                     key={i}
-                    className="bg-[#6a2818] text-[#ffd74a] font-black text-center rounded py-0.5 text-sm"
+                    className="bg-[#124723] text-[#ffd402] font-black text-center rounded py-0.5 text-sm"
                   >
                     {l}
                   </div>
@@ -312,7 +312,7 @@ export function TableroFullscreenV2({
                     return (
                       <div
                         key={`${i}-${j}`}
-                        className={`flex items-center justify-center rounded font-bold text-base md:text-lg border ${esCentro ? 'bg-[#ffd74a] border-[#ffd74a]' : marcado ? 'bg-[#ef4444] text-white border-[#ef4444]' : 'bg-white border-gray-200'}`}
+                        className={`flex items-center justify-center rounded font-bold text-base md:text-lg border ${esCentro ? 'bg-[#ffd402] border-[#ffd402]' : marcado ? 'bg-[#ef4444] text-white border-[#ef4444]' : 'bg-white border-gray-200'}`}
                       >
                         {esCentro ? '★' : n}
                       </div>
@@ -338,34 +338,34 @@ export function TableroFullscreenV2({
           {modalidadesActivas.map((mod) => (
             <PatronGigante key={mod.id} modalidad={mod} />
           ))}
-           <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-3">
             <div className="text-center">
-              <p className="text-[#6a2818] text-sm font-bold uppercase tracking-widest">
-                Cantadas
-              </p>
-              <p className="text-[#000] font-black text-7xl lg:text-[8rem] leading-none flex items-baseline justify-end">
+              <p className="text-[#f8df7e] text-sm font-bold uppercase tracking-widest">Cantadas</p>
+              <p className="text-white font-black text-7xl lg:text-[8rem] leading-none flex items-baseline justify-end">
                 {totalSorteados}
-                <span className="text-[55px] text-[#000] ml-1">/75</span>
+                <span className="text-[55px] text-white/70 ml-1">/75</span>
               </p>
             </div>
 
             {/* PREMIO GIGANTE */}
             {premioRonda > 0 && (
-              <div className="bg-[#ffd74a] border-4 border-[#ffd74a] px-6 py-2 rounded-2xl shadow-[0_0_20px_rgba(255,215,74,0.4)] animate-in fade-in flex flex-col items-center">
-                <p className="text-[#6a2818] text-sm font-black uppercase tracking-[0.2em] mb-[-5px]">
-                  Premio 
+              <div className="bg-[#ffd402] border-4 border-[#ffd402] px-6 py-2 rounded-2xl shadow-[0_0_20px_rgba(255,212,2,0.4)] animate-in fade-in flex flex-col items-center">
+                <p className="text-[#1d1d1b] text-sm font-black uppercase tracking-[0.2em] mb-[-5px]">
+                  Premio
                 </p>
-                <p className={`text-[#124723] font-black tracking-tighter shadow-black drop-shadow-md ${
-                  moneda === 'VES' && premioRonda > 1000 
-                    ? 'text-3xl xl:text-4xl' 
-                    : 'text-5xl xl:text-6xl'
-                }`}>
-                  {moneda === 'USD' ? '$' : 'Bs. '}{premioRonda.toLocaleString()}
+                <p
+                  className={`text-[#124723] font-black tracking-tighter shadow-black drop-shadow-md ${
+                    moneda === 'VES' && premioRonda > 1000
+                      ? 'text-3xl xl:text-4xl'
+                      : 'text-5xl xl:text-6xl'
+                  }`}
+                >
+                  {moneda === 'USD' ? '$' : 'Bs. '}
+                  {premioRonda.toLocaleString()}
                 </p>
               </div>
             )}
           </div>
-
         </div>
 
         {/* COL 2: Centro (Logo/Soporte/Menu) */}
@@ -374,10 +374,8 @@ export function TableroFullscreenV2({
             <Image src="/logo.png" alt="Logo Bingo" fill className="object-contain" priority />
           </div>*/}
           <div className="flex flex-col items-center">
-            <p className="text-[#000] text-3xl font-bold uppercase tracking-[0.4em] ">
-              Soporte
-            </p>
-            <p className="text-[#6a2818] font-black text-[6.5em]  tracking-wider">
+            <p className="text-white text-3xl font-bold uppercase tracking-[0.4em] ">Soporte</p>
+            <p className="text-[#ffd402] font-black text-[6.5em]  tracking-wider">
               {numeroSoporte || '0000'}
             </p>
           </div>
@@ -385,7 +383,7 @@ export function TableroFullscreenV2({
           <div className="relative">
             <button
               onClick={() => setMenuAbierto(!menuAbierto)}
-              className="flex items-center gap-2 px-4 py-1.5 bg-[#000] text-[#fff] rounded-full transition-colors border border-[#6a2818] gap-2"
+              className="flex items-center gap-2 px-4 py-1.5 bg-[#1d1d1b] text-white rounded-full transition-colors border border-[#ffd402]/30 gap-2"
             >
               <Menu className="w-4 h-4" />
               <span className="text-xs font-bold uppercase tracking-wider">Menú</span>
@@ -461,14 +459,13 @@ export function TableroFullscreenV2({
 
         {/* COL 3: Stats + Premio (GIGANTE) */}
         <div className="flex items-center justify-end ">
-         
-          <div className="h-[90%] aspect-5/4 bg-[#6a2818] border-4 border-[#ffd74a] rounded-xl flex flex-col shadow-2xl relative overflow-hidden">
-            <div className="bg-[#ffd74a] h-8 w-full flex items-center justify-center shrink-0">
-              <span className="text-[#6a2818] font-black text-sm lg:text-base uppercase tracking-[0.3em]">
+          <div className="h-[90%] aspect-5/4 bg-[#1d1d1b] border-4 border-[#ffd402] rounded-xl flex flex-col shadow-2xl relative overflow-hidden">
+            <div className="bg-[#ffd402] h-8 w-full flex items-center justify-center shrink-0">
+              <span className="text-[#1d1d1b] font-black text-sm lg:text-base uppercase tracking-[0.3em]">
                 Última
               </span>
             </div>
-            <div className="flex-1 flex items-center justify-end bg-[#6a2818] relative">
+            <div className="flex-1 flex items-center justify-end bg-[#1d1d1b] relative">
               {/* Grid de últimos 4 números con animación slot machine */}
               <div className="grid grid-cols-2 grid-rows-3 w-full h-full">
                 {/* Div 1: Último número (más grande) - ocupa 3 filas */}
@@ -485,11 +482,11 @@ export function TableroFullscreenV2({
                     <span className="font-black text-7xl lg:text-8xl text-white/30 ml-4">-</span>
                   )}
                 </div>
-                
+
                 {/* Div 2: 2do número más reciente */}
                 <div className="flex items-center justify-center overflow-hidden">
                   {historialClicks.length >= 2 && (
-                    <span 
+                    <span
                       key={`pos2-${historialClicks[historialClicks.length - 2]}-${historialClicks.length}`}
                       className="font-black text-3xl lg:text-4xl xl:text-6xl mt-4 text-white/80 slot-machine-enter"
                     >
@@ -497,11 +494,11 @@ export function TableroFullscreenV2({
                     </span>
                   )}
                 </div>
-                
+
                 {/* Div 3: 3er número más reciente */}
                 <div className="col-start-2 flex items-center justify-center overflow-hidden">
                   {historialClicks.length >= 3 && (
-                    <span 
+                    <span
                       key={`pos3-${historialClicks[historialClicks.length - 3]}-${historialClicks.length}`}
                       className="font-black text-3xl lg:text-4xl xl:text-6xl text-white/80 slot-machine-enter"
                     >
@@ -509,11 +506,11 @@ export function TableroFullscreenV2({
                     </span>
                   )}
                 </div>
-                
+
                 {/* Div 4: 4to número más reciente */}
                 <div className="col-start-2 row-start-3 flex items-center justify-center overflow-hidden">
                   {historialClicks.length >= 4 && (
-                    <span 
+                    <span
                       key={`pos4-${historialClicks[historialClicks.length - 4]}-${historialClicks.length}`}
                       className="font-black text-3xl lg:text-4xl xl:text-6xl mb-4 text-white/80 slot-machine-enter"
                     >
@@ -552,18 +549,20 @@ export function TableroFullscreenV2({
       {/* Modal de confirmación para retirar número */}
       {numeroARetirar !== null && (
         <>
-          <div className="fixed inset-0 bg-black/60 z-[100] animate-in fade-in" onClick={cancelarRetiro} />
+          <div
+            className="fixed inset-0 bg-black/60 z-[100] animate-in fade-in"
+            onClick={cancelarRetiro}
+          />
           <div className="fixed inset-0 z-[101] flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 animate-in zoom-in-95">
               <div className="text-center">
                 <div className="mx-auto w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-4">
                   <span className="text-4xl font-black text-red-600">{numeroARetirar}</span>
                 </div>
-                <h3 className="text-2xl font-black text-gray-900 mb-2">
-                  ¿Retirar número?
-                </h3>
+                <h3 className="text-2xl font-black text-gray-900 mb-2">¿Retirar número?</h3>
                 <p className="text-gray-600 mb-6">
-                  ¿Estás seguro que quieres retirar el número <span className="font-bold text-red-600">{numeroARetirar}</span>?
+                  ¿Estás seguro que quieres retirar el número{' '}
+                  <span className="font-bold text-red-600">{numeroARetirar}</span>?
                 </p>
                 <div className="flex gap-3">
                   <button

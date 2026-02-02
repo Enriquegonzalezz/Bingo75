@@ -45,62 +45,50 @@ export default function Home() {
     return () => ctx.revert();
   }, []);
   return (
-    <div className="min-h-screen bg-[#fbf7da]">
+    <div className="min-h-screen bg-[#124723]">
       <div className="container mx-auto px-4 py-12 md:py-20 max-w-7xl">
         {/* Hero - Flex Layout */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-12 mb-20">
           {/* Logo - Izquierda */}
           <div className="flex items-center gap-6">
             <div ref={logoRef}>
-              <Image
-                src="/gocho.png"
-                alt="Gocho"
-                width={350}
-                height={120}
-                className=""
-              />
+              <Image src="/logo.png" alt="Bingocarabobo" width={350} height={120} className="" />
             </div>
           </div>
 
           {/* Stats - Derecha */}
-             <div ref={cardsRef} className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          <Link href="/tablero">
-            <div className="bg-[#6b2818] rounded-2xl shadow-xl p-10 hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer group border-2 border-[#fbf7da]">
-              <div className="w-16 h-16 bg-[#ffd402] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                <PlayCircle className="w-9 h-9 text-[#124723]" />
+          <div ref={cardsRef} className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <Link href="/tablero">
+              <div className="bg-[#1d1d1b] rounded-2xl shadow-xl p-10 hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer group border-2 border-[#ffd402]">
+                <div className="w-16 h-16 bg-[#ffd402] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <PlayCircle className="w-9 h-9 text-[#124723]" />
+                </div>
+                <h2 className="text-3xl font-black text-[#ffd402] mb-3">Iniciar Sorteo</h2>
+                <p className="text-[#f8df7e] text-lg">
+                  Sortea números manualmente y detecta ganadores automáticamente con validación en
+                  tiempo real
+                </p>
               </div>
-              <h2 className="text-3xl font-black text-[#ffd402] mb-3">
-                Iniciar Sorteo
-              </h2>
-              <p className="text-[#fbf7da] text-lg">
-                Sortea números manualmente y detecta ganadores automáticamente con validación en tiempo real
-              </p>
-            </div>
-          </Link>
+            </Link>
 
-          <Link href="/cartones">
-            <div className="bg-[#6b2818] rounded-2xl shadow-xl p-10 hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer group border-2 border-[#fbf7da]">
-              <div className="w-16 h-16 bg-[#ffd402] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                <Grid3x3 className="w-9 h-9 text-white" />
+            <Link href="/cartones">
+              <div className="bg-[#1d1d1b] rounded-2xl shadow-xl p-10 hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer group border-2 border-[#68b258]">
+                <div className="w-16 h-16 bg-[#68b258] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <Grid3x3 className="w-9 h-9 text-white" />
+                </div>
+                <h2 className="text-3xl font-black text-[#68b258] mb-3">Ver Cartones</h2>
+                <p className="text-[#f8df7e] text-lg">
+                  Explora los 10,000 cartones disponibles con búsqueda instantánea y visualización
+                  detallada
+                </p>
               </div>
-              <h2 className="text-3xl font-black text-[#ffd402] mb-3">
-                Ver Cartones
-              </h2>
-              <p className="text-[#fbf7da] text-lg">
-                Explora los 10,000 cartones disponibles con búsqueda instantánea y visualización detallada
-              </p>
-            </div>
-          </Link>
-        </div>
+            </Link>
+          </div>
         </div>
 
         {/* Main Actions */}
-    
 
         {/* Quick Access */}
-       
-
-        
       </div>
     </div>
   );

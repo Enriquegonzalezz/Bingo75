@@ -6,9 +6,9 @@ import { LayoutClient } from './LayoutClient';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Bingoelgocho - Sistema Profesional',
+  title: 'Bingocarabobo - Sistema Profesional',
   description: 'Sistema completo de gestión de Bingo 75 con arquitectura escalable',
-  keywords: ['bingo', 'bingo 75', 'sorteo', 'cartones', 'gocho'],
+  keywords: ['bingo', 'bingo 75', 'sorteo', 'cartones', 'Bingocarabobo'],
 };
 
 export default function RootLayout({

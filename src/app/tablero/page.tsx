@@ -29,11 +29,11 @@ const DashButton = ({ onClick, disabled, variant = 'primary', children, classNam
     'flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-bold transition-all duration-200 shadow-md active:scale-95 text-sm md:text-base';
   const variants = {
     primary:
-      'bg-[#ffd74a] text-[#6a2818] hover:bg-[#ffe84d] disabled:bg-gray-600 disabled:text-gray-400',
+      'bg-[#ffd402] text-[#1d1d1b] hover:bg-[#e6c000] disabled:bg-gray-600 disabled:text-gray-400',
     outline:
-      'bg-transparent border-2 border-[#ffd74a] text-[#ffd74a] hover:bg-[#ffd74a] hover:text-[#6a2818]',
+      'bg-transparent border-2 border-[#ffd402] text-[#ffd402] hover:bg-[#ffd402] hover:text-[#1d1d1b]',
     danger: 'bg-red-600 text-white hover:bg-red-700',
-    dark: 'bg-[#6a2818] text-white hover:bg-[#8a3828] border border-gray-700',
+    dark: 'bg-[#1d1d1b] text-white hover:bg-[#2d2d2b] border border-gray-700',
   };
   return (
     <button
@@ -91,16 +91,21 @@ export default function TableroPage() {
     if (!configuracionJuego) return;
     // No actualizar el historial si no hay ganadores (evita sobrescribir al cambiar de ronda)
     if (ganadores.length === 0 && cartonesConMenosAciertos.length === 0) return;
-    
+
     setHistorialRondas((prev) => {
       // Deep clone de ganadores para preservar patronMatriz
       const ganadoresReales = ganadores
         .filter((g) => g.tipo !== 'pavoso')
-        .map(g => ({ ...g, patronMatriz: g.patronMatriz.map(row => [...row]) }));
+        .map((g) => ({ ...g, patronMatriz: g.patronMatriz.map((row) => [...row]) }));
       const pavosos = ganadores
         .filter((g) => g.tipo === 'pavoso')
-        .map(g => ({ ...g, patronMatriz: g.patronMatriz.map(row => [...row]) }));
-      const prevData = prev[rondaActual] || { ganadores: [], pavosos: [], menosAciertos: [], numerosSorteados: [] };
+        .map((g) => ({ ...g, patronMatriz: g.patronMatriz.map((row) => [...row]) }));
+      const prevData = prev[rondaActual] || {
+        ganadores: [],
+        pavosos: [],
+        menosAciertos: [],
+        numerosSorteados: [],
+      };
       if (
         prevData.ganadores.length === ganadoresReales.length &&
         prevData.pavosos.length === pavosos.length &&
@@ -120,7 +125,14 @@ export default function TableroPage() {
     });
     // Si la ronda avanza, actualizamos el filtro para seguir al juego
     if (!rondaFinalizada) setRondaFiltro(rondaActual);
-  }, [ganadores, cartonesConMenosAciertos, rondaActual, rondaFinalizada, configuracionJuego, numerosSorteados]);
+  }, [
+    ganadores,
+    cartonesConMenosAciertos,
+    rondaActual,
+    rondaFinalizada,
+    configuracionJuego,
+    numerosSorteados,
+  ]);
 
   useEffect(() => {
     if (totalSorteados === 1 && !isFullscreen) enterFullscreen();
@@ -200,11 +212,11 @@ export default function TableroPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fbf7da] font-sans text-gray-100 pb-10">
-      <header className="bg-[#6a2818] border-b-4 border-[#ffd74a] shadow-lg sticky top-0 z-30">
+    <div className="min-h-screen bg-[#124723] font-sans text-gray-100 pb-10">
+      <header className="bg-[#1d1d1b] border-b-4 border-[#ffd402] shadow-lg sticky top-0 z-30">
         <div className="container mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-black text-[#ffd74a] uppercase tracking-wider">
+            <h1 className="text-2xl md:text-3xl font-black text-[#ffd402] uppercase tracking-wider">
               Tablero de Sorteo
             </h1>
             <p className="text-xs text-gray-400 font-mono">
@@ -235,16 +247,16 @@ export default function TableroPage() {
 
       <main className="container mx-auto px-4 py-6 max-w-[1800px]">
         {configuracionJuego && (
-          <div className="bg-[#6a2818] rounded-xl p-4 border border-[#ffd74a]/30 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-md">
+          <div className="bg-[#1d1d1b] rounded-xl p-4 border border-[#ffd402]/30 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-md">
             <div>
-              <h3 className="text-[#ffd74a] font-bold text-sm uppercase mb-2">
+              <h3 className="text-[#ffd402] font-bold text-sm uppercase mb-2">
                 Modalidades Activas
               </h3>
               <div className="flex flex-wrap gap-2">
                 {modalidadesActivas.map((mod) => (
                   <span
                     key={mod.id}
-                    className="bg-[#6a2818] text-white px-3 py-1 rounded-full text-xs font-bold border border-[#ffd74a]"
+                    className="bg-[#124723] text-white px-3 py-1 rounded-full text-xs font-bold border border-[#68b258]"
                   >
                     {mod.nombre}
                   </span>
@@ -252,7 +264,7 @@ export default function TableroPage() {
               </div>
             </div>
             <div className="text-right">
-              <div className="bg-[#ffd74a] text-[#6a2818] px-4 py-1 rounded-lg font-black text-lg inline-block shadow-[0_0_15px_rgba(255,215,74,0.3)]">
+              <div className="bg-[#ffd402] text-[#1d1d1b] px-4 py-1 rounded-lg font-black text-lg inline-block shadow-[0_0_15px_rgba(255,212,2,0.3)]">
                 RONDA {rondaActual}/{totalRondas}
               </div>
             </div>
@@ -262,8 +274,8 @@ export default function TableroPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8 space-y-6">
             <div className="bg-white rounded-2xl p-6 shadow-xl">
-              <h2 className="text-[#6a2818] font-bold text-xl mb-4 flex items-center gap-2">
-                <span className="w-2 h-8 bg-[#6a2818] rounded-full"></span>Seleccionar Número Manual
+              <h2 className="text-[#1d1d1b] font-bold text-xl mb-4 flex items-center gap-2">
+                <span className="w-2 h-8 bg-[#124723] rounded-full"></span>Seleccionar Número Manual
               </h2>
               <div className="grid grid-cols-10 sm:grid-cols-15 gap-2">
                 {todosNumeros.map((num) => {
@@ -279,8 +291,8 @@ export default function TableroPage() {
                       className={cn(
                         'aspect-square flex items-center justify-center rounded-lg font-black text-lg transition-all',
                         sorteado
-                          ? 'bg-[#6a2818] text-gray-500 cursor-not-allowed scale-90 opacity-50'
-                          : 'bg-white text-[#6a2818] hover:scale-110 shadow-sm hover:shadow-md'
+                          ? 'bg-[#1d1d1b] text-gray-500 cursor-not-allowed scale-90 opacity-50'
+                          : 'bg-white text-[#1d1d1b] hover:scale-110 shadow-sm hover:shadow-md'
                       )}
                       style={{ border: sorteado ? 'none' : `3px solid ${colorBorde}` }}
                     >
@@ -290,9 +302,9 @@ export default function TableroPage() {
                 })}
               </div>
             </div>
-            <div className="bg-[#6a2818] rounded-2xl p-6 shadow-xl border-t-4 border-[#ffd74a]">
+            <div className="bg-[#1d1d1b] rounded-2xl p-6 shadow-xl border-t-4 border-[#68b258]">
               <h2 className="text-white font-bold text-xl mb-4 flex items-center gap-2">
-                <span className="w-2 h-8 bg-[#ffd74a] rounded-full"></span>Números Sorteados
+                <span className="w-2 h-8 bg-[#68b258] rounded-full"></span>Números Sorteados
               </h2>
               <div className="space-y-3">
                 {letras.map((letra) => {
@@ -309,11 +321,11 @@ export default function TableroPage() {
                       >
                         {letra}
                       </div>
-                      <div className="flex-1 bg-[#6a2818]/50 rounded-xl min-h-[3rem] p-2 flex flex-wrap gap-2 items-center">
+                      <div className="flex-1 bg-[#124723]/50 rounded-xl min-h-[3rem] p-2 flex flex-wrap gap-2 items-center">
                         {numerosDeLetra.map((n) => (
                           <span
                             key={n}
-                            className="bg-white text-[#6a2818] w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-sm animate-in zoom-in"
+                            className="bg-white text-[#1d1d1b] w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-sm animate-in zoom-in"
                           >
                             {n}
                           </span>
@@ -326,11 +338,11 @@ export default function TableroPage() {
             </div>
 
             {/* PANEL MENOS ACIERTOS CLICABLE */}
-            <div className="bg-[#6a2818] rounded-2xl p-6 shadow-xl border border-red-900/50">
+            <div className="bg-[#1d1d1b] rounded-2xl p-6 shadow-xl border border-red-900/50">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">❌</span>
-                  <h2 className="text-[#ffd74a] font-bold text-xl">
+                  <h2 className="text-[#ffd402] font-bold text-xl">
                     Menos Aciertos (Ronda {rondaFiltro})
                   </h2>
                 </div>
@@ -348,16 +360,16 @@ export default function TableroPage() {
                     <button
                       key={item.numero_carton}
                       onClick={() => handleAbrirModal('menos_aciertos', item)}
-                      className="bg-[#6a2818] p-3 rounded-xl border border-[#ffd74a]/30 flex flex-col items-center text-center hover:bg-[#8a3828] hover:scale-105 transition-all group"
+                      className="bg-[#124723] p-3 rounded-xl border border-[#ffd402]/30 flex flex-col items-center text-center hover:bg-[#1a5c2f] hover:scale-105 transition-all group"
                     >
                       <span className="text-xs text-gray-400 uppercase tracking-wider mb-1">
                         Posición {idx + 1}
                       </span>
-                      <span className="text-2xl font-black text-white group-hover:text-[#ffd74a]">
+                      <span className="text-2xl font-black text-white group-hover:text-[#ffd402]">
                         #{item.numero_carton}
                       </span>
                       <div className="mt-2 bg-black/30 px-3 py-1 rounded-full">
-                        <span className="text-[#ffd74a] font-bold">{item.aciertos} aciertos</span>
+                        <span className="text-[#ffd402] font-bold">{item.aciertos} aciertos</span>
                       </div>
                     </button>
                   ))}
@@ -368,7 +380,7 @@ export default function TableroPage() {
 
           <div className="lg:col-span-4">
             <div className="sticky top-24 space-y-4">
-              <div className="bg-[#6a2818] p-3 rounded-xl shadow-lg border border-gray-700">
+              <div className="bg-[#1d1d1b] p-3 rounded-xl shadow-lg border border-gray-700">
                 <div className="flex items-center gap-2 mb-2 text-gray-400 text-xs uppercase font-bold px-1">
                   <Filter className="w-3 h-3" /> Filtrar Resultados por Ronda
                 </div>
@@ -385,10 +397,10 @@ export default function TableroPage() {
                         className={cn(
                           'flex-1 min-w-[80px] px-3 py-2 rounded-lg font-bold text-sm transition-all whitespace-nowrap',
                           isActive
-                            ? 'bg-[#ffd74a] text-[#6a2818] shadow-md transform scale-105'
+                            ? 'bg-[#ffd402] text-[#1d1d1b] shadow-md transform scale-105'
                             : isDisabled
                               ? 'bg-gray-800 text-gray-600'
-                              : 'bg-[#6a2818] text-white hover:bg-[#8a3828]'
+                              : 'bg-[#124723] text-white hover:bg-[#1a5c2f]'
                         )}
                       >
                         Ronda {r}
@@ -398,14 +410,14 @@ export default function TableroPage() {
                 </div>
               </div>
 
-              <div className="bg-[#6a2818] rounded-t-2xl p-6 border-b-4 border-[#ffd74a] shadow-lg">
+              <div className="bg-[#1d1d1b] rounded-t-2xl p-6 border-b-4 border-[#ffd402] shadow-lg">
                 <div className="flex items-center gap-3 mb-2">
-                  <Trophy className="w-8 h-8 text-[#ffd74a]" />
+                  <Trophy className="w-8 h-8 text-[#ffd402]" />
                   <h2 className="text-2xl font-bold text-white">Resultados</h2>
                 </div>
                 <div className="flex justify-between items-end">
                   <div>
-                    <span className="text-4xl font-black text-[#ffd74a]">
+                    <span className="text-4xl font-black text-[#ffd402]">
                       {datosVisualizados.ganadores.length}
                     </span>
                     <span className="block text-gray-400 text-xs uppercase font-bold">
@@ -421,7 +433,7 @@ export default function TableroPage() {
                 </div>
               </div>
 
-              <div className="bg-[#6a2818] rounded-b-2xl p-3 shadow-inner h-[calc(100vh-450px)] overflow-y-auto custom-scrollbar border border-white/5 space-y-3">
+              <div className="bg-[#0f2e1b] rounded-b-2xl p-3 shadow-inner h-[calc(100vh-450px)] overflow-y-auto custom-scrollbar border border-white/5 space-y-3">
                 {datosVisualizados.ganadores.length === 0 &&
                 datosVisualizados.pavosos.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-white/30 space-y-4 p-8 text-center">
@@ -434,31 +446,31 @@ export default function TableroPage() {
                       <button
                         key={`g-${idx}`}
                         onClick={() => handleAbrirModal('ganador', ganador)}
-                        className="w-full text-left p-4 rounded-xl border-l-8 border-[#ffd74a] bg-[#ffd74a] shadow-md relative overflow-hidden group transition-all hover:translate-x-1"
+                        className="w-full text-left p-4 rounded-xl border-l-8 border-[#2e5c26] bg-[#68b258] shadow-md relative overflow-hidden group transition-all hover:translate-x-1"
                       >
                         <div className="flex justify-between items-start relative z-10">
                           <div>
-                            <p className="text-xs font-bold uppercase mb-1 text-[#6a2818]">
+                            <p className="text-xs font-bold uppercase mb-1 text-[#124723]">
                               🏆 ¡Bingo!
                             </p>
-                            <p className="text-3xl font-black leading-none text-[#6a2818]">
+                            <p className="text-3xl font-black leading-none text-white">
                               #{ganador.numero_carton}
                             </p>
-                            <p className="text-xs mt-1 font-mono text-[#6a2818]/80">
+                            <p className="text-xs mt-1 font-mono text-white/80">
                               Serial: {ganador.carton.serial}
                             </p>
-                            <p className="text-sm font-bold mt-2 text-[#6a2818] uppercase">
+                            <p className="text-sm font-bold mt-2 text-[#124723] uppercase">
                               {ganador.patron}
                             </p>
                           </div>
-                          <span className="text-xs font-bold px-2 py-1 rounded bg-[#6a2818]/20 text-[#6a2818]">
+                          <span className="text-xs font-bold px-2 py-1 rounded bg-black/20 text-white">
                             {new Date(ganador.timestamp).toLocaleTimeString([], {
                               hour: '2-digit',
                               minute: '2-digit',
                             })}
                           </span>
                         </div>
-                        <Trophy className="absolute -right-4 -bottom-4 w-24 h-24 text-[#6a2818] opacity-10 rotate-12" />
+                        <Trophy className="absolute -right-4 -bottom-4 w-24 h-24 text-white opacity-10 rotate-12" />
                       </button>
                     ))}
                     {datosVisualizados.pavosos.map((ganador, idx) => (
