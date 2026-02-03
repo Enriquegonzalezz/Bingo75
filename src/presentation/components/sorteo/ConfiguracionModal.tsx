@@ -621,7 +621,7 @@ export function ConfiguracionModal({
                                   ? 'bg-white text-[#124723] cursor-default'
                                   : activo
                                     ? 'bg-[#ffd402] text-[#1d1d1b] shadow-lg'
-                                    : 'bg-red text-gray-500 hover:bg-[#2d2d2b]'
+                                    : 'bg-[#1d1d1b] text-gray-500 hover:bg-[#2d2d2b]'
                               }
                             `}
                           >
